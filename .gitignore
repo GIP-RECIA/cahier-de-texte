@@ -10,7 +10,6 @@
 # Build directories
 ###################
 build/
-bin/
 
 ###################
 # Eclipse 
