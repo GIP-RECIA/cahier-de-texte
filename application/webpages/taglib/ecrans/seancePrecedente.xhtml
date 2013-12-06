@@ -1,0 +1,178 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:a4j="http://richfaces.org/a4j" xmlns:crx="urn:crlr:ext"
+	xmlns:cr="urn:crlr" xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:rich="http://richfaces.org/rich">
+<ui:composition>
+
+<cr:consultationSeance
+	seanceDetail="#{seance}"
+	afficheFromVisa="false"
+	afficheTamponVisa="false"
+	style="background-color: #{richSkin.tabBackgroundColor};"
+	
+	idSeancePrecedenteXX="#{id_seancePrecedente}"
+	controleur="#{controleur}"
+	cibleModifierSeancePrecedente="#{cibleModifierSeancePrecedente}"
+	idPopupSaisieSeance="#{idPopupSaisieSeance}"
+	idPopupDevoir=""
+	affichePopupDevoir="false"
+	modifiable="#{empty readOnly or not readOnly}"
+    	
+/>
+
+
+
+
+
+
+
+
+<ui:remove>
+
+
+
+
+
+
+
+<style>
+input.rf-sel-inp {
+    width: 25px;
+}
+</style>
+	<!-- 
+        composant permettant le rendu du formulaire de consultation d'une seance precedente.
+        - controleur : le controleur du formulaire
+        - seance : le SeanceDTO contenant les info de la seance
+        - formulaire_contenant : nom du formulaire qui herberge le composant
+        - Le controleur doit implementer la propriete form.seancePrecedente de type SeanceDTO
+        - cibleModifierSeancePrecedente : methode invoquee sur le controleur quand on veut modifier la seance precedente
+    -->
+
+    <c:set var="idSeancePrecedenteXX" value="${empty id_seancePrecedente ? cr:idcompteur('id_seancePrecedente') : id_seancePrecedente}" />
+	<c:set var="formulaire_contenant" value="${empty formulaire_contenant ? '#formulaire_principal' : formulaire_contenant}" />
+    <c:set var="showAnnotations" value="#{empty showAnnotations ? 'true' : showAnnotations}" />
+	<rich:panel>
+		<table class="grille" style="">
+            <tr>
+                <td>
+                    <h:outputLabel value="Date" styleClass="libelle" title="Date de la séance précédente" />
+                    #{cr:formatDate(seance.date, 'dd/MM/yyyy')}
+                    <b>de </b>#{seance.horaireDebut}
+                    <b>à </b>#{seance.horaireFin}
+                </td>
+                <td style="width:20px;">
+                    <cr:lien id="#{idSeancePrecedenteXX}_modifierSeance" 
+                        bean="#{controleur}"
+                        cible="#{cibleModifierSeancePrecedente}"
+                        render="#{idPopupSaisieSeance}_form:#{idPopupSaisieSeance}_panel"
+                        image="modifier.gif"
+                        oncomplete="#{rich:component(idPopupSaisieSeance)}.show(); appliqueRotationTampon();"
+                        desc="Modifier la séance précédente" 
+                        rendered="#{empty readOnly or not readOnly}"
+                        >
+                        <f:setPropertyActionListener value="#{seance}" target="#{controleur.form.seancePrecedente}" />
+                    </cr:lien> 
+                </td>
+            </tr>
+        </table>
+        <table class="grille" style="">
+            <tr>
+                <td style="width:50px; vertical-align: middle;" >
+                    <h:outputLabel value="Intitulé" styleClass="libelle" title="Initulé de la séance:" />
+                </td>
+                <td>
+                    <h:inputText value="#{seance.intitule}" 
+                        id="#{idSeancePrecedenteXX}_idSeance_intitule"
+                        styleClass="champ"
+                        disabled="#{readOnly}" readonly="true"
+                        style="width:100%;" >
+                    </h:inputText>
+                </td>
+            </tr>
+        </table>
+        <table class="grille" style="">
+            <tr>
+                <td>
+                    <h:outputText escape="false" styleClass="description champLatex" value="#{seance.descriptionHTML}" />  
+                </td>
+            </tr>
+        </table>
+        <t:div rendered="#{(not empty seance.annotations) and (showAnnotations)}">
+	        <table class="grille" style="">
+	            <tr>
+	                <td>
+	                    <h:outputLabel
+	                            value="Annotations personnelles de l'enseignant (qui ne sont visibles que par lui)"
+	                            style="padding-right: 10px; padding-left: 10px;"
+	                            styleClass="libelle"
+	                            >
+	                    </h:outputLabel>
+	                </td>
+	            </tr>
+	            <tr id="#{idSeancePrecedenteXX}_idAnnotationPersonnelle">
+	                <td>
+	                   <h:outputText escape="false" styleClass="description" value="#{seance.annotationsHTML}" />
+	                </td>
+	            </tr>
+	        </table>
+        </t:div>
+        <table class="grille" style="">
+            <tr>
+                <td>
+                    <t:div id="#{idSeancePrecedenteXX}_ListeDesPiecesJointe">
+                        <rich:panel id="#{idSeancePrecedenteXX}_ListeDesPiecesJointePanel"  rendered="#{not empty seance.files}" 
+                                 style="vertical-align:top; overflow:auto; width:100%; height:180px;">
+                            <cr:table idTable="#{idSeancePrecedenteXX}_tableListingPieceJointeSea" style="width:100%;"
+                                liste="#{seance.files}" entete="Liste des pièces jointes ajoutées à la séance" >
+                                <cr:colonne libelleColonne="Fichier" id="">
+                                    <h:outputText value="#{ligne.nom}" />
+                                </cr:colonne>
+                                <cr:colonne libelleColonne="Actions" align="center" id="">
+                                    <cr:lien id="#{idSeancePrecedenteXX}_dlSeaFichier" chemin="#{ligne.pathFullDownload}" rendered="#{ligne.activerLien}" bean=""
+                                         image="download.png" desc="Télécharger"/>   
+                                </cr:colonne>
+                            </cr:table>
+                        </rich:panel>
+                    </t:div>
+                </td>            
+            </tr>
+            <tr>
+                <td>
+                    <t:div id="#{idSeancePrecedenteXX}_ListeDesDevoirs">
+                        <rich:panel id="#{idSeancePrecedenteXX}_ListeDesDevoirsPanel"  rendered="#{not empty seance.devoirs}" 
+                                 style="vertical-align:top; overflow:auto; width:100%; height:180px;">
+                            <cr:table idTable="#{idSeancePrecedenteXX}_tableListingDevoirsSea" style="width:100%;"
+                                liste="#{seance.devoirs}" entete="Travail à faire / devoirs donnés à cette séance précédente" >
+                                <cr:colonne libelleColonne="Intitulé" id="">
+                                    <h:outputText value="#{ligne.intitule}" />
+                                </cr:colonne>
+                                <cr:colonne libelleColonne="Type" id="">
+                                    <h:outputText value="#{ligne.typeDevoirDTO.libelle}" />
+                                </cr:colonne>
+                                <cr:colonne libelleColonne="Description" id="">
+                                    <h:outputText escape="false"
+                                        title="#{ligne.descriptionSansBalise}"
+                                        value="#{ligne.descriptionSansBaliseAbrege}" />
+                                </cr:colonne>
+                                <cr:colonne libelleColonne="Pour le" id="">
+                                    <h:outputText value="#{cr:formatDate(ligne.dateRemise, 'dd/MM/yyyy')}" />
+                                </cr:colonne>
+                                <cr:colonne libelleColonne="Devoir" id="" title="">
+                                    <h:graphicImage rendered="#{ligne.typeDevoirDTO.categorie.id eq 'DEVOIR'}" id="${cr:idcompteur('image')}" library="images/icones" name="valider.gif"/>
+                                </cr:colonne>
+                            </cr:table>
+                        </rich:panel>
+                    </t:div>
+                </td>            
+            </tr>
+        </table>
+	</rich:panel>
+	<hr />
+</ui:remove>
+</ui:composition>
+</html>

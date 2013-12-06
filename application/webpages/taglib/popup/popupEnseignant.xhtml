@@ -1,0 +1,59 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"  
+    xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:a4j="http://richfaces.org/a4j" 
+    xmlns:f="http://java.sun.com/jsf/core"    
+    xmlns:t="http://myfaces.apache.org/tomahawk"  
+    xmlns:cr="urn:crlr"
+    xmlns:rich="http://richfaces.org/rich">
+
+<ui:composition>
+  <cr:popupListeFiltrable idPopup="idPopupEnseignant"
+                            tailleAuto="true"
+                            largeurPopup="400"
+                            hauteur="200"
+                            titrePopup="Liste des enseignants #{classeGroupe.form.typeGroupeSelectionne eq GROUPES ? 'du groupe' : ' de la classe'}">
+                             <t:div id="idPopupEnseignantRegion"
+           style="">
+      <cr:tableSaisiePopup bean="#{enseignant}"
+                           cible="selectionnerEnseignant"
+                           lienModifiable="true"                           
+                           liste="#{enseignant.form.listeEnseignant}"
+                           largeur="375"
+                           render="#{render}"
+                           valeur="#{enseignant.form.enseignantSelectionne}"
+                           status="statuspop"
+                           avecPagination="false">
+       
+        
+        <rich:column filterExpression="#{fn:containsIgnoreCase(ligne.nomComplet,enseignant.form.filtreEnseignant)}"
+                     filterValue="#{enseignant.form.filtreEnseignant}"
+                     width="275px">
+          <f:facet name="header">
+            <h:panelGroup>
+              <h:outputText value="Enseignant : " />
+              <h:inputText id="filterEnseignantTextId"
+                           value="#{enseignant.form.filtreEnseignant}">
+                           
+                <a4j:ajax event="keyup"
+                          oncomplete="transfertFocus(null, '#{rich:clientId('filterEnseignantTextId')}');"
+                          render="idPopupEnseignant_panel"
+                          status="status">
+                  <a4j:attachQueue requestDelay="500" />
+                </a4j:ajax>
+              </h:inputText>
+            </h:panelGroup>
+          </f:facet>
+          <h:outputText value="#{ligne.nomComplet}" />
+        </rich:column>
+      </cr:tableSaisiePopup>
+      </t:div>
+      </cr:popupListeFiltrable>
+    
+    
+</ui:composition>
+
+
+</html>

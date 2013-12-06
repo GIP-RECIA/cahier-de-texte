@@ -1,0 +1,20 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:cr="urn:crlr">
+<ui:composition>
+   <ui:remove>Attention, ces liens n'utilisent pas Ajax</ui:remove>
+   <c:set var="cible" value="${empty cible ? 'print' : cible}"/>
+       
+   <cr:lien id="#{empty id ? 'print' : id}" image="#{empty sansImage ? 'imprimer.gif' : image}"
+        bean="#{bean}" cible="#{cible}" rendered="#{rendered}" render="" actionFor="#{empty actionFor ? 'formulaire_principal' : actionFor}"
+        desc="#{desc}"
+   		target="#{typeEdition == 'CSV' ? 'CSV' : 'Edition'}">
+   		<ui:insert/>
+   </cr:lien>
+</ui:composition>
+</html>

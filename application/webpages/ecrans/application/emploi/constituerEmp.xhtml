@@ -1,0 +1,449 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:a4j="http://richfaces.org/a4j"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:cr="urn:crlr"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:rich="http://richfaces.org/rich"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+  <cr:page 
+           titrePage="Constituer l'emploi du temps">
+    <rich:jQuery query="validerSetFocusOnElement"
+                 selector="document"
+                 timing="domready" />
+    <h:outputScript library="js"
+                    name="jquery-ui-1.8.20.custom.js"
+                    target="head" />
+    <h:outputScript library="js/fullcalendar"
+                    name="fullcalendar.js"
+                    target="head" />
+    <h:outputScript library="js"
+                    name="jquery.qtip.js"
+                    target="head" />
+    <h:outputStylesheet library="css"
+                        name="fullcalendar.css"
+                        target="head" />
+                        <!-- Target="body" ne marche pas.  Il faut surcharger des styles richfaces -->
+    <t:stylesheet  path="/resources/css/constituerEmp.css"  />
+    <h:outputStylesheet library="css"
+                        name="jquery.qtip.css"
+                        target="head" />
+    <h:outputScript library="js"
+                    name="agendaCommon.js"
+                    target="head" />
+    <h:outputScript library="js"
+                    name="constituerEmp.js"
+                    target="head" />
+    <cr:menuAction id="idMenuAction">
+      <cr:elemMenuAction bean="#{constituerEmp}"
+                         cible="sauvegarder"
+                         title="Sauvegarder"
+                         idaction="idSave"
+                         image="save.png"
+                         oncomplete="if (#{cr:haveMessagesError()} == false) {setModificationFormulaire(false);} chargerAgenda(); setModificationFormulaire(false);"
+                         render=":formulaire_principal:constituerEmpContenu">
+                         </cr:elemMenuAction>
+      <cr:elemMenuAction bean="#{constituerEmp}"
+                         cible="supprimer"
+                         confirm="Etes-vous sûr de vouloir supprimer la période du #{cr:formatDate(constituerEmp.form.periodeSelectionnee.dateDebut, 'dd/MM/yyyy')} et toutes les cases associées?"
+                         title="Supprimer l'emploi du temps courant"
+                         idaction="idDelete"
+                         image="delete.png"
+                         oncomplete="chargerAgenda(); setModificationFormulaire(false);"
+                         render=":formulaire_principal:constituerEmpContenu,idDelete">
+                         </cr:elemMenuAction>
+      <cr:elemMenuAction bean="#{constituerEmp}"
+                         cible="initAjoutePeriodePopup"
+                         title="Ajouter une nouvelle période"
+                         idaction="idTopLevelMenuAdd"
+                         image="emploiTempsAdd.png"
+                         oncomplete="#{rich:component('idPopupPeriode')}.show(); setModificationFormulaire(false);"
+                         render="idPopupPeriodeContenu" />
+      <cr:lienEdition bean="#{constituerEmp}"
+                      cible="printEmp"
+                      desc="Créer édition"
+                      id="editionPDFLien"
+                      image="pdf.png"
+                      sansImage="false"></cr:lienEdition>
+      
+                                                  
+      <cr:lien id="initialiserSemaine" image="emploiTempsDuplicate.png"
+                        bean="#{constituerEmp}" cible="initialiserSemaine2Avec1"
+                        sansImage="false"
+                        confirm="Votre emploi du temps de la semaine 1 va écraser celui de la semaine 2. Êtes vous sûr de vouloir continuer ?"
+                        rendered="#{constituerEmp.form.vraiOuFauxAlternanceSemaine}"
+                        desc="Initialiser la semaine 2 avec la semaine 1"
+                        oncomplete="if (#{cr:haveMessagesError()} == false) {setModificationFormulaire(false); } chargerAgenda();"
+                        render=":formulaire_principal:constituerEmpContenu"/>
+                        
+                        
+      <h:graphicImage
+      library="images/icones" name="aide.png" 
+      title="Aide contextuelle"
+                         id="idAide"
+                         onclick="#{rich:component('idPopupAide')}.show();" /> 
+      
+    </cr:menuAction>
+    <rich:panel id="constituerEmpContenu" styleClass="constituerEmpContenu" header="Constituer l'emploi du temps">
+    
+      
+    
+      <a4j:outputPanel id="calendarDataPanel">
+        <div id='calendarData'></div>
+        <rich:jQuery query="data('horairesCoursJSON', '#{constituerEmp.form.horairesCoursJSON}')"
+                     selector="#calendarData"
+                     timing="immediate" />
+        <input type="hidden" id="listeEmploiDeTempsJSON" value="#{constituerEmp.form.listeEmploiDeTempsJSON}"/>
+        <input type="hidden" id="etablissementJSON" value="#{constituerEmp.form.etablissementJSON}" />
+                     
+      </a4j:outputPanel>
+      
+      
+      
+      <rich:panel id="constituerEmp">
+        <rich:panel id="constituerEmpEntete">
+          <h:panelGrid columns="5"
+                       style="margin:auto;padding:5px 0px;text-align:center;">
+                       
+            
+            <h:outputText rendered="${ empty constituerEmp.form.listePeriode}"
+                          value="Aucune période trouvée. Vous pouvez en ajouter une depuis le menu." />
+            <cr:saisieListe donnees=""
+                            id="periodeSaisieListe"
+                            rendered="${not empty constituerEmp.form.listePeriode}"
+                            titre="Sélectionner une période (emploi du temps actif à partir du) :"
+                            valeur="#{constituerEmp.form.periodeSelectionnee}">
+                            
+              <a4j:ajax listener="#{constituerEmp.chargerPeriode}"
+                        status="status"
+                        onbeforesubmit="return confirmationAjoutPeriode('#{constituerEmp.form.periodeSelectionnee.id}');"
+                        oncomplete="chargerAgenda(); setModificationFormulaire(false);"
+                        render="constituerEmpContenu,idDelete" />
+              <f:converter converterId="selectOneDtoConverter">
+              </f:converter>
+              <f:selectItems itemLabel="#{cr:formatDate(periode.dateDebut, 'dd/MM/yyyy')}"
+                             itemValue="#{periode}"
+                             value="#{constituerEmp.form.listePeriode}"
+                             var="periode" />
+              <f:attribute name="converterListe"
+                           value="#{constituerEmp.form.listePeriode}" />
+            </cr:saisieListe>
+            <cr:spacer width="50" />
+          </h:panelGrid>
+        </rich:panel>
+        <cr:tabPanelCheckSauvegarde itemChangeListener="navigationOnlget"
+                       styleClass="navigationTabOnglet"
+                       idTabPanel="calTabs"
+                       selectedTab="#{constituerEmp.form.ongletSelectionneStr}" 
+                       bean="#{constituerEmp}"
+                       rendered="#{constituerEmp.form.periodeSelectionnee != null and constituerEmp.form.vraiOuFauxAlternanceSemaine}"
+                       >
+          <a4j:ajax event="itemchange"
+                    oncomplete="console.log('itemChangeComplete'); chargerAgenda(); setModificationFormulaire(false);"
+                    render="calendarDataPanel"></a4j:ajax>
+          <rich:tab header="Semaine 1"
+                    id="ongletSemaine1"
+                    name="ongletSemaine1"
+                    >
+            <table style="width: 100%;">
+              <tr>
+                <td>
+                  <div class='calendarGrille'></div>
+                </td>
+                <td style="width: 100%;">
+                  <div class='calendar'></div>
+                </td>
+              </tr>
+            </table>
+          </rich:tab>
+          <rich:tab header="Semaine 2"
+                    id="ongletSemaine2"
+                    name="ongletSemaine2"
+                    >
+            <table style="width: 100%;">
+              <tr>
+                <td>
+                  <div class='calendarGrille'></div>
+                </td>
+                <td style="width: 100%;">
+                  <div class='calendar'></div>
+                </td>
+              </tr>
+            </table>
+          </rich:tab>
+        </cr:tabPanelCheckSauvegarde>
+        <a4j:outputPanel rendered="#{constituerEmp.form.periodeSelectionnee != null and !constituerEmp.form.vraiOuFauxAlternanceSemaine}">
+
+          <table style="width: 100%;">
+            <tr>
+              <td>
+                <div class='calendarGrille'></div>
+              </td>
+              <td style="width: 100%;">
+                <div class='calendar'></div>
+              </td>
+            </tr>
+          </table>
+        </a4j:outputPanel>
+      </rich:panel>
+    </rich:panel>
+    <a4j:jsFunction action="#{constituerEmp.chargerDetailJourEmploiDTOSel}"
+                    execute="@this"
+                    name="afficherEventPopup"
+                    oncomplete="RichFaces.$('idPopupEvent').show();"
+                    render=":idPopupEvent_form:idPopupEventRegion">
+      <a4j:param assignTo="#{constituerEmp.form.detailJourEmploiDTOSelIndex}"
+                 name="index" />
+    </a4j:jsFunction>
+    <a4j:jsFunction action="#{constituerEmp.chargerDetailJourEmploiDTOSel}"
+                    execute="@this"
+                    name="setDetailJourEmploiDTOSelIndex">
+      <a4j:param assignTo="#{constituerEmp.form.detailJourEmploiDTOSelIndex}"
+                 name="index" />
+    </a4j:jsFunction>
+    
+    <a4j:jsFunction action="#{constituerEmp.creerDetailJourEmploiDTOSel}"
+                    execute="@this"
+                    name="creerDetailJourEmploiDTOSel">
+      
+    </a4j:jsFunction>
+    
+    
+    
+    <a4j:jsFunction action="#{constituerEmp.affecterDetailJourEmploiDTOSel}"
+                    execute="@this"
+                    name="affecterDetailJourEmploiDTOSel">
+      <a4j:param assignTo="#{constituerEmp.form.detailJourEmploiDTOSel.jour}"
+                 name="jour" />
+      <a4j:param assignTo="#{constituerEmp.form.detailJourEmploiDTOSel.heureDebut}"
+                 name="heureDebut" />
+      <a4j:param assignTo="#{constituerEmp.form.detailJourEmploiDTOSel.minuteDebut}"
+                 name="minuteDebut" />
+      <a4j:param assignTo="#{constituerEmp.form.detailJourEmploiDTOSel.heureFin}"
+                 name="heureFin" />
+      <a4j:param assignTo="#{constituerEmp.form.detailJourEmploiDTOSel.minuteFin}"
+                 name="minuteFin" />
+    </a4j:jsFunction>
+    
+    <cr:popup idPopup="idPopupAide" titrePopup="Aide"
+     largeurPopup="820" tailleAuto="true" popupUseRichEditor="false">
+     <div style="overflow: auto; width: 100%; height: 600px;" > 
+	     <span style="word-wrap: break-word; width:780px;display: block;float:left;white-space:normal;">
+	        <h:outputText value="#{constituerEmp.form.texteAide}" escape="false" />
+	     </span>
+     </div>
+                                      
+    </cr:popup>
+    
+    <cr:popupConfirmSauvegardeModification
+        libelleMessage=" Voulez-vous enregistrer vos modifications avant de quitter cette page ?"
+        bean="#{constituerEmp}" cible="sauvegarder"
+        oncancel="console.log('oncancel');"
+        oncomplete="chargerAgenda(); setModificationFormulaire(false);"
+        render="constituerEmp" action="" />
+        
+  </cr:page>
+  <cr:popupModifiable idPopup="idPopupEvent"
+                      largeurPopup="660"
+                      maxlength="50"
+                      statusPopup="statuspop"
+                      titrePopup="Case">
+    <cr:menuAction surcharge="false">
+    
+      <cr:lien bean="#{constituerEmp}"
+               cible="sauvegarderEvenement"
+               id="popupEventSauvegarde"
+               image="valider.png"
+               immediate="false"
+               onclick="console.log('sauvegardeEvenement');"
+               oncomplete="console.log('sauvegardeEvenementOnComplete'); if ( #{cr:haveMessagesError()} != true ) { #{rich:component('idPopupEvent')}.hide(); } chargerAgenda(); "
+               render=":formulaire_principal:constituerEmpContenu"
+               styleClass="toolbarButton"
+               value="sauvegarder"></cr:lien>
+      <cr:lien bean="#{constituerEmp}"
+               cible="supprimerEvenement"
+               id="supprimerEvenement"
+               image="supprimer.png"
+               onclick="console.log('supprimerEvenement');"
+               oncomplete="#{rich:component('idPopupEvent')}.hide();chargerAgenda();"
+               render=":formulaire_principal:constituerEmpContenu"
+               styleClass="toolbarButton"
+               value="supprimer" />
+    </cr:menuAction>
+    <a4j:outputPanel id="idPopupEventRegion">
+      
+      <t:panelGrid columns="1" style="width: 100%;">
+        <cr:saisieHeureMinute avecMinute="true"
+                              bean="#{constituerEmp}"
+                              id="heureMinuteDebut"
+                              modifiable="true"
+                              titre="Début"
+                              valeurHeure="#{constituerEmp.form.detailJourEmploiDTOSel.heureDebut}"
+                              valeurMinute="#{constituerEmp.form.detailJourEmploiDTOSel.minuteDebut}">
+
+          <f:ajax event="selectitem" />
+        </cr:saisieHeureMinute>
+        <cr:saisieHeureMinute avecMinute="true"
+                              bean="#{constituerEmp}"
+                              id="heureMinuteFin"
+                              modifiable="true"
+                              saisieLibre="true"
+                              titre="Fin"
+                              valeurHeure="#{constituerEmp.form.detailJourEmploiDTOSel.heureFin}"
+                              valeurMinute="#{constituerEmp.form.detailJourEmploiDTOSel.minuteFin}" />
+      </t:panelGrid>
+      <h:panelGrid columns="2">
+        <cr:saisieListe id="matiereEvenement"
+                        requis="false"
+                        largeur="300" 
+                        titre="Enseignement"
+                        valeur="#{constituerEmp.form.detailJourEmploiDTOSel.matiere}">
+
+          <f:converter converterId="selectOneDtoConverter">
+          </f:converter>
+          <f:selectItems itemLabel="#{variable.code}"
+                         itemValue="#{variable}"
+                         value="#{constituerEmp.form.listeEnseignements}"
+                         var="variable" />
+          <f:attribute name="converterListe"
+                       value="#{constituerEmp.form.listeEnseignements}" />
+        </cr:saisieListe>
+      </h:panelGrid>
+      <h:panelGrid columns="3">
+      
+        <h:selectOneRadio value="#{constituerEmp.form.detailJourEmploiDTOSel.groupeOuClasse.typeGroupe}">
+                          
+          <f:ajax event="change"
+                  render="classeGroupeEvenementRegion" />
+          <f:selectItem itemLabel="Classe"
+                        itemValue="CLASSE" />
+          <f:selectItem itemLabel="Groupe"
+                        itemValue="GROUPE" />
+        </h:selectOneRadio>
+        <a4j:outputPanel id="classeGroupeEvenementRegion">
+          <a4j:outputPanel rendered="#{constituerEmp.form.detailJourEmploiDTOSel.groupeOuClasse.typeGroupe != null}">
+
+            <cr:saisieListe donnees="#{constituerEmp.form.listeClasses}"
+                            id="classeEvenement"
+                            proprieteLibelle="code"
+                            proprieteValeur="id"
+                            rendered="#{constituerEmp.form.detailJourEmploiDTOSel.groupeOuClasse.vraiOuFauxClasse}"
+                            titre=""
+                            valeur="#{constituerEmp.form.detailJourEmploiDTOSel.idClasse}">
+            </cr:saisieListe>
+            <cr:saisieListe donnees="#{constituerEmp.form.listeGroupes}"
+                            id="groupeEvenement"
+                            proprieteLibelle="code"
+                            proprieteValeur="id"
+                            rendered="#{!constituerEmp.form.detailJourEmploiDTOSel.groupeOuClasse.vraiOuFauxClasse}"
+                            titre=""
+                            valeur="#{constituerEmp.form.detailJourEmploiDTOSel.idGroupe}">
+            </cr:saisieListe>
+          </a4j:outputPanel>
+        </a4j:outputPanel>
+      </h:panelGrid>
+      <h:panelGrid columns="2">
+        <cr:saisieTexte bean=""
+                        id="idPopupEventDesc"
+                        modifiable="true"
+                        tabindex="1"
+                        largeur="350"
+                        titre="Description"
+                        valeur="#{constituerEmp.form.detailJourEmploiDTOSel.description}">
+        </cr:saisieTexte>
+        <cr:saisieTexte bean=""
+                        id="idPopupEventSalle"
+                        modifiable="true"
+                        tabindex="2"
+                        titre="Salle"
+			maxlength="15"
+                        valeur="#{constituerEmp.form.detailJourEmploiDTOSel.codeSalle}">
+        </cr:saisieTexte>
+      </h:panelGrid>
+      <h:panelGrid columns="5">
+        <h:outputLabel rendered="true"
+                       style="padding-right: 5px; padding-left: 5px;"
+                       styleClass="libelle"
+                       value="Couleur" />
+        <t:div id="couleurSelection"
+               style="width:20px;height:20px;background-color:#{constituerEmp.form.detailJourEmploiDTOSel.typeCouleur.id}" />
+        <h:outputLabel rendered="true"
+                       style="padding-right: 5px; padding-left: 5px;"
+                       styleClass="libelle"
+                       value="Palette" />
+        <cr:saisiePaletteCouleur listeCouleur="#{constituerEmp.form.listeCouleur}"
+         onClick="return true; jQuery('#idPopupEvent_form\\:couleurSelection').css('background-color', '#{coul.id}');"
+         valeur="#{constituerEmp.form.detailJourEmploiDTOSel.typeCouleur}"/>
+
+        <cr:spacer height="15" />
+      </h:panelGrid>
+      <h:panelGrid columns="2"></h:panelGrid>
+    </a4j:outputPanel>
+  </cr:popupModifiable>
+  <cr:popupModifiable idPopup="idPopupPeriode"
+                      largeurPopup="660"
+                      maxlength="50"
+                      statusPopup="statuspop"
+                      titrePopup="Ajouter une période">
+    <cr:menuAction surcharge="false">
+      <cr:lien bean="#{constituerEmp}"
+               cible="creerPeriode"
+               id="creerPeriodeBtn"
+               image="save.png"
+               immediate="false"
+               oncomplete="if ( #{cr:haveMessagesError()} != true ) { #{rich:component('idPopupPeriode')}.hide();chargerAgenda();  setModificationFormulaire(false); }"
+               render=":formulaire_principal:constituerEmpContenu"
+               status="statuspop"
+               styleClass="toolbarButton"
+               value="sauvegarder"></cr:lien>
+    </cr:menuAction>
+    <a4j:outputPanel id="idPopupPeriodeContenu">
+      <br />
+      <cr:saisieDate id="creerPeriodeDate"
+                     required="true"
+                     requiredMessage="Il faut saisir une date"
+                     titre="Emploi du temps actif à partir du :"
+                     valeur="#{constituerEmp.form.creerPeriodeDate}">
+                     </cr:saisieDate>
+      <br />
+      <rich:panel id="creerPeriodeInitPanel"
+                  rendered="#{not empty constituerEmp.form.listePeriode}"
+                  style="background-color: transparent; border-style:solid; border-color:black; margin-top:15px; border-width:1px;">
+
+        <h:outputLabel rendered="true"
+                       style="padding-right: 5px; padding-left: 5px;"
+                       styleClass="libelle"
+                       value="Initialiser à partir d'un emploi du temps ?" />
+        <h:selectOneRadio value="#{constituerEmp.form.initPeriodeAvecCopie}">
+
+          <a4j:ajax event="change"
+                    render="creerPeriodeInitPanel" />
+          <f:selectItem itemLabel="Oui"
+                        itemValue="true" />
+          <f:selectItem itemLabel="Non"
+                        itemValue="false" />
+        </h:selectOneRadio>
+        <br />
+        <cr:spacer height="20" />
+        <cr:saisieListe id="initPeriodeDate"
+                        rendered="#{constituerEmp.form.initPeriodeAvecCopie}"
+                        titre="Sélectionner une période (emploi du temps actif à partir du) :"
+                        valeur="#{constituerEmp.form.periodeACopie}">
+                        
+          <f:converter converterId="selectOneDtoConverter">
+          </f:converter>
+          <f:attribute name="converterListe"
+                       value="#{constituerEmp.form.listePeriode}" />
+          <f:selectItems itemLabel="#{cr:formatDate(periode.dateDebut, 'dd/MM/yyyy')}"
+                         itemValue="#{periode}"
+                         value="#{constituerEmp.form.listePeriode}"
+                         var="periode" />
+        </cr:saisieListe>
+      </rich:panel>
+    </a4j:outputPanel>
+  </cr:popupModifiable>
+  <cr:popupStatus idStatus="statuspop" />
+</html>

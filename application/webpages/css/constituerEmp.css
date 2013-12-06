@@ -1,0 +1,47 @@
+.corpsCalTable {
+    background-color: #FFFFFF;
+    border: 1px dotted #900000;
+    font-weight: bold;
+    height: 40px;
+    margin: 0;
+    text-decoration: none;
+    white-space: normal;
+    width: 100%;
+}
+.corpsOuvre, .rf-dg-c {
+    padding: 0;
+    width: 17px;
+    font-weight:bold;
+    
+}
+
+.fc-state-highlight { /* <td> today cell */ /* TODO: add .fc-today to <th> */
+    background: none;
+}
+
+
+
+input.rf-sel-inp {
+    width: 50px;
+}
+
+.toolbarButton {
+	border: none;
+	background-color: inherit;
+	margin: 0 5px 5px 0;
+	
+}
+
+
+.calendarGrille {
+    width: 80px;
+    padding-top: 17px;
+}
+
+/* jquery ui popup style */
+.ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus {
+    background: url("images/ui-bg_glass_100_f6f6f6_1x400.png") repeat-x scroll 50% 50% #F6F6F6;
+    border: 1px solid #CCCCCC;
+    color: #1C94C4;
+    font-weight: bold;
+}

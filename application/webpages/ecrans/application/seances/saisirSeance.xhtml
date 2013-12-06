@@ -1,0 +1,462 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:a4j="http://richfaces.org/a4j" xmlns:crx="urn:crlr:ext"
+	xmlns:cr="urn:crlr" xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:rich="http://richfaces.org/rich">
+
+<cr:page titrePage="Remplir le cahier de texte"
+	bean="#{saisirSeance}" form="#{saisirSeance.form}">
+	<h:outputScript library="js" name="jquery-ui-1.8.20.custom.js" target="head" />
+	<h:outputScript library="js/fullcalendar" name="fullcalendar.js" target="head" />
+	<h:outputScript library="js" name="jquery.qtip.js" target="head" />
+	<h:outputStylesheet library="css" name="fullcalendar.css" target="head" />
+	<h:outputStylesheet library="css" name="saisirSeance.css" target="head" />
+	<h:outputStylesheet library="css" name="jquery.qtip.css" target="head" />
+	<h:outputStylesheet library="css" name="consultationSeance.css" target="head" />
+	<h:outputScript library="js" name="agendaCommon.js" target="head" />
+	<h:outputScript library="js" name="saisirSeance.js" target="head" />
+	<h:outputScript library="js"  name="saisieDateListe.js" target="head"/>
+	
+
+	<cr:menuAction id="idMenuAction">
+		<cr:elemMenuAction 
+		      idaction="idSauver" bean="#{saisirSeance}" cible="sauver"
+			  image="save.png" 
+			  title="Sauvegarder"
+			  render="idPanelSaisirSeance,calendarDataPanel" 
+			  oncomplete="chargerAgenda(); setModificationFormulaire(false); appliqueRotationTampon(); appliquerGestionModification(); " 
+			  rendered="#{saisirSeance.form.vraiFauxSaisieEnCours}" />
+		<cr:elemMenuAction idaction="idCopier" bean="#{ajoutSeance}" cible="copier"
+			image="duplicate.png" title="Copier la séance"
+			rendered="#{saisirSeance.form.vraiFauxSaisieEnCours}"
+			render="idColler" />
+		<cr:elemMenuAction idaction="idColler" bean="#{ajoutSeance}" cible="coller"
+			image="coller.png" title="Coller la séance copiée précédemment"
+			oncomplete="setModificationFormulaire(true);handleResizeSaisirSeance();"
+			rendered="#{saisirSeance.form.vraiFauxSaisieEnCours and ajoutSeance.form.seanceCopie != null}"
+			render="TAB_SEANCE,TAB_DEVOIR" >
+	    </cr:elemMenuAction>
+		<cr:elemMenuAction idaction="idSupprimer" bean="#{saisirSeance}"
+		      cible="delete"
+              image="delete.png" 
+              title="Supprimer la séance"
+              render="idPanelSaisirSeance,calendarDataPanel,idMenuAction" 
+              oncomplete="chargerAgenda(); setModificationFormulaire(false); appliquerGestionModification();"
+              rendered="#{ajoutSeance.form.vraixOuFauxSeanceExiste and saisirSeance.form.vraiFauxSaisieEnCours}" 
+              confirm="Voulez-vous vraiement supprimer cette séance ?" />
+              
+        <span
+            id="idRetour" 
+            style="#{saisirSeance.form.afficheRetour ? 'cursor: pointer;' : 'display:none; '}"
+            onclick="idActionEnCours='idMenuActionRetour'; "
+            class="navigationPage"
+            title="Retour" >
+            <h:graphicImage library="images/icones" name="back.png" />     
+            <a4j:jsFunction name="callAction_idMenuActionRetour" 
+            action="#{saisirSeance.retour}"/>  
+        </span>       
+              
+	</cr:menuAction>
+
+    <cr:saisieDate rendered="false" id="saisieDateInvisible" valeur="" titre="Date bidon qui permet de faire marcher dans le composant cr:saisieSeance les champs de saisie de date" />  
+    <t:div style="display: none;"><cr:saisieEditeur rendered="true" id="saisieEditeurInvisible" commentaire="Editeur bidon qui permet de faire marcher dans le composant cr:saisieSeance les champs de saisie de editeur" /></t:div>
+
+
+	<a4j:outputPanel id="idSaisirSeance">
+
+		<a4j:outputPanel id="calendarDataPanel">
+			<div id='calendarData'></div>
+            <input type="text"
+             disabled="disabled"
+             style="display:none;" id="agendaJSON" value="#{saisirSeance.form.agendaJSON}"/>
+            <input type="text"
+             disabled="disabled"
+             style="display:none;" id="horairesJSON" value="#{saisirSeance.form.horairesJSON}"/>
+            <input type="text"
+             disabled="disabled"
+             style="display:none;" id="dateLundi" value="#{saisirSeance.form.dateLundi}"/>
+            <input type="text"
+             disabled="disabled"
+             style="display:none;" id="etablissementJSON" value="#{saisirSeance.form.etablissementJSON}"/>
+        
+		</a4j:outputPanel>
+
+		<rich:panel header="Remplir le cahier de texte" id="idPanelSaisirSeance" >
+			<cr:barreSemaine id="idBarreSemaine" checkSauvegarde="true"
+				listeSemaine="#{saisirSeance.form.listeBarreSemaine}"
+				listeMois="#{saisirSeance.form.listeMois}"			
+				onclick="" />
+
+			<cr:lien id="idSelectionSemaine" bean="#{saisirSeance}"
+				cible="selectionnerSemaine"
+				render="idBarreSemaine,idPanelCalendarSeance,calendarDataPanel"
+				titre="" oncomplete="chargerAgenda();" />
+			<t:inputHidden forceId="true" id="idCacheValeurSem"
+				value="#{saisirSeance.form.numeroSemaineSelectionne}" />
+			
+			
+			<cr:lien id="idOpenPopUpCheck" bean="#{saisirSeance}"
+                cible="empty"
+                render="idBarreSemaine,idPanelCalendarSeance,calendarDataPanel"
+                titre="" oncomplete="chargerAgenda();RichFaces.$('formulaire_principal:idPopupConfirmSauvegardeModification').show();" />	
+
+			<t:div id="idPanelCalendarSeance">
+				<table style="width: 100%;">
+					<tr>
+						<td style="width: 300px;" id="idAgenda">
+						      <div class='calendar'></div>
+						</td>
+						<td style="width: 18px;">
+							<h:graphicImage
+								id="idIconeMasqueAgenda" library="images/icones"
+								name="arrowLeft.png" onclick="basculeAffichageAgenda();"
+								title="Afficher / Masquer l'agenda">
+							</h:graphicImage>
+					    </td>
+                        
+						<td><t:div id="tabPanelDetailJour"
+							rendered="true">
+							<rich:tabPanel selectedTab="tabSeance" switchType="client"
+								id="idtabPanelDetailJour" onitemchange="onchangeOnglet();"
+								rendered="#{not empty saisirSeance.form.plageSelected}">
+								<rich:tab id="TAB_SEANCE"
+									header="#{ajoutSeance.form.seanceTitre}" rendered="true">
+                                    <t:div id="idDivTabSeance" style="vertical-align:top; overflow:auto; border-style:solid; border-width:1px; border-color:#c0c0c0;">
+										<cr:saisieSeance
+											seance="#{ajoutSeance.form.seance}"
+											readOnly="false"
+											idPopupPiecesJointes="idPopupPiecesJointes"
+											id_saisieSeance="idSaisieSeance"
+											affichageSequence="#{saisirSeance.form.plageSelected.afficheSelectionSequence}"
+											listeSequence="#{saisirSeance.form.plageSelected.listeSequence}"
+											sequenceSelected="#{ajoutSeance.form.seance.sequenceDTO}"
+											controleur="#{ajoutSeance}" 
+											cible="chargerSequence"
+											decalFinEnSaisieDebut="true"
+											bean="#{ajoutSeance}"
+	                                        cibleResetSeance="resetSeance"
+	                                        cibleDeletePieceJointeSeance="deletePieceJointeSeance" 
+	                                        cibleAjouterPieceJointeSeance="ajouterPieceJointeSeance"
+	                                        cibleAfterAjouterPieceJointeSeance="afterAjouterPieceJointeSeance"
+	                                        cibleResetSeanceAnnotations="resetSeanceAnnotations"
+                                            cibleChargeImagesLatex="chargeImagesLatex"
+                                            cibleChargeImagesLatexAnnotations="chargeImagesLatexAnnotations"
+											 />
+                                    </t:div>
+								</rich:tab>
+								<rich:tab id="TAB_DEVOIR" header="Travail à faire" rendered="true">
+								    <t:div id="idListeDesDevoirs"  
+								            styleClass="listeDesDevoirsSeance">
+									    <c:forEach items="#{ajoutSeance.form.seance.devoirs}" var="devoir" varStatus="status">
+									        <cr:saisieDevoir
+									           id_saisieDevoir="idSaisieDevoir${status.index}"
+									           devoirDTO="#{devoir}"
+									           readOnly="false"
+									           listeTypeDevoir="#{ajoutSeance.form.listeTypeDevoir}"
+									           id_devoirConteneur="idListeDesDevoirs"
+									           idPopupPiecesJointes="idPopupPiecesJointes"
+									           controleur="#{ajoutSeance}"
+                                               cibleResetDevoir="resetDevoir"
+                                               cibleDeleteDevoir="deleteDevoir"
+                                               cibleDeletePieceJointe="deletePieceJointe" 
+                                               cibleAjouterPieceJointe="ajouterPieceJointe"
+                                               cibleAfterAjouterPieceJointe="afterAjouterPieceJointe"
+                                               cibleAfficherChargeTravail="afficherChargeTravail"
+                                               cibleChargeImagesLatex="chargeImagesLatexDevoir"
+                                               listeDate="#{ajoutSeance.form.listeDateRemiseDevoir}"
+                                               id_popupChargeTravail="idPopupChargeTravail"
+									        /> 
+									    </c:forEach>
+								    </t:div>
+								    <t:div style="height:32px; padding-top:5px;" >
+									    <cr:lien id="idAjouterDevoir" bean="#{ajoutSeance}"
+	                                        cible="ajouterDevoir"
+	                                        render="idListeDesDevoirs"
+	                                        image="add.png"
+	                                        desc="Ajouter un travail à faire" />
+									</t:div>
+    		                    </rich:tab>
+								<rich:tab id="TAB_SEANCE_PRECEDENTE" header="Séances précédentes" rendered="true">
+                                    <t:div id="idListeDesSeancePrecedente"  
+                                            styleClass="listeDesDevoirsSeance">
+					                    <t:div id="idPasDeseanceprecedente"  
+					                        style="text-align: center;" >
+					                        <h:outputLabel rendered="#{empty ajoutSeance.form.listeSeancePrecedente}" value="Il n'y a aucune séance précédente pour la même classe ou groupe / enseignement" styleClass="libelle" title="" />
+					                    </t:div>     
+					                    <t:div id="contentSeancePrecedente">
+	                                        <c:forEach items="#{ajoutSeance.form.listeSeancePrecedente}" var="seancePrecedente" varStatus="status">
+	                                            <cr:seancePrecedente
+	                                               id_seancePrecedente="idSeancePrecedente${status.index}"
+	                                               seance="#{seancePrecedente}"
+	                                               controleur="#{ajoutSeance}"
+	                                               idPopupSaisieSeance="idPopupModifierSeancePrecedente"
+	                                               cibleModifierSeancePrecedente="modifierSeancePrecedente"
+	                                               showAnnotations="true"
+	                                            /> 
+	                                        </c:forEach>
+	                                    </t:div>
+                                    </t:div>
+                                    <a4j:commandLink 
+                                           id="idchargernouvelleseanceprecedente" 
+                                           action="#{ajoutSeance['chargerSuiteSeancePrecendente']}"
+                                           oncomplete="resizePanelSeance(); scrollSuiteSeance();"
+                                           status="statuspop"
+                                           rendered="true"
+                                           onclick="stockerTailleScrollSeancePrecedente();"
+                                           render="idListeDesSeancePrecedente idchargernouvelleseanceprecedente"
+                                           style="#{ajoutSeance.form.afficheSuiteSeancePrecedente ? '' : 'display:none;'}"
+                                    >       
+                                        <h:graphicImage
+                                            library="images/icones" 
+                                            name="flecheBas.png"
+                                            title="Afficher la suite des séances précédentes" />
+                                    </a4j:commandLink>
+                            
+                                </rich:tab>
+							</rich:tabPanel>
+						</t:div></td>
+					</tr>
+				</table>
+			</t:div>
+		</rich:panel>
+	</a4j:outputPanel>
+
+	<a4j:jsFunction action="#{saisirSeance.afficherSeanceSelected}"
+		execute="@this" name="afficherSeanceSelected"
+		render="tabPanelDetailJour,idMenuActionAdd,calendarDataPanel,idPanelSaisirSeance"
+		status="statuspop"
+		oncomplete="chargerAgenda(); onchangeOnglet(); selectionnerOnglet('TAB_SEANCE'); appliquerGestionModification(); appliqueRotationTampon();"
+		>
+		<a4j:param assignTo="#{saisirSeance.form.plageSelectedIndex}"
+			name="index" />
+	</a4j:jsFunction>
+
+	<a4j:jsFunction action="#{saisirSeance.ajouterNouvelleSeance}"
+		execute="@this" name="afficherNouvelleSeance"
+		render="tabPanelDetailJour,idMenuActionAdd,idPanelSaisirSeance,calendarDataPanel"
+		status="statuspop"
+		oncomplete="chargerAgenda(); setModificationFormulaire(false); onchangeOnglet(); selectionnerOnglet('TAB_SEANCE'); appliquerGestionModification(); appliqueRotationTampon();"
+		>
+		<a4j:param assignTo="#{saisirSeance.form.plageSelectedIndex}" name="index" />
+	</a4j:jsFunction>
+    
+    <a4j:jsFunction action="#{saisirSeance.ajouterNouvelleSeanceLibre}"
+                    execute="@this"
+                    status="statuspop"
+                    oncomplete="appliquerGestionModification();"
+                    name="ajouterNouvelleSeanceLibre">
+    </a4j:jsFunction>
+
+    <a4j:jsFunction action="#{saisirSeance.afficherNouvelleSeanceLibre}"
+                    execute="@this"
+                    status="statuspop"
+                    name="afficherNouvelleSeanceLibre"
+                    oncomplete="if (#{cr:haveMessagesError()} == false) {jQuery('.showPopupSelectionSequence').click();} appliquerGestionModification();"
+                    render="idPopupSelectionSequence_form:idPopupSelectionSequenceRegion"
+                    >
+      <a4j:param assignTo="#{ajoutSeance.form.seance.dateLong}" name="date" />
+      <a4j:param assignTo="#{ajoutSeance.form.seance.heureDebut}" name="heureDebut" />
+      <a4j:param assignTo="#{ajoutSeance.form.seance.minuteDebut}" name="minuteDebut" />
+      <a4j:param assignTo="#{ajoutSeance.form.seance.heureFin}" name="heureFin" />
+      <a4j:param assignTo="#{ajoutSeance.form.seance.minuteFin}" name="minuteFin" />
+    </a4j:jsFunction>
+    
+	<a class="showPopupSelectionSequence" href="#"
+		onclick="#{rich:component('idPopupSelectionSequence')}.show(); return false;"
+		style="display: hidden"></a>
+	<a4j:jsFunction action="#{saisirSeance.ajouterNouvelleSeance}"
+		execute="@this" name="afficherSelectionSequence"
+		status="statuspop"
+		oncomplete="jQuery('.showPopupSelectionSequence').click(); appliquerGestionModification();"
+		render="idPopupSelectionSequence_form:idPopupSelectionSequenceRegion">
+		<a4j:param assignTo="#{saisirSeance.form.plageSelectedIndex}" name="index" />
+	</a4j:jsFunction>
+
+    <a4j:jsFunction action="#{saisirSeance.clickSurPlage}"
+                    execute="@this"
+                    name="clickSurPlage"
+                    status="statuspop"
+                    oncomplete="RichFaces.$('formulaire_principal:idPopupConfirmSauvegardeModification').show(); appliquerGestionModification();"
+                    render="idLienClickSurPlageDiv"
+                    >
+        <a4j:param assignTo="#{saisirSeance.form.indexPlageCible}" name="indexPlageCible" />
+    </a4j:jsFunction>
+	
+    <a4j:jsFunction action="#{saisirSeance.conserverInfoNouvelleSeancelibre}"
+                    execute="@this"
+                    status="statuspop"
+                    oncomplete="RichFaces.$('formulaire_principal:idPopupConfirmSauvegardeModification').show(); appliquerGestionModification();"
+                    name="conserverInfoNouvelleSeancelibre"
+                    render="idLienClickSurPlageVideDiv"
+                    >
+      <a4j:param assignTo="#{saisirSeance.form.dateLongVide}" name="date" />
+      <a4j:param assignTo="#{saisirSeance.form.heureDebutVide}" name="heureDebut" />
+      <a4j:param assignTo="#{saisirSeance.form.minuteDebutVide}" name="minuteDebut" />
+      <a4j:param assignTo="#{saisirSeance.form.heureFinVide}" name="heureFin" />
+      <a4j:param assignTo="#{saisirSeance.form.minuteFinVide}" name="minuteFin" />
+    </a4j:jsFunction>
+	
+    <cr:popupChargeTravail
+	    idPopup="idPopupChargeTravail" 
+	    listeDevoirPrincipal="#{ajoutSeance.form.devoirSelected.chargeTravail.listeDevoirPrincipal}"  
+	    listeDevoirComplement="#{ajoutSeance.form.devoirSelected.chargeTravail.listeDevoirComplement}"
+	    groupeOuClasse="#{ajoutSeance.form.devoirSelected.chargeTravail.groupeOuClasse}"
+    />
+	
+	<t:div id="idLienClickSurPlageDiv" style="display: none;" >
+	   <span id="idLienClickSurPlage" onclick="chargerAgenda(); functionSaisirSeance(#{saisirSeance.form.indexPlageCible});" />
+	</t:div>
+
+    <t:div id="idLienClickSurPlageVideDiv" style="display: none;" >
+       <span id="idLienClickSurPlageVide" onclick="chargerAgenda(); preparerNouvelleSeancelibre(#{saisirSeance.form.dateLongVide}, #{saisirSeance.form.heureDebutVide}, #{saisirSeance.form.minuteDebutVide}, #{saisirSeance.form.heureFinVide}, #{saisirSeance.form.minuteFinVide});" />
+    </t:div>
+	
+    <cr:popupConfirmSauvegardeModification 
+        libelleMessage="Voulez-vous enregistrer vos modifications avant de quitter cette page ?"
+        bean="#{saisirSeance}" 
+        cible="sauver"       
+        render="idPanelSaisirSeance,calendarDataPanel" 
+        oncomplete="chargerAgenda(); setModificationFormulaire(false);"
+        onErrorSauvegarde="chargerAgenda(); setModificationFormulaire(true);"
+        action="" />
+	
+</cr:page>
+
+<cr:popupPiecesJointes 
+    idPopup="idPopupPiecesJointes" tailleAuto="true"
+    largeurPopup="660" titrePopup="Pièces jointes"
+    statusPopup="statuspopup" raffraichirTabAfterUpload="#{ajoutSeance.form.raffraichirTabAfterUpload}" />
+
+
+<cr:popupModifiable idPopup="idPopupModifierSeancePrecedente"
+    largeurPopup="800" maxlength="50" statusPopup="statuspop"
+    titrePopup="Modification d'une séance précédente">
+    <a4j:outputPanel id="idPopupModifierSeancePrecedenteRegion">
+        <cr:menuAction id="idMenuActionPopupSeance" surcharge="false">
+            <cr:elemMenuAction 
+              idaction="idSauverSeancePrecedente" bean="#{saisirSeance}" cible="sauverSeancePrecedente"
+              image="save.png" 
+              title="Sauvegarder"
+              render="formulaire_principal:calendarDataPanel,formulaire_principal:idListeDesSeancePrecedente" 
+              oncomplete="chargerAgenda(); if (#{facesContext.maximumSeverity == null or facesContext.maximumSeverity.ordinal le 0} ) { #{rich:component('idPopupModifierSeancePrecedente')}.hide(); }" 
+              rendered="#{saisirSeance.form.vraiFauxSaisieEnCours}" 
+            />
+        </cr:menuAction>
+        <rich:tabPanel selectedTab="tabSeancePrecedent" switchType="ajax"
+            id="idtabPanelDetailJourSeancePrecedent" rendered="true" >
+            <rich:tab id="TAB_SEANCE_PREC" header="#{ajoutSeance.form.seancePrecenteTitre}" rendered="true">
+		        <t:div style="height:450px; overflow:auto;">
+		            <cr:saisieSeance
+			            seance="#{ajoutSeance.form.seancePrecedente}"
+			            readOnly="false"
+			            formulaire_contenant="idPopupModifierSeancePrecedente_form"
+			            idPopupPiecesJointes="idPopupPiecesJointes"
+			            id_saisieSeance="idSaisieSeancePrecedente"
+			            affichageSequence="#{ajoutSeance.form.afficheSelectionSequenceSeancePrecedente}"
+			            listeSequence="#{ajoutSeance.form.listeSequenceSeancePrecedente}"
+			            sequenceSelected="#{ajoutSeance.form.sequenceSeancePrecedenteSelected}"
+			            controleur="#{ajoutSeance}" cible="chargerSequenceSeancePrecedente"
+			            bean="#{ajoutSeance}"
+			            cibleResetSeance="resetSeancePrecedente"
+			            cibleDeletePieceJointeSeance="deletePieceJointeSeancePrecedente" 
+			            cibleAjouterPieceJointeSeance="ajouterPieceJointeSeance"
+			            cibleAfterAjouterPieceJointeSeance="afterAjouterPieceJointeSeancePrecedente"
+			            cibleResetSeanceAnnotations="resetSeanceAnnotations"
+                        cibleChargeImagesLatex="chargeImagesLatexSeancePrecedente"
+                        cibleChargeImagesLatexAnnotations="chargeImagesLatexAnnotationsSeancePrecedente"
+			            
+		            />
+		        </t:div>
+		    </rich:tab>
+		    <rich:tab id="TAB_DEVOIR" header="Travail à faire" rendered="true">
+                <t:div id="idListeDesDevoirsSeancePrecedente" styleClass="listeDesDevoirsSeance" >
+                    <c:forEach items="#{ajoutSeance.form.seancePrecedente.devoirs}" var="devoir" varStatus="status">
+                        <cr:saisieDevoir
+                           formulaire_contenant="idPopupModifierSeancePrecedente_form"
+                           id_saisieDevoir="idSaisieDevoirSeancePrecedente${status.index}"
+                           devoirDTO="#{devoir}"
+                           readOnly="false"
+                           id_devoirConteneur="idListeDesDevoirsSeancePrecedente"
+                           idPopupPiecesJointes="idPopupPiecesJointes"
+                           listeTypeDevoir="#{ajoutSeance.form.listeTypeDevoir}"
+                           controleur="#{ajoutSeance}"
+                           cibleResetDevoir="resetDevoir"
+                           cibleDeleteDevoir="deleteDevoirSeancePrecedente"
+                           cibleDeletePieceJointe="deletePieceJointe" 
+                           cibleAjouterPieceJointe="ajouterPieceJointe"
+                           cibleAfterAjouterPieceJointe="afterAjouterPieceJointe"
+                           cibleChargeImagesLatex="chargeImagesLatexDevoir"
+                           listeDate="#{ajoutSeance.form.listeDateRemiseDevoirSeancePrecedente}"
+                        /> 
+                    </c:forEach>
+                </t:div>
+                <t:div style="height:32px; padding-top:5px;">
+                    <cr:lien id="idAjouterDevoirSeancePrecedente" bean="#{ajoutSeance}"
+                        cible="ajouterDevoirSeancePrecedente"
+                        render="idListeDesDevoirsSeancePrecedente"
+                        image="add.png"
+                        desc="Ajouter un travail à faire" />
+                </t:div>
+            </rich:tab>
+		</rich:tabPanel>
+    </a4j:outputPanel>
+</cr:popupModifiable>
+
+
+<cr:popupModifiable idPopup="idPopupSelectionSequence"
+	largeurPopup="600" maxlength="50" statusPopup="statuspop"
+	titrePopup="Veuillez sélectionner une séquence">
+	<a4j:outputPanel id="idPopupSelectionSequenceRegion">
+		<t:div style="height:360px; overflow:auto;">
+			<cr:tableSaisiePopup
+			    idPopup="idPopupSelectionSequence" 
+			    bean="#{saisirSeance}"
+				cible="selectionnerSequenceJour"
+				oncomplete="
+				    chargerAgenda(); 
+				    setModificationFormulaire(false); 
+				    onchangeOnglet(); 
+				    selectionnerOnglet('TAB_SEANCE'); 
+				    appliquerGestionModification();
+				    "
+				liste="#{saisirSeance.form.plagePrepare.listeSequence}"
+				largeur="575" 
+                status="statuspop"
+				render="formulaire_principal:idPanelSaisirSeance,formulaire_principal:idMenuActionAdd,formulaire_principal:calendarDataPanel"
+				valeur="#{ajoutSeance.form.seance.sequenceDTO}"
+				avecPagination="false"
+				>
+
+                <rich:column style="width:80px" >
+                    <f:facet name="header">
+                        <h:panelGroup>
+                            <h:outputText value="Classe/Groupe" /><br/>
+                            <h:inputText id="filterText" style="width:35px" 
+                                onkeyup="filterListeGeneriqueAffichage('idPopupSelectionSequence_form:idPopupSelectionSequence_table',1,this.value);" />
+                        </h:panelGroup>
+                    </f:facet>
+                    <h:outputText value="#{ligne.designationClasseGroupe}" />
+                </rich:column>
+
+				<cr:colonne libelleColonne="Intitulé"  id="" style="width:255px" >
+					<h:outputText value="#{ligne.intitule}" />
+				</cr:colonne>
+
+
+				<cr:colonne libelleColonne="Enseignement" id="" style="width:230px" >
+					<h:outputText value="#{ligne.designationEnseignement}" />
+				</cr:colonne>
+			</cr:tableSaisiePopup>
+		</t:div>
+	</a4j:outputPanel>
+</cr:popupModifiable>
+
+
+
+<cr:popupStatus idStatus="statuspop" />
+
+</html>

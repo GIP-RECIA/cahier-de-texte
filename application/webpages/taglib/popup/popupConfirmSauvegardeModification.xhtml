@@ -1,0 +1,55 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"  
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:rich="http://richfaces.org/rich"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:cr="urn:crlr">
+<ui:composition>
+    <cr:popup idPopup="idPopupConfirmSauvegardeModification" tailleAuto="true"
+        titrePopup="Sauvegarde des modifications">
+        <span id="idLienNavigationPopupConfirmSauvegardeModification" style="display:none" title="" />
+        <span id="idOngletNavigationPopupConfirmSauvegardeModification" style="display:none" title="" />
+        <span id="idPopupNavigationMenu" style="display:none" title="" />
+        <span id="idRFPopupConfirmSauvegardeModification" style="display:none" title="" />
+        <p style="text-align: center; white-space: nowrap;">#{libelleMessage}</p>
+        <c:if test="${not empty libelleMessage2}">
+        <p style="text-align: center; white-space: nowrap;">#{libelleMessage2}</p>
+        </c:if>
+        <c:if test="${not empty libelleMessage3}">
+        <p style="text-align: center; white-space: nowrap;">#{libelleMessage3}</p>
+        </c:if>
+        <p style="text-align: center;">
+              <cr:lien bean="#{bean}"
+                 id="idLienValiderPopupConfirmSauvegardeModification" 
+                 titre="Oui" 
+                 cible="#{cible}"
+                 oncomplete=" 
+                    if (#{facesContext.maximumSeverity==null or facesContext.maximumSeverity.ordinal le 0}){ 
+                        naviguerSuivant(); 
+                    } else {
+                        RichFaces.$('formulaire_principal:idPopupConfirmSauvegardeModification').hide();
+                        #{onErrorSauvegarde}
+                    }
+                    "
+                 render="#{render}" /> 
+              <cr:lien bean="#{bean}"
+                 id="idLienRefuserPopupConfirmSauvegardeModification" titre="Non"
+                 style="padding-left:10px;" 
+                 cible="empty"
+                 oncomplete="naviguerSuivant();"/>
+                 
+              <a id="idLienAnnulerPopupConfirmSauvegardeModification"
+              href="#"
+              style="padding-left:10px;"
+              class="lien "
+              onclick="RichFaces.$('formulaire_principal:idPopupConfirmSauvegardeModification').hide();#{oncancel} return false;">
+              Annuler</a>
+      
+        </p>
+    </cr:popup>
+</ui:composition>
+
+
+</html>

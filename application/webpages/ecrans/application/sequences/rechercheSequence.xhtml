@@ -1,0 +1,136 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:a4j="http://richfaces.org/a4j"
+      xmlns:cr="urn:crlr"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:rich="http://richfaces.org/rich"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+  <cr:page titrePage="Recherche séquence"
+           bean="#{rechSequence}"
+           form="#{rechSequence.form}">
+    <cr:menuAction id="idMenuAction">
+      <cr:elemMenuAction idaction="idRechercher"
+                         bean="#{rechSequence}"
+                         cible="rechercher"
+                         image="binocular.png"
+                         title="Rechercher"
+                         render="listingSequence" />
+      <cr:elemMenuAction idaction="idReinitialiser"
+                         bean="#{rechSequence}"
+                         cible="reset"
+                         image="eraser.png"
+                         title="Réinitialiser"
+                         render="outilRecherche" />
+    </cr:menuAction>
+    
+    <cr:lien id="refreshRecheche" bean="#{rechSequence}"
+            cible="reset"
+            oncomplete=""
+            render="listingSequence"
+            titre="" />    
+    
+    <rich:panel id="outilRecherche">
+      <rich:panel header="Rechercher une séquence"
+                  id="rechSequence">
+       
+          <cr:selectClasseGroupe 
+                oncomplete= ""
+                render = "outilRecherche"
+                tousClasseGroupe = "true"
+                choixGroupesDeClass = "false"
+                /> 
+                
+        <cr:selectEnseignement render="listingSequence outilRecherche">
+      </cr:selectEnseignement>
+          
+        <h:panelGrid columns="6"
+                     class="table">
+          <cr:saisieDate id="datedu"
+                         decalageTitreGauche="56"
+                         valeur="#{rechSequence.form.criteres.dateDebut}"
+                         titre="Date de début comprise entre le"
+                         oncomplete="lancerLienAjax('refreshRecheche');"
+                          />
+          <cr:saisieDate id="dateau"
+                         decalageTitreGauche="10"
+                         valeur="#{rechSequence.form.criteres.dateFin}"
+                         oncomplete="lancerLienAjax('refreshRecheche');"
+                         titre="et le" />
+        </h:panelGrid>
+      </rich:panel>
+      <rich:panel id="listingSequence">
+        <cr:table idTable="tableListingSequence"
+                  liste="#{rechSequence.form.listeSequence}"
+                  style="margin: auto;"
+                  entete="Liste des séquences"
+                  nbLignes="13"
+                  rendered="#{not empty rechSequence.form.listeSequence}">
+                  
+          <cr:colonne id="Model"
+                      libelleColonne="Type"
+                      align="center">
+            <h:outputText value="#{ligne.groupesClassesDTO.typeGroupe eq 'GROUPE' ? 'Groupe' : 'Classe'}" />
+          </cr:colonne>
+          <cr:colonne libelleColonne="Classe/groupe"
+                      align="center"
+                      id="">
+            <h:outputText value="#{ligne.groupesClassesDTO.designation}" />
+          </cr:colonne>
+          <cr:colonne libelleColonne="Désignation de l'enseignement"
+                      id="">
+            <h:outputText value="#{ligne.designationEnseignement}" />
+          </cr:colonne>
+          <cr:colonne libelleColonne="Intitulé de la séquence"
+                      id="">
+            <h:outputText value="#{ligne.intitule}" />
+          </cr:colonne>
+          <cr:colonne libelleColonne="Date de début"
+                      align="center"
+                      id="">
+            <h:outputText value="#{cr:formatDate(ligne.dateDebut, 'dd/MM/yyyy')}" />
+          </cr:colonne>
+          <cr:colonne libelleColonne="Date de fin"
+                      align="center"
+                      id="">
+            <h:outputText value="#{cr:formatDate(ligne.dateFin, 'dd/MM/yyyy')}" />
+          </cr:colonne>
+          <cr:colonne libelleColonne="Actions" align="center" id="">
+            <cr:lien id="selectionLigne"
+                     bean="#{rechSequence}"
+                     cible="selectionner"
+                     image="edit.gif"
+                     desc="Modifier"
+                     render="listingSequence">
+                     <f:setPropertyActionListener value="#{ligne}" target="#{rechSequence.form.resultatSelectionne}" />
+            </cr:lien>
+            <cr:lien bean="#{rechSequence}"
+                     id="dupliquer"
+                     rendered="#{not rechSequence.form.vraiOuFauxSaisieSimplifiee}"
+                     cible="dupliquer"
+                     image="dupliquer.gif"
+                     desc="Dupliquer"
+                     render="listingSequence">
+                     <f:setPropertyActionListener value="#{ligne}" target="#{rechSequence.form.resultatSelectionne}" />
+            </cr:lien>
+          </cr:colonne>
+        </cr:table>
+      </rich:panel>
+    </rich:panel>
+  
+  
+  
+  </cr:page>
+  
+  <cr:popupGroupeClasse bean="#{rechSequence}" render="outilRecherche">
+    
+  </cr:popupGroupeClasse>
+ 
+  <cr:popupEnseignement bean="#{rechSequence}" render="outilRecherche"/>
+  
+  
+  <cr:popupStatus idStatus="statuspop" />
+</html>

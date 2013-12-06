@@ -1,0 +1,78 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:cr="urn:crlr">
+<ui:composition>
+   
+  <c:set var="rendered" value="${empty rendered ? true : rendered}"/> 
+  <c:set var="readonly" value="${empty readonly ? false : readonly}"/>
+  
+  <c:set var="myBackgroundClass" value="MySkin"/>
+  
+  <c:set var="myBackgroundColor" 
+  value="#{ (not empty seance.typeCouleur) ? seance.typeCouleur.id :  richSkin.tableSubfooterBackgroundColor }"/>
+    <a4j:outputPanel>
+    
+    
+    
+    <t:div styleClass="raised #{ rendered ? '' : 'cachee'}" style="margin-bottom: 5px;">
+    <t:div styleClass="top">
+        <t:div styleClass="b1" />
+        <t:div styleClass="b2 #{myBackgroundClass}" style="background:#{myBackgroundColor};" />
+        <t:div styleClass="b3 #{myBackgroundClass}" style="background:#{myBackgroundColor};" />
+        <t:div styleClass="b4 #{myBackgroundClass}" style="background:#{myBackgroundColor};" />
+    </t:div>
+    <t:div styleClass="boxcontent #{myBackgroundClass}" style="background:#{myBackgroundColor};">
+        <cr:lien
+            id="#{id}"
+              desc="Séance\n #{seance.intitule}"
+               oncomplete="
+                    #{rich:component('idPopupSeance')}.show(); 
+                    basculeAnnotations('#idPopupSeance_form','idSaisieSeance'); 
+                    #{rich:component('idPopupSeance')}.moveTo(10, 10);
+                    appliqueRotationTampon();
+                    if (#{rich:element('richTabPanel')}) {
+                         #{rich:component('richTabPanel')}.switchToItem('tabSeance');
+                    }"
+              bean="#{bean}" render=":idPopupSeance_form:idPopupSeance_panel" cible="chargerSeance"
+              style="white-space: normal; text-decoration: none;"
+              styleClass="#{myBackgroundClass} planningLien"
+              onclick="console.log('click seance')" 
+              rendered="true"
+              modifiable="#{not readonly}"
+              >
+              
+                  
+                  <f:setPropertyActionListener target="#{planning.form.seanceSelectionne}" value="#{seance}"/>
+                  
+                <b>#{seance.heureDebut}h#{seance.minuteDebutAffichage} </b>
+                <h:outputText value="#{seance.sequenceDTO.groupesClassesDTO.designation}" /> 
+                <br/>
+                <h:outputText value="#{seance.matiere}" /> <br/>
+                <h:outputText rendered="#{visualisationNomEnseignant}" 
+                    value="#{seance.enseignantDTO.civilite} #{seance.enseignantDTO.nom}" />
+          
+          </cr:lien>
+          
+          <h:graphicImage rendered="#{seance.emploiDeTempsDescription != null}"
+          title="#{seance.emploiDeTempsDescription}"
+          styleClass="planningLien"
+          library="images/icones" name="info.png"/>
+          
+    </t:div>
+    <t:div styleClass="bottom">
+            <t:div styleClass="b4b #{myBackgroundClass}" style="background:#{myBackgroundColor};" />
+            <t:div styleClass="b3b #{myBackgroundClass}" style="background:#{myBackgroundColor};" />
+            <t:div styleClass="b2b #{myBackgroundClass}" style="background:#{myBackgroundColor};" />
+            <t:div styleClass="b1b" />
+    </t:div>
+    </t:div>
+        
+</a4j:outputPanel>
+</ui:composition>
+</html>

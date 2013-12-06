@@ -1,0 +1,77 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:a4j="http://richfaces.org/a4j" xmlns:cr="urn:crlr">
+<ui:composition>
+	<ui:remove>
+        Attention ! Il est recommandé de fournir un identifiant pour le lien. Dans les tableaux par exemple,
+        un bug a été rencontré lorsque l'on n'en met pas.
+    </ui:remove>
+	<ui:remove>
+		<!-- 
+        saisieTexte : composant permettant le rendu d'un
+        champ de formulaire de type texte.
+        
+        propriétés : 
+        * id : identifiant du composant.
+        - titre : libellé (optionnel) du champ. 
+        - desc : description du champ (tooltip).
+        * valeur : valueBinding
+        - modifiable
+        - maxlength : taille max en caractères affichable.
+        - largeur : largeur du champ. par défaut 150 pixels.    
+        - styleClass : class pour le champ ( redéfinit celui par défaut )   
+        - decalageTitreDroite : Décalage du libellé sur la droite.
+        - decalageTitreGauche : Décalage du libellé sur la gauche.
+    -->
+	</ui:remove>
+	<c:set var="maxlength" value="${empty maxlength ? '50' : maxlength}" />
+	<c:set var="largeur" value="${empty largeur ? '100' : largeur}" />
+	<c:set var="decalageTitreDroite"
+		value="${empty decalageTitreDroite ? '10' : decalageTitreDroite}" />
+	<c:set var="decalageTitreGauche"
+		value="${empty decalageTitreGauche ? '0' : decalageTitreGauche}" />
+	<c:set var="modifiable" value="${empty modifiable ? true : modifiable}" />
+	<c:set var="rendered" value="${empty rendered ? true : rendered}" />
+	<c:set var="id" value="${empty id ? cr:idcompteur('saisieTexte') : id}" />
+	<c:set var="styleClassError" value="${empty styleClassError or !styleClassError  ? '' : 'messageErreur'}" />
+	
+	<c:choose>
+		<c:when test="${empty titre}">
+			<h:inputText value="#{valeur}" id="#{id}"
+				onkeypress="#{onkeypress};if(checkReturnKey(event,13)){return false}"
+				styleClass="${not empty rendered and not rendered ? 'cachee' : empty styleClass ? (modifiable ? 'champ' : 'inactif') : styleClass} ${styleClassError}"
+				maxlength="#{maxlength}" rendered="#{rendered}"
+				disabled="#{not modifiable}" readonly="#{not modifiable}"
+				style="width:${largeur}px">
+				<ui:insert />
+			</h:inputText>
+		</c:when>
+		<c:otherwise>
+			<h:outputLabel value="#{titre}"
+				style="padding-right: ${decalageTitreDroite}px; padding-left: ${decalageTitreGauche}px;"
+				rendered="#{rendered}" styleClass="libelle" title="${desc}" />
+			<c:choose>
+				<c:when test="#{modifiable}">
+					<h:inputText value="#{valeur}" id="#{id}"
+						onkeypress="#{onkeypress};if(checkReturnKey(event,13)){return false}"
+						styleClass="${not empty rendered and not rendered ? 'cachee' : empty styleClass ? (modifiable ? 'champ' : 'inactif') : styleClass} ${styleClassError}"
+						maxlength="#{maxlength}" rendered="#{rendered}"
+						disabled="#{not modifiable}" readonly="#{not modifiable}"
+						style="width:${largeur}px" onchange="#{onchange};">
+
+						<ui:insert />
+					</h:inputText>
+				</c:when>
+				<c:otherwise>
+					<h:outputLabel value="#{valeur}" id="#{id}"
+						styleClass="${empty styleClass ? 'champ' : styleClass}" style="width:${largeur}px" />
+				</c:otherwise>
+			</c:choose>
+		</c:otherwise>
+	</c:choose>
+</ui:composition>
+</html>

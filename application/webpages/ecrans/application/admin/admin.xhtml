@@ -1,0 +1,710 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:a4j="http://richfaces.org/a4j" 
+    xmlns:cr="urn:crlr"
+    xmlns:rich="http://richfaces.org/rich"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:c="http://java.sun.com/jsp/jstl/core" 
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+
+<cr:page titrePage="Administration" bean="#{admin}" form="#{admin.form}">
+    <h:outputScript library="js/fullcalendar" name="fullcalendar.js" target="head" />
+    <h:outputStylesheet library="css" name="fullcalendar.css" target="head" />
+    <h:outputScript library="js" name="agendaCommon.js" target="head" />
+    <h:outputScript library="js" name="admin.js" target="head" />
+    <h:outputScript library="js" name="jquery-ui-1.8.20.custom.js" target="head" />
+    <h:outputScript library="js" name="jquery.qtip.js"  target="head" />
+    <h:outputStylesheet library="css" name="jquery.qtip.css" target="head" />
+    
+    <cr:menuAction id="idMenuAction"
+        autreAction="#{(admin.form.ongletSelectionne eq 'GRILLE_HORAIRE')}">
+
+        <cr:lien id="idSaveGrilleHoraire" bean="#{admin}"
+            rendered="#{admin.form.ongletSelectionne eq 'GRILLE_HORAIRE' and not (not admin.form.vraiOuFauxOuvertEntSource or admin.form.vraiOuFauxOuvertEtabSource)}"
+            cible="saveGrilleHoraire" image="save.png"
+            desc="Enregistrer le paramétrage de la grille horaire"
+            oncomplete="reloadAgenda(); setModificationFormulaire(false);"
+            render="configEmpTemps" />
+
+        <cr:lien id="idGenererApercuGrille" bean="#{admin}"
+            rendered="#{admin.form.ongletSelectionne eq 'GRILLE_HORAIRE' and not(not admin.form.vraiOuFauxOuvertEntSource or admin.form.vraiOuFauxOuvertEtabSource)}"
+            cible="genererGrilleHoraire" image="start.png"
+            desc="Regénérer la grille horaire."
+            render="configEmpTemps"
+            oncomplete="reloadAgenda(); setModificationFormulaire(true);" />
+
+        <cr:lien id="idReloadGrille" bean="#{admin}"
+            rendered="#{admin.form.ongletSelectionne eq 'GRILLE_HORAIRE' and not(not admin.form.vraiOuFauxOuvertEntSource or admin.form.vraiOuFauxOuvertEtabSource)}"
+            cible="initialiseValeurEtGrilleHoraire" image="reload.png"
+            desc="Recharger la grille horaire initiale."
+            render="configEmpTemps"
+            oncomplete="reloadAgenda(); setModificationFormulaire(false);" />
+
+    </cr:menuAction>
+    
+     <h:outputStylesheet library="css"
+                        name="admin.css"
+                        target="head" />
+                        
+    <rich:panel header="Administration du cahier de texte" id="admincahier">
+
+        <cr:tabPanelCheckSauvegarde 
+            selectedTab="#{admin.form.ongletSelectionne}" 
+            bean="#{admin}"
+            itemChangeListener="navigationOnlget" 
+            styleClass="navigationTabOnglet"
+            >
+
+                <a4j:ajax event="itemchange"
+                    oncomplete="console.log('itemChangeComplete'); reloadAgenda();"
+                    render="calendarDataPanel"></a4j:ajax>
+
+            <rich:tab id="ANNEE_SCOLAIRE" header="Année scolaire"
+                rendered="#{admin.form.mapAccesOnglet['ANNEE_SCOLAIRE']}"
+                styleClass="navigationOnglet">
+
+                <script type="text/javascript"> 
+                    changeTitreOnTab('#{admin.form.ongletSelectionne}');
+                </script>
+                <rich:panel id="anneeScolairePanel">
+                    <cr:lien id="idSelMoisBarre" bean="#{admin}"
+                        cible="selectionneBarreMois" render="anneeScolairePanel" titre="" />
+                    <t:inputHidden forceId="true" id="idCacheValeurMois"
+                        value="#{admin.form.dateMoisSelectionne}" />
+                    <fieldset><legend style="font-weight: bold;">Saisie
+                    de l'année scolaire</legend> <h:panelGrid columns="5" class="table">
+                        <cr:saisieDate id="dateDebutAnnee" decalageTitreDroite="0"
+                            modifiable="#{not admin.form.vraiOuFauxOuvertEntSource}"
+                            decalageTitreGauche="15" largeur="65"
+                            valeur="#{admin.form.dateAnneeScolaireQO.dateRentree}"
+                            titre="Début" />
+
+                        <cr:saisieDate id="dateFinAnnee" decalageTitreDroite="0"
+                            modifiable="#{not admin.form.vraiOuFauxOuvertEntSource}"
+                            decalageTitreGauche="5" largeur="65"
+                            valeur="#{admin.form.dateAnneeScolaireQO.dateSortie}" titre="Fin" />
+
+                        <cr:lien id="idValiderAnneeSco" bean="#{admin}"
+                            rendered="#{not admin.form.vraiOuFauxOuvertEntSource}"
+                            cible="saveAnneeScolaire" image="save.png"
+                            desc="Enregister l'année scolaire." render="anneeScolairePanel" />
+                    </h:panelGrid></fieldset>
+                    <cr:spacer height="5" />
+                    <fieldset><legend style="font-weight: bold;">Saisie
+                    des plages de jours vaquées</legend> <h:panelGrid columns="3" class="table">
+
+                        <h:panelGrid columns="1" class="table">
+                            <rich:dataGrid id="barreMoisAnneeScolaire"
+                                value="#{admin.form.listeMoisAnneeSco}" var="mois"
+                                columnClasses="corpsOuvre"
+                                columns="#{fn:length(admin.form.listeMoisAnneeSco)}"
+                                elements="#{fn:length(admin.form.listeMoisAnneeSco)}"
+                                style="width:400px;">
+                                <h:panelGrid columns="1"
+                                    style="cursor:pointer;width:100%;background-color:#{mois.valeur3 ? 'yellow' : 'white'}"
+                                    onclick="lancerLienAjax('idSelMoisBarre',{'idCacheValeurMois': '#{mois.valeur2}'});">
+                                    <h:outputText value="#{mois.valeur1}" />
+                                </h:panelGrid>
+                            </rich:dataGrid>
+                            <cr:table idTable="tableListingJourMois"
+                                liste="#{admin.form.listeVancance}" largeur="400" entete=""
+                                nbLignes="100" avecPagination="false" classeTable="impair">
+                                <cr:colonne libelleColonne="Lun." id="colonnelundi"
+                                    style="height:30px;background-color:#{empty ligne.couleurLundi ? 'white' : ligne.couleurLundi};">
+                                    <h:outputText
+                                        value="#{cr:formatDate(ligne.jourLundi, 'dd MMM')}" />
+                                </cr:colonne>
+                                <cr:colonne libelleColonne="Mar." id="colonnemardi"
+                                    style="height:30px;background-color:#{empty ligne.couleurMardi ? 'white' : ligne.couleurMardi};">
+                                    <h:outputText
+                                        value="#{cr:formatDate(ligne.jourMardi, 'dd MMM')}" />
+                                </cr:colonne>
+                                <cr:colonne libelleColonne="Mer." id="colonnemercredi"
+                                    style="height:30px;background-color:#{empty ligne.couleurMercredi ? 'white' : ligne.couleurMercredi};">
+                                    <h:outputText
+                                        value="#{cr:formatDate(ligne.jourMercredi, 'dd MMM')}" />
+                                </cr:colonne>
+                                <cr:colonne libelleColonne="Jeu." id="colonnejeudi"
+                                    style="height:30px;background-color:#{empty ligne.couleurJeudi ? 'white' : ligne.couleurJeudi};">
+                                    <h:outputText
+                                        value="#{cr:formatDate(ligne.jourJeudi, 'dd MMM')}" />
+                                </cr:colonne>
+                                <cr:colonne libelleColonne="Ven." id="colonnevendredi"
+                                    style="height:30px;background-color:#{empty ligne.couleurVendredi ? 'white' : ligne.couleurVendredi};">
+                                    <h:outputText
+                                        value="#{cr:formatDate(ligne.jourVendredi, 'dd MMM')}" />
+                                </cr:colonne>
+                                <cr:colonne libelleColonne="Sam." id="colonnesamedi"
+                                    style="height:30px;background-color:#{empty ligne.couleurSamedi ? 'white' : ligne.couleurSamedi};">
+                                    <h:outputText
+                                        value="#{cr:formatDate(ligne.jourSamedi, 'dd MMM')}" />
+                                </cr:colonne>
+                                <cr:colonne libelleColonne="Dim." id="colonnedimanche"
+                                    style="height:30px;background-color:#{empty ligne.couleurDimanche ? 'white' : ligne.couleurDimanche};">
+                                    <h:outputText
+                                        value="#{cr:formatDate(ligne.jourDimanche, 'dd MMM')}" />
+                                </cr:colonne>
+                            </cr:table>
+
+
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="1" class="table">
+                            <t:div
+                                style="overflow-y: scroll; height:240px;border: 1px solid #ccc;">
+                                <cr:table idTable="tableListingJourFeries"
+                                    liste="#{admin.form.listeJourFerie}" largeur="150" entete=""
+                                    nbLignes="100" avecPagination="false">
+                                    <cr:colonne libelleColonne="Vaqué du" id="">
+                                        <h:outputText
+                                            value="#{cr:formatDate(ligne.valeur1, 'dd/MM/yyyy')}" />
+                                    </cr:colonne>
+                                    <cr:colonne libelleColonne="Au" id="">
+                                        <h:outputText
+                                            value="#{cr:formatDate(ligne.valeur2, 'dd/MM/yyyy')}" />
+                                    </cr:colonne>
+                                    <cr:colonne>
+                                        <cr:lien bean="#{admin}" id="supprimer"
+                                            rendered="#{not admin.form.vraiOuFauxOuvertEntSource}"
+                                            oncomplete="#{rich:component('idPopupDelPlage')}.show();"
+                                            cible="empty" image="delete.gif" desc="Supprimer une plage"
+                                            render="idPopupDelPlage">
+                                            <f:setPropertyActionListener value="#{ligne}"
+                                                target="#{admin.form.plageJourFerieSelectionne}" />
+                                        </cr:lien>
+                                    </cr:colonne>
+                                </cr:table>
+                            </t:div>
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="3" class="table">
+                            <cr:saisieDate id="dateDebutFerie" decalageTitreDroite="0"
+                                decalageTitreGauche="5" largeur="65"
+                                modifiable="#{not admin.form.vraiOuFauxOuvertEntSource}"
+                                currentDate="#{admin.form.dateMoisSelectionnePourCalendar}"
+                                valeur="#{admin.form.dateDebutFerie}" titre="Début" />
+
+                            <cr:lien id="idAjoutPlageFerie" bean="#{admin}"
+                                rendered="#{not admin.form.vraiOuFauxOuvertEntSource}"
+                                cible="ajouterPlageFerie" image="save.png"
+                                desc="Ajouter une plage de jours vaqués."
+                                render="anneeScolairePanel" />
+
+                            <cr:saisieDate id="dateFinFerie" decalageTitreDroite="0"
+                                decalageTitreGauche="5" largeur="65"
+                                modifiable="#{not admin.form.vraiOuFauxOuvertEntSource}"
+                                currentDate="#{admin.form.dateMoisSelectionnePourCalendar}"
+                                valeur="#{admin.form.dateFinFerie}" titre="Fin" />
+                        </h:panelGrid>
+                    </h:panelGrid></fieldset>
+                    <cr:spacer height="5" />
+                    <fieldset><legend style="font-weight: bold;">Ouverture
+                    du module cahier de texte aux établissements</legend> <h:panelGrid
+                        columns="4" class="table">
+                        <h:outputLabel value="Ouverture" styleClass="libelle" />
+                        <h:selectBooleanCheckbox
+                            value="#{admin.form.ouvertureQO.vraiOuFauxOuvert}"
+                            id="checkboxOuvertENT" />
+                        <cr:spacer width="20" />
+                        
+                        <cr:lien id="idSaveOuvertENT" bean="#{admin}"
+                            oncomplete="#{rich:component('idPopupConfirmOuvertEnt')}.show();"
+                            cible="empty" image="save.png" desc="Sauvegarder."
+                            render="idPopupConfirmOuvertEnt" />
+                    </h:panelGrid></fieldset>
+                </rich:panel>
+            </rich:tab>
+
+
+            <rich:tab id="JOURS_OUVRES" header="Jours ouvrés et alternance"
+                rendered="#{admin.form.mapAccesOnglet['JOURS_OUVRES']}"
+                styleClass="navigationOnglet">
+                <script type="text/javascript">
+                changeTitreOnTab('#{admin.form.ongletSelectionne}');
+                </script>
+                <cr:lien id="idSelJourOuv" bean="#{admin}" cible="saveJourOuvre"
+                    render="panelJoursOuvres" titre="" />
+                <rich:panel id="panelJoursOuvres">
+                    <fieldset><legend style="font-weight: bold;">Choisissez vos jours ouvrés (en vert)</legend> 
+                    <h:panelGrid columns="4" class="table">
+                        <t:inputHidden forceId="true" id="idCacheValeurJour"
+                            value="#{admin.form.libelleJourOuvreSel}" />
+                        <rich:dataGrid id="listeJourOuvre"
+                            value="#{admin.form.listeOuvre}" var="jour"
+                            columnClasses="corpsOuvre" columns="7" elements="7" width="100px">
+                            <h:panelGrid columns="1"
+                                style="#{admin.form.vraiOuFauxOuvertEntSource and not admin.form.vraiOuFauxOuvertEtabSource ? 'cursor:pointer;width:100%;' : ''} color:#ffffff;background-color:#{jour.valeur3 ? 'green' : 'gray'};"
+                                ondblclick="if (#{admin.form.vraiOuFauxOuvertEntSource and not admin.form.vraiOuFauxOuvertEtabSource}) lancerLienAjax('idSelJourOuv',{'idCacheValeurJour': '#{jour.valeur1}'});">
+                                <h:outputText value="#{jour.valeur2}" />
+                            </h:panelGrid>
+                        </rich:dataGrid>
+                    </h:panelGrid></fieldset>
+                    <cr:spacer height="5" />
+
+                    <fieldset><legend style="font-weight: bold;">Définir
+                    l'alternance des semaines 1 et 2</legend> <cr:spacer height="10" /> <h:panelGrid
+                        columns="2">
+                        <h:outputLabel value="Alternance semaine 1 et 2"
+                            styleClass="libelle" />
+                        <h:selectBooleanCheckbox
+                            value="#{admin.form.vraiOuFauxAlternanceSemaine}"
+                            styleClass="checkSauvegarde" id="checkboxAlterSem"
+                            disabled="#{not admin.form.vraiOuFauxOuvertEntSource or admin.form.vraiOuFauxOuvertEtabSource}">
+                            <a4j:ajax event="click"
+                                listener="#{admin['activerAlternanceSemaine']}"
+                                render="panelJoursOuvres" />
+                        </h:selectBooleanCheckbox>
+                        <h:outputLabel
+                            value="Répercuter la modification sur les semaines suivantes"
+                            rendered="#{admin.form.vraiOuFauxAlternanceSemaine}"
+                            styleClass="libelle" />
+                        <h:selectBooleanCheckbox
+                            rendered="#{admin.form.vraiOuFauxAlternanceSemaine}"
+                            value="#{admin.form.repercutionModificationAlternance}"
+                            disabled="#{not admin.form.vraiOuFauxOuvertEntSource or admin.form.vraiOuFauxOuvertEtabSource}"
+                            id="checkboxRepercution" />
+                    </h:panelGrid> <cr:spacer height="10" />
+                    <a4j:commandLink 
+                         id="idSelSem" 
+                         action="#{admin['saveAlternanceSemaine']}" 
+		                 render="panelJoursOuvres,idPopupConfirmSauvegardeModification"  
+		                 title="">
+                    </a4j:commandLink> 
+                    <t:inputHidden forceId="true" id="idCacheValeurSem"
+                        value="#{admin.form.numeroSemaineSelectionne}" /> 
+
+                    <cr:barreSemaine 
+                       listeSemaine="#{admin.form.listeBarreSemaine}" 
+                       listeMois="#{admin.form.listeMois}"
+                       style="#{(not admin.form.vraiOuFauxOuvertEntSource or admin.form.vraiOuFauxOuvertEtabSource) or (not admin.form.vraiOuFauxAlternanceSemaine) ? '' : 'cursor:pointer;'}"
+                       ondblclick="
+                           if (#{admin.form.vraiOuFauxAlternanceSemaine and not(not admin.form.vraiOuFauxOuvertEntSource or admin.form.vraiOuFauxOuvertEtabSource)}) {
+                               lancerLienAjax('idSelSem',{'idCacheValeurSem': '#{sem.numeroSemaine}'}); 
+                               setModificationFormulaire(true); } "/>
+
+                    <cr:spacer height="10" /> 
+                    
+                    <h:panelGrid columns="5" class="table"
+                        rendered="#{admin.form.vraiOuFauxAlternanceSemaine}">
+                        <div style="width: 18px; height: 18px; background-color: #{admin.form.couleurSemainePair};"></div>
+                        <h:outputLabel value="Semaines 1" styleClass="libelle" />
+                        <cr:spacer width="100" />
+                        <div style="width: 18px; height: 18px; background-color: #{admin.form.couleurSemaineImpair};"></div>
+                        <h:outputLabel value="Semaines 2" styleClass="libelle" />
+                    </h:panelGrid> 
+                    <cr:lien id="idValiderAlterSem" bean="#{admin}"
+                        rendered="#{admin.form.vraiOuFauxAlternanceSemaine and admin.form.vraiOuFauxOuvertEntSource and not admin.form.vraiOuFauxOuvertEtabSource}"
+                        oncomplete="setModificationFormulaire(false);"
+                        cible="saveAlternancesSemaines" image="save.png"
+                        desc="Enregister l'alternance des semaines 1 et 2."
+                        render="panelJoursOuvres" />
+                    <cr:spacer width="10" /> 
+                    <cr:lien id="idReiniAlterSem"
+                        bean="#{admin}"
+                        rendered="#{admin.form.vraiOuFauxAlternanceSemaine and admin.form.vraiOuFauxOuvertEntSource and not admin.form.vraiOuFauxOuvertEtabSource}"
+                        cible="reinitialiserAlternanacesSemaines" image="reload.png"
+                        desc="Réinitialiser l'alternance des semaines 1 et 2."
+                        render="panelJoursOuvres" /></fieldset>
+                </rich:panel>
+            </rich:tab>
+
+            <rich:tab id="GRILLE_HORAIRE" header="Grille horaire"
+                rendered="#{admin.form.mapAccesOnglet['GRILLE_HORAIRE']}"
+                styleClass="navigationOnglet">
+                
+                
+                
+                <script type="text/javascript"> 
+                    changeTitreOnTab('#{admin.form.ongletSelectionne}');
+                </script>
+                <rich:panel>
+                    <h:panelGrid columns="2">
+                        <rich:panel id="configEmpTemps">
+                            <fieldset><legend style="font-weight: bold;">Paramétrage</legend>
+                            <cr:spacer height="5" /> <h:panelGrid columns="2">
+                                <h:panelGroup>
+                                    <h:panelGrid columns="1">
+                                        <cr:spacer height="10" />
+                                    </h:panelGrid>
+                                    <h:panelGroup>
+                                        <h:outputLabel value="Scission des plages"
+                                            styleClass="libelle" />
+                                        <h:selectOneRadio id="idfractionnement"
+                                            value="#{admin.form.fractionnement}"
+                                            disabled="#{(not admin.form.vraiOuFauxOuvertEntSource or admin.form.vraiOuFauxOuvertEtabSource)}"
+                                            styleClass="checkSauvegarde">
+                                            <f:selectItem itemLabel="Aucune" itemValue="1" />
+                                            <f:selectItem itemLabel="1/2 cours" itemValue="2" />
+                                            <f:selectItem itemLabel="1/4 cours" itemValue="4" />
+                                        </h:selectOneRadio>
+                                    </h:panelGroup>
+
+                                    <h:panelGrid columns="1">
+                                        <cr:spacer height="10" />
+                                    </h:panelGrid>
+                                    <h:panelGrid columns="1">
+                                        <h:outputLabel value="Heure début des cours"
+                                            styleClass="libelle" title="Heure de début" />
+                                    </h:panelGrid>
+                                    <h:panelGrid columns="5">
+                                        <cr:saisieHeureMinute id="heureDebutCours" avecMinute="true"
+                                            valeurHeure="#{admin.form.heureDebut}"
+                                            valeurMinute="#{admin.form.minuteDebut}" titre=""
+                                            styleClass="checkSauvegarde"
+                                            modifiable="#{not (not admin.form.vraiOuFauxOuvertEntSource or admin.form.vraiOuFauxOuvertEtabSource)}"
+                                            bean="#{admin}" />
+                                    </h:panelGrid>
+
+                                    <h:panelGrid columns="1">
+                                        <cr:spacer height="10" />
+                                    </h:panelGrid>
+                                    <h:outputLabel value="Heure fin des cours" styleClass="libelle"
+                                        title="Heure de fin" />
+                                    <h:panelGrid columns="5">
+                                        <cr:saisieHeureMinute id="heureFinCours" avecMinute="false"
+                                            valeurHeure="#{admin.form.heureFin}" titre=""
+                                            styleClass="checkSauvegarde"
+                                            modifiable="#{not(not admin.form.vraiOuFauxOuvertEntSource or admin.form.vraiOuFauxOuvertEtabSource)}"
+                                            bean="#{admin}" />
+                                    </h:panelGrid>
+
+
+                                    <h:panelGrid columns="1">
+                                        <cr:spacer height="10" />
+                                    </h:panelGrid>
+                                    <h:outputLabel value="Durée habituelle d'un cours"
+                                        styleClass="libelle" title="Durée d'un cours" />
+                                    <h:panelGrid columns="5">
+                                        <cr:saisieHeureMinute id="tempsCours" avecHeure="false"
+                                            avecMinute="true" cibleMinute="#{admin.form.listeDureeCours}"
+                                            valeurMinute="#{admin.form.dureeCours}" titre=""
+                                            styleClass="checkSauvegarde"
+                                            modifiable="#{not (not admin.form.vraiOuFauxOuvertEntSource or admin.form.vraiOuFauxOuvertEtabSource)}"
+                                            bean="#{admin}" />
+                                    </h:panelGrid>
+                                </h:panelGroup>
+                            </h:panelGrid></fieldset>
+                            <div id='calendarData'></div>
+                            <rich:jQuery
+                                query="data('modificationAutorise', #{admin.form.vraiOuFauxOuvertEntSource and not admin.form.vraiOuFauxOuvertEtabSource})"
+                                selector="#calendarData" timing="immediate" />
+                            <rich:jQuery
+                                query="data('dureeCours', '#{admin.form.dureeCours}')"
+                                selector="#calendarData" timing="immediate" />
+                            <rich:jQuery
+                                query="data('horairesCoursJSON', '#{admin.form.horairesCoursJSON}')"
+                                selector="#calendarData" timing="immediate" />
+                            <input type="hidden" id="etabHeureFin" 
+                                value="#{admin.form.heureFin}"/>
+                            <input type="hidden" id="etabHeureDebut" 
+                                value="#{admin.form.heureDebut}"/>
+                        </rich:panel>
+                        <rich:panel>
+                            <fieldset><legend style="font-weight: bold;">Grille
+                            horaire</legend>
+                            <div class='calendarGrille'></div>
+                            </fieldset>
+                        </rich:panel>
+                    </h:panelGrid>
+                </rich:panel>
+                <a class="showPopupEvent" href="#"
+                    onclick="#{rich:component('idPopupEvent')}.show(); return false;"
+                    style="display: hidden"></a>
+
+                <a4j:jsFunction action="#{admin.chargerPlageSelected}" execute="@this"
+                    name="afficherPlagePopup"
+                    oncomplete="$('.showPopupEvent').click();"
+                    render=":idPopupEvent_form:idPopupEventRegion">
+                    <a4j:param assignTo="#{admin.form.plageSelectedIndex}" name="index" />
+                </a4j:jsFunction>
+			    <a4j:jsFunction action="#{admin.chargerPlageSelected}" execute="@this" 
+                        name="setPlageSelectedIndex" >
+			      <a4j:param assignTo="#{admin.form.plageSelectedIndex}" name="index" />
+			    </a4j:jsFunction>
+          
+           <a4j:jsFunction action="#{admin.chargerPlageSelected}" execute="@this"
+           name="rerenderAgenda" 
+           status="status"
+           render="configEmpTemps"
+           oncomplete="setModificationFormulaire(true); reloadAgenda();"
+           >
+           
+           </a4j:jsFunction>
+             
+                
+			    <a4j:jsFunction action="#{admin.validerEditionHorairePlage}"
+                   execute="@this" name="affecterPlageSelected">
+	                 <a4j:param assignTo="#{admin.form.plageEditee.heureDebut}"
+	                 name="heureDebut" />
+	                 <a4j:param assignTo="#{admin.form.plageEditee.minuteDebut}"
+	                 name="minuteDebut" />  
+	                 <a4j:param assignTo="#{admin.form.plageEditee.heureFin}"
+	                 name="heureFin" />                                   
+	                 <a4j:param assignTo="#{admin.form.plageEditee.minuteFin}"
+	                 name="minuteFin" />
+			    </a4j:jsFunction>
+                
+            </rich:tab>
+
+<ui:remove>
+-----------------------------------------------------
+Onglet : GESTION des LIBELLES et des TYPES DE DEVOIRS
+-----------------------------------------------------
+</ui:remove>
+            <rich:tab id="LIBELLES" name="LIBELLES"
+                header="Paramétrage des libellés"
+                rendered="#{admin.form.mapAccesOnglet['LIBELLES']}"
+                disabled="#{not admin.form.vraiOuFauxOuvertEntSource}"
+                styleClass="navigationOnglet">
+                <script type="text/javascript"> 
+                    changeTitreOnTab('#{admin.form.ongletSelectionne}');
+                </script>
+                <h:panelGrid columns="5">
+                    <h:panelGroup id="paneltabLibEns" layout="block"
+                        style="overflow-y: auto; height: 450px;width: 480px;">
+                        <cr:table idTable="tabLibEns"
+                            liste="#{admin.form.listeEnseignement}" largeur="460"
+                            entete="Enseignements" avecPagination="false">
+                            <rich:column width="300px" 
+                                filterValue="#{admin.form.filtreEnseignementLong}"
+                                filterExpression="#{fn:containsIgnoreCase(ligne.intitule,bean.form.filtreEnseignementLong)}"                   
+                                >
+                                <f:facet name="header">
+                                    <h:panelGroup>
+                                        <h:outputText value="Libellé Long : " />
+                                        <h:inputText value="#{admin.form.filtreEnseignementLong}"
+                                            id="filterLongText">
+                                                <a4j:ajax event="keyup" render="tabLibEns"
+                                                    status="statuspop"
+                                                    oncomplete="transfertFocus(this.id,'#{rich:clientId('filterLongText')}');" >
+                                                    <a4j:attachQueue requestDelay="500" />
+                                               </a4j:ajax>
+                                            
+                                        </h:inputText>
+                                    </h:panelGroup>
+                                </f:facet>
+                                <h:outputText value="#{ligne.intitule}" />
+                            </rich:column>
+                            <rich:column width="100px" 
+                                filterValue="#{admin.form.filtreEnseignementLong}"
+                                filterExpression="#{fn:containsIgnoreCase(ligne.libellePerso,bean.form.filtreEnseignementCourt)}"                   
+                                >
+                                <f:facet name="header">
+                                    <h:panelGroup>
+                                        <h:outputText value="Court : " />
+                                        <h:inputText value="#{admin.form.filtreEnseignementCourt}"
+                                            id="filterCourtText" size="10">
+                                                <a4j:ajax event="keyup" render="tabLibEns"
+                                                    status="statuspop"
+                                                    oncomplete="transfertFocus(this.id,'#{rich:clientId('filterCourtText')}');" >
+                                                    <a4j:attachQueue requestDelay="500" />
+                                               </a4j:ajax>
+                                            
+                                        </h:inputText>
+                                    </h:panelGroup>
+                                </f:facet>
+                                <h:outputText value="#{ligne.libellePerso}" />
+                            </rich:column>
+
+                            <cr:colonne libelleColonne="" id="">
+                                <cr:lien bean="#{admin}" id="editEns"
+                                    oncomplete="#{rich:component('idPopupLibEns')}.show();"
+                                    cible="selectionnerLibelleEnseignement"
+                                    image="selectionner.gif" desc="Editer"
+                                    render="idPopupLibEnsRegion">
+                                    <f:setPropertyActionListener value="#{ligne}"
+                                        target="#{admin.form.enseignementSel}" />
+                                </cr:lien>
+                            </cr:colonne>
+                        </cr:table>
+                    </h:panelGroup>
+                    <cr:spacer width="30" />
+                    <cr:table idTable="tabLibDev" liste="#{admin.form.listeTypeDevoir}"
+                        largeur="250" entete="Type de travail à faire" nbLignes="13">
+                        <cr:colonne libelleColonne="Libellé" id="">
+                            #{ligne.libelle}
+                    </cr:colonne>
+                        <cr:colonne libelleColonne="Devoir" id="">
+                            <h:selectBooleanCheckbox disabled='true'
+                                value="#{ligne.categorie.id eq 'DEVOIR'}" />
+                        </cr:colonne>
+                        <cr:colonne libelleColonne="" taille="50" id="">
+                            <cr:lien bean="#{admin}" id="editDev"
+                                oncomplete="#{rich:component('idPopupLibDev')}.show();"
+                                cible="selectionnerLibelleTypeDevoir" image="selectionner.gif"
+                                desc="Editer" render="idPopupLibDevRegion">
+                                <f:setPropertyActionListener value="#{ligne}"
+                                    target="#{admin.form.typeDevoirSel}" />
+                            </cr:lien>
+                            <cr:spacer width="10" />
+                            <cr:lien bean="#{admin}" id="delDev"
+                                oncomplete="#{rich:component('idPopupDelDev')}.show();"
+                                cible="empty" image="delete.gif" desc="Supprimer"
+                                render="idPopupLibDevRegion">
+                                <f:setPropertyActionListener value="#{ligne}"
+                                    target="#{admin.form.typeDevoirSel}" />
+                            </cr:lien>
+                        </cr:colonne>
+                    </cr:table>
+                    <cr:spacer width="30" />
+                    <h:panelGrid columns="1" class="table">
+                        <h:outputLabel value="Ajouter un type de travail"
+                            styleClass="libelle" />
+                        <cr:lien id="idAjoutTypeDevoir" bean="#{admin}"
+                            oncomplete="#{rich:component('idPopupLibDev')}.show();"
+                            cible="ajoutTypeDevoir" image="add.png"
+                            desc="Ajouter un type de travail à faire."
+                            render="idPopupLibDevRegion" />
+                    </h:panelGrid>
+                </h:panelGrid>
+            </rich:tab>
+
+            <rich:tab id="OUVERTURE" header="Ouverture"
+                rendered="#{admin.form.mapAccesOnglet['OUVERTURE']}"
+                disabled="#{not admin.form.vraiOuFauxOuvertEntSource}"
+                styleClass="navigationOnglet">
+                <script type="text/javascript"> 
+                    changeTitreOnTab('#{admin.form.ongletSelectionne}');
+                </script>
+                <fieldset><legend style="font-weight: bold;">Ouverture
+                du module cahier de texte pour l'établissement en cours</legend> <cr:spacer
+                    height="10" /> <h:panelGrid columns="1" class="table">
+                    <h:outputLabel
+                        value="Suite à la configuation du cahier de texte (grille horaire, jours ouvrés, alternance des semaines et libellés), il est nécessaire "
+                        styleClass="libelle" />
+                </h:panelGrid> <h:panelGrid columns="2" class="table">
+                    <h:outputLabel
+                        value="de le rendre accessible en cochant la case suivante"
+                        styleClass="libelle" />
+                    <h:selectBooleanCheckbox value="#{admin.form.vraiOuFauxOuvertEtab}"
+                        id="checkboxOuvertEtab" onclick="lancerLienAjax('idSaveOuvertEtab');" />
+                        
+                    <cr:lien id="idSaveOuvertEtab" bean="#{admin}"
+                            cible="empty"  
+                            oncomplete="#{rich:component('idPopupConfirmOuvertEtab')}.show();"
+                            render="idPopupConfirmOuvertEtab" />
+                </h:panelGrid></fieldset>
+            </rich:tab>
+        </cr:tabPanelCheckSauvegarde>
+    </rich:panel>
+
+
+    <cr:popupConfirm idPopupConfirm="idPopupConfirmOuvertEnt"
+        libelleMessage="Etes-vous sûr de vouloir #{admin.form.ouvertureQO.vraiOuFauxOuvert ? 'ouvrir' : 'fermer'} le cahier de texte ?"
+        bean="#{admin}" cible="saveOuvertureENT" render="admincahier" />
+
+    <cr:popupConfirm idPopupConfirm="idPopupDelPlage"
+        libelleMessage="Etes-vous sûr de vouloir supprimer la plage vaquée du #{cr:formatDate(admin.form.plageJourFerieSelectionne.valeur1, 'dd/MM/yyyy')} au  #{cr:formatDate(admin.form.plageJourFerieSelectionne.valeur2, 'dd/MM/yyyy')} ?"
+        bean="#{admin}" cible="supprimerPlageFerie"
+        render="tableListingJourFeries,tableListingJourMois" />
+
+    <cr:popupConfirm idPopupConfirm="idPopupDelDev"
+        libelleMessage="Etes-vous sûr de vouloir supprimer le type de devoir #{admin.form.typeDevoirSel.libelle} ?"
+        bean="#{admin}" cible="deleteTypeDevoir" render="tabLibDev" />
+
+    <a4j:commandLink id="idRefreshPageAdmin" action="ADMIN@menu@arbre" />
+    <cr:popupConfirm idPopupConfirm="idPopupConfirmOuvertEtab" closeButton="false"
+        libelleMessage="Etes-vous sûr de vouloir #{admin.form.vraiOuFauxOuvertEtab ? 'ouvrir' : 'fermer'} le cahier de texte pour l'établissement #{admin.form.libelleEtab} ?"
+        bean="#{admin}" cible="saveOuvertureEtablissement"
+        render="admincahier"
+        oncomplete="lancerLienAjax('idRefreshPageAdmin', ''); " 
+        oncancel="
+          jQuery('#formulaire_principal\\:checkboxOuvertEtab')[0].checked = !jQuery('#formulaire_principal\\:checkboxOuvertEtab')[0].checked;"
+        />
+
+    <cr:popupConfirmSauvegardeModification
+        libelleMessage=" Voulez-vous enregistrer vos modifications avant de quitter cette page ? "
+        bean="#{admin}" 
+        cible="#{admin.form.nomMethodeSauvegarde}"
+        oncancel="reloadAgenda();"
+        onErrorSauvegarde="reloadAgenda();"
+        render="admincahier" action="" />
+
+
+</cr:page>
+
+<cr:popupModifiable idPopup="idPopupLibEns"
+    titrePopup="Modification du libellé court de l'enseignement">
+    <cr:menuAction id="idMenuPopupLibEns" surcharge="false">
+        <cr:lien id="idSavePopupLibEns" bean="#{admin}" rendered="true"
+            cible="saveLibelleEnseignement" image="save.png"
+            desc="Sauvegarder la saisie du libellé cours de l'enseignement"
+            oncomplete="if (#{facesContext.maximumSeverity==null}) #{rich:component('idPopupLibEns')}.hide();"
+            render="tabLibEns" />
+    </cr:menuAction>
+    <a4j:outputPanel id="idPopupLibEnsRegion">
+        <h:panelGrid columns="2">
+            <h:outputLabel value="Enseignement"
+                style="padding-right: 10px; padding-left: 0px;" rendered="true"
+                styleClass="libelle" title="Enseignement" />
+            <h:outputLabel value="#{admin.form.enseignementSel.intitule}"
+                style="padding-right: 10px; padding-left: 0px;" rendered="true"
+                styleClass="libelle" title="Enseignement sélectionné" />
+            <cr:saisieTexte id="libPerso" titre="Libellé court" maxlength="8"
+                valeur="#{admin.form.libelleEnseignement}" bean="#{admin}"
+                largeur="100" />
+        </h:panelGrid>
+    </a4j:outputPanel>
+</cr:popupModifiable>
+
+<cr:popupModifiable idPopup="idPopupLibDev"
+    titrePopup="Saisie d'un type de travail à faire">
+    <cr:menuAction id="idMenuPopupLibDev" surcharge="false">
+        <cr:lien id="idSavelibTypeDev" bean="#{admin}" rendered="true"
+            cible="saveLibelleTypeDevoir" image="save.png"
+            desc="Sauvegarder la saisie du libellé du type de travail à faire"
+            oncomplete="if (#{facesContext.maximumSeverity==null}) #{rich:component('idPopupLibDev')}.hide();"
+            render="tabLibDev" />
+    </cr:menuAction>
+    <a4j:outputPanel id="idPopupLibDevRegion">
+        <h:panelGrid columns="2">
+            <cr:saisieTexte id="libTypedev" titre="Libellé" maxlength="20"
+                valeur="#{admin.form.libelleTypeDevoir}" bean="#{admin}"
+                largeur="130" />
+            <h:outputLabel value="Devoir"
+                style="padding-right: 10px; padding-left: 0px;" rendered="true"
+                styleClass="libelle" title="Catégorie" />
+            <h:selectBooleanCheckbox value="#{admin.form.vraiOuFauxDevoir}" />
+        </h:panelGrid>
+    </a4j:outputPanel>
+</cr:popupModifiable>
+
+<cr:popupModifiable idPopup="idPopupEvent" largeurPopup="400"
+    maxlength="50" statusPopup="statuspop"
+    titrePopup="Modification de la plage de la grille horaire">
+    <cr:menuAction id="idMenuActionPopupEvent" surcharge="false">
+        <cr:lien id="idValiderEditionHorairePlage" bean="#{admin}"
+            rendered="true" cible="validerEditionHorairePlage"
+            image="valider.png"
+            desc="Valider les modifications horaires de la plage"
+            oncomplete="if ( #{cr:haveMessagesError()} != true ) { #{rich:component('idPopupEvent')}.hide(); setModificationFormulaire(true); reloadAgenda(); }" 
+            render="configEmpTemps" />
+        <cr:spacer width="10" />
+        <cr:lien id="idSupprimerPlage" bean="#{admin}" rendered="true"
+            cible="supprimerPlage" image="supprimer.png"
+            desc="Supprimer la plage"
+            oncomplete="#{rich:component('idPopupEvent')}.hide(); setModificationFormulaire(true); reloadAgenda();" 
+            render="configEmpTemps" />
+    </cr:menuAction>
+    <a4j:outputPanel id="idPopupEventRegion">
+        <t:panelGrid columns="1">
+            <cr:saisieHeureMinute avecMinute="true" bean="#{admin}"
+                id="heureMinuteDebut" modifiable="true" titre="Début"
+                valeurHeure="#{admin.form.plageEditee.heureDebut}"
+                valeurMinute="#{admin.form.plageEditee.minuteDebut}">
+                <f:ajax event="selectitem" />
+            </cr:saisieHeureMinute>
+            <cr:saisieHeureMinute avecMinute="true" bean="#{admin}"
+                id="heureMinuteFin" modifiable="true" saisieLibre="true" titre="Fin"
+                valeurHeure="#{admin.form.plageEditee.heureFin}"
+                valeurMinute="#{admin.form.plageEditee.minuteFin}" />
+        </t:panelGrid>
+    </a4j:outputPanel>
+</cr:popupModifiable>
+
+<cr:popupStatus idStatus="statuspop" />
+
+</html>

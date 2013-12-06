@@ -1,0 +1,37 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:rich="http://richfaces.org/rich"
+    xmlns:cr="urn:crlr">  
+<ui:composition>
+ <ui:remove>
+    <!-- 
+        colonne : composant permettant le rendu d'une colonne dans un tableau.
+        
+        propriétés : 
+        * id : identifiant unique.        
+        - taille : la taille de la colonne (optionelle). 
+        - libelleColonne : représente le libellé de la colonne.   
+        - avecHeader : Entête de colonne.     
+    -->    
+    </ui:remove> 
+    <c:set var="id" value="${empty id ? cr:idcompteur('colonne') : id}"/> 
+    <c:set var="width" value="${not empty taille ? cr:concat('width:',cr:concat(taille, 'px;')) : ''}"/> 
+    <c:set var="avecHeader" value="${empty avecHeader ? true : false}"/>
+    <c:set var="align" value="${empty align ? left : align}"/>
+
+	<rich:column id="#{id}" rendered="#{rendered}" style="#{width};text-align:#{align};#{style}" styleClass="#{styleClass}">
+
+		<c:choose>
+			<c:when test="${avecHeader}">
+				<f:facet name="header">
+					<h:outputText value="#{libelleColonne}" styleClass="headerText" />
+				</f:facet>
+			</c:when>
+		</c:choose>
+		<ui:insert />
+	</rich:column> 
+</ui:composition>
+</html>	

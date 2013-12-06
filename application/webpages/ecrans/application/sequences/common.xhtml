@@ -1,0 +1,140 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:crx="urn:crlr:ext"
+    xmlns:cr="urn:crlr"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:rich="http://richfaces.org/rich">
+    
+    <a4j:queue requestDelay="300" ignoreDupResponce="true"/>  
+    
+    <cr:menuAction>
+        <cr:elemMenuAction idaction="idRetour" bean="#{consulterSequence}" cible="retour"
+                image="back.png" title="Retour"
+                render="consulterSequence" />
+        <cr:elemMenuAction idaction="idModifier" bean="#{consulterSequence}" cible="modifier"
+                image="save.png" title="Sauvegarder"
+                render="consulterSequence"
+                rendered="#{consulterSequence.form.renderedModifier}" />    
+        <cr:elemMenuAction idaction="idSupprimer" bean="#{consulterSequence}" cible="supprimer"
+                image="delete.png" title="Supprimer"
+                render="consulterSequence"
+                rendered="#{consulterSequence.form.renderedModifier}"
+                confirm="Etes-vous sur de vouloir supprimer cette séquence ?" />  
+        <cr:elemMenuAction idaction="idDupliquer" bean="#{consulterSequence}" cible="dupliquer"
+                image="save.png" title="Sauvegarder"
+                render="consulterSequence"
+                rendered="#{consulterSequence.form.renderedDupliquer}" />       
+    </cr:menuAction>
+
+    <rich:panel header="#{consulterSequence.form.titreDePate}" id="consulterSequence">
+        <h:panelGrid  columns="6" class="table">
+        
+            <cr:saisiePopup id="intituleEnseignement" titre="Enseignement*" styleClassError="${fn:contains(consulterSequence.form.listeChampsObligatoire, 'SEQUENCE_06')}"
+                    idPopup="idPopupEnseignement" decalageTitreDroite="14"
+                    valeur="#{consulterSequence.form.enseignementSelectionne.intitule}"
+                    modifiable="false"
+                    largeur="300"
+                    bean="#{consulterSequence}" lienModifiable="#{(not consulterSequence.form.seancesAssociees or consulterSequence.form.renderedDupliquer) and not consulterSequence.form.vraiOuFauxSaisieSimplifiee}" >
+                    
+            </cr:saisiePopup>
+            
+             <h:selectOneRadio id="selectionClasseOuGroupe" styleClassError="${fn:contains(consulterSequence.form.listeChampsObligatoire, 'SEQUENCE_07')}"
+                style="padding-left:10px;"
+                value="#{consulterSequence.form.typeGroupeSelectionne}">
+                <a4j:ajax event="click" listener="#{consulterSequence['resetClasseGroupeSelectionne']}" render="consulterSequence" />
+                <f:selectItem itemLabel="Classe*" itemValue="CLASSE" itemDisabled="#{(consulterSequence.form.seancesAssociees and not consulterSequence.form.renderedDupliquer) or consulterSequence.form.vraiOuFauxSaisieSimplifiee}" />
+                <f:selectItem itemLabel="Groupe*" itemValue="GROUPE" itemDisabled="#{(consulterSequence.form.seancesAssociees and not consulterSequence.form.renderedDupliquer) or consulterSequence.form.vraiOuFauxSaisieSimplifiee}" />
+            </h:selectOneRadio>
+
+            <cr:saisiePopup id="intituleGroupeClasse" idPopup="idPopupGroupeClasse" styleClassError="${fn:contains(consulterSequence.form.listeChampsObligatoire, 'SEQUENCE_07')}"
+                   bean="#{consulterSequence}"
+                   modifiable="false"
+                   lienModifiable="#{not empty consulterSequence.form.typeGroupeSelectionne and ((not consulterSequence.form.seancesAssociees or consulterSequence.form.renderedDupliquer) and not consulterSequence.form.vraiOuFauxSaisieSimplifiee)}"
+                   valeur="#{consulterSequence.form.groupeClasseSelectionne.intitule}"  />
+        </h:panelGrid>
+        
+    <ui:remove >
+        Supression pour duplication
+        <h:panelGrid  columns="4" class="table">           
+            <cr:saisiePopup id="idEtablissements" titre="Etablissement cible"  uniquementPopup="true"
+                    idPopup="idPopupEtablissements" bean="#{consulterSequence}" decalageTitreGauche="60"                    
+                    rendered="#{not empty consulterSequence.form.listeEtablissement}" largeur="100"
+                    valeur="#{consulterSequence.form.etablissementCible.code}" >
+            </cr:saisiePopup>                
+             <cr:saisieTexte id="idEtablissementLibelle" modifiable="false" titre=""
+                    decalageTitreGauche="5" largeur="310" decalageTitreDroite="0"
+                    rendered="#{not empty consulterSequence.form.listeEtablissement}"
+                    valeur="#{consulterSequence.form.etablissementCible.designation}" />        
+        </h:panelGrid>
+    </ui:remove>
+
+        <h:panelGrid  columns="2" class="table">                   
+            <cr:saisieTexte id="intituleSequence" titre="Intitulé*" largeur="390" styleClassError="${fn:contains(consulterSequence.form.listeChampsObligatoire, 'SEQUENCE_08')}"
+                    valeur="#{consulterSequence.form.intitule}"
+                    bean="#{consulterSequence}" modifiable="#{consulterSequence.form.modifiable}" />
+                    <h:outputText value="" />
+         </h:panelGrid>
+         <h:panelGrid  columns="6" class="table"> 
+            <cr:saisieDate id="dateDebutSequence" decalageTitreGauche="0"
+                    valeur="#{consulterSequence.form.dateDebut}" titre="Date de début*"  styleClassError="${fn:contains(consulterSequence.form.listeChampsObligatoire, 'SEQUENCE_09')}"
+                    modifiable="#{consulterSequence.form.modifiable and not consulterSequence.form.vraiOuFauxSaisieSimplifiee}" />
+            <h:outputText value="" />
+            
+            <cr:saisieDate id="dateFinSequence" decalageTitreGauche="0" styleClassError="${fn:contains(consulterSequence.form.listeChampsObligatoire, 'SEQUENCE_10')}"
+                    valeur="#{consulterSequence.form.dateFin}" titre="Date de fin*" 
+                    modifiable="#{consulterSequence.form.modifiable and not consulterSequence.form.vraiOuFauxSaisieSimplifiee}" />
+            <h:outputText value="" />
+        
+        </h:panelGrid>
+        
+       <h:panelGrid  columns="2" class="table" >
+            <cr:saisieEditeur id="descriptionSequence" titre="Description" desc="saisir le commentaire" decalageTitreDroite="30" styleClassError="${fn:contains(consulterSequence.form.listeChampsObligatoire, 'SEQUENCE_25')}"          
+                valeur="#{consulterSequence.form.description}" modifiable="#{consulterSequence.form.modifiable}" />
+        </h:panelGrid>
+
+    </rich:panel>
+    
+        <ui:remove >
+    <cr:popup idPopup="idPopupEtablissements" tailleAuto="true"
+        largeurPopup="500"
+        rendered="#{not empty consulterSequence.form.listeEtablissement}"
+        titrePopup="Liste des établissements">
+        <cr:tableSaisiePopup bean="#{consulterSequence}" cible="empty"
+            liste="#{consulterSequence.form.listeEtablissement}" largeur="475"
+            render="consulterSequence"
+            valeur="#{consulterSequence.form.etablissementCible}">
+            <cr:colonne taille="30" libelleColonne="Id" id="">
+                <h:outputText value="#{ligne.id}" />
+            </cr:colonne>
+            <cr:colonne taille="30" libelleColonne="Siren" id="">
+                <h:outputText value="#{ligne.code}" />
+            </cr:colonne>
+            <cr:colonne taille="405" libelleColonne="Nom" id="">
+                <h:outputText value="#{ligne.designation}" />
+            </cr:colonne>
+        </cr:tableSaisiePopup>
+    </cr:popup>
+        </ui:remove >
+    
+    <ui:remove>
+    supression pour duplication
+    <cr:popup idPopup="idPopupEnseignement" tailleAuto="true"
+        largeurPopup="300"
+        titrePopup="Liste des enseignements">
+        <cr:tableSaisiePopup bean="#{rechSequence}"         
+            liste="#{consulterSequence.form.listeEnseignement}" render="consulterSequence"
+            valeur="#{consulterSequence.form.enseignementSelectionne}">
+            <cr:colonne taille="30" libelleColonne="Code" id="">
+                <h:outputText value="#{ligne.code}" />
+            </cr:colonne>
+            <cr:colonne  taille="350" libelleColonne="Intitulé" id="">
+                <h:outputText value="#{ligne.intitule}" />
+            </cr:colonne>
+        </cr:tableSaisiePopup>
+    </cr:popup>
+    </ui:remove>
+       
+</html>

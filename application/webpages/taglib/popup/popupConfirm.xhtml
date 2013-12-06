@@ -1,0 +1,32 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"  
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:rich="http://richfaces.org/rich"
+    xmlns:cr="urn:crlr">
+<ui:composition>
+	<cr:popup idPopup="#{idPopupConfirm}" tailleAuto="true" closeButton="#{closeButton}"
+		titrePopup="Confirmation de l'action">
+		<p style="text-align: center; white-space: nowrap;">#{libelleMessage}</p>
+		<c:if test="${not empty libelleMessage2}">
+        <p style="text-align: center; white-space: nowrap;">#{libelleMessage2}</p>
+    </c:if>
+    <c:if test="${not empty libelleMessage3}">
+        <p style="text-align: center; white-space: nowrap;">#{libelleMessage3}</p>
+    </c:if>
+		<p style="text-align: center;">
+		      <cr:lien bean="#{bean}"
+			     id="idLien#{idPopupConfirm}" titre="OK" cible="#{cible}"
+			     oncomplete="#{rich:component(idPopupConfirm)}.hide(); #{oncomplete}"
+			     render="#{render}" /> 
+			  <cr:lien bean="#{bean}"
+			     id="idLienAnnuler#{idPopupConfirm}" titre="Annuler"
+			     style="padding-left:10px;" cible="empty"
+			     oncomplete="#{rich:component(idPopupConfirm)}.hide(); #{oncancel}" />
+	    </p>
+	</cr:popup>
+</ui:composition>
+
+
+</html>

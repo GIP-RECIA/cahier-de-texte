@@ -1,0 +1,24 @@
+.corpsOuvre {
+    padding: 0;
+}
+
+.rich-tab-disabled {
+    background-image: none;
+    background-color: #ffffff;
+}
+
+input.rf-sel-inp {
+    width: 50px;
+}
+
+.fractionnementClass input.rf-sel-inp {
+    width: 130px;
+}
+
+.calendarGrille {
+    width: 200px;
+}
+
+.fc-agenda-axis {
+    width: 200px;
+}

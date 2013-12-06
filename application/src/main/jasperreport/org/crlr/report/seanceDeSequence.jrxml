@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="seances" pageWidth="535" pageHeight="842" columnWidth="535" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="printSequenceDTO" class="org.crlr.dto.application.sequence.PrintSequenceDTO" isForPrompting="false"/>
+	<parameter name="afficheDevoirs" class="java.lang.Boolean"/>
+	<parameter name="libelleClasseGroupe" class="java.lang.String"/>
+	<parameter name="hasEnseignants" class="java.lang.Boolean"/>
+	<parameter name="hasEnseignement" class="java.lang.Boolean"/>
+	<field name="heureDebut" class="java.lang.Integer"/>
+	<field name="heureFin" class="java.lang.Integer"/>
+	<field name="minuteDebut" class="java.lang.Integer"/>
+	<field name="minuteFin" class="java.lang.Integer"/>
+	<field name="intitule" class="java.lang.String"/>
+	<field name="description" class="java.lang.String"/>
+	<field name="devoirs" class="java.util.List"/>
+	<field name="listeImages" class="java.util.List"/>
+	<field name="date" class="java.util.Date"/>
+	<field name="descriptionPDF" class="java.lang.String"/>
+	<field name="files" class="java.util.List"/>
+	<field name="id" class="java.lang.Integer"/>
+	<group name="test" minHeightToStartNewPage="200" keepTogether="true">
+		<groupExpression><![CDATA[$F{id}]]></groupExpression>
+		<groupHeader>
+			<band/>
+		</groupHeader>
+		<groupFooter>
+			<band/>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="65">
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false">
+				<reportElement key="textField-2" stretchType="RelativeToTallestObject" x="-1" y="44" width="535" height="19" isPrintInFirstWholeBand="true" isPrintWhenDetailOverflows="true"/>
+				<box>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Justified" markup="styled">
+					<font fontName="SansSerif"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{descriptionPDF} + "\n"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-3" stretchType="RelativeToBandHeight" x="0" y="4" width="100" height="39" isPrintWhenDetailOverflows="true"/>
+				<box topPadding="2" leftPadding="3">
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Le " + org.crlr.utils.DateUtils.format($F{date}) ]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-5" stretchType="RelativeToBandHeight" x="101" y="3" width="334" height="40" isPrintWhenDetailOverflows="true"/>
+				<box topPadding="1" leftPadding="3">
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Justified">
+					<font fontName="SansSerif"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{intitule}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="535" y="3" width="1" height="40"/>
+			</line>
+			<line>
+				<reportElement x="100" y="3" width="1" height="40"/>
+			</line>
+			<line>
+				<reportElement x="435" y="3" width="1" height="40">
+					<printWhenExpression><![CDATA[!$P{hasEnseignants} || !$P{hasEnseignement}]]></printWhenExpression>
+				</reportElement>
+			</line>
+			<line>
+				<reportElement x="0" y="43" width="535" height="1"/>
+			</line>
+			<line>
+				<reportElement x="0" y="3" width="535" height="1"/>
+			</line>
+			<line>
+				<reportElement x="0" y="3" width="1" height="40"/>
+			</line>
+			<image onErrorType="Icon">
+				<reportElement x="518" y="47" width="16" height="16">
+					<printWhenExpression><![CDATA[$F{files}.size() > 0]]></printWhenExpression>
+				</reportElement>
+				<imageExpression><![CDATA[getClass().getResourceAsStream("/org/crlr/report/attachment.gif")]]></imageExpression>
+			</image>
+		</band>
+		<band height="20" splitType="Stretch">
+			<subreport runToBottom="false">
+				<reportElement stretchType="RelativeToTallestObject" x="-1" y="0" width="536" height="20"/>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{listeImages})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[getClass().getResourceAsStream("/org/crlr/report/imageList_subreport.jasper")]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="18">
+			<subreport isUsingCache="false">
+				<reportElement key="subreport-1" stretchType="RelativeToBandHeight" x="0" y="0" width="535" height="18" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[$P{afficheDevoirs}]]></printWhenExpression>
+				</reportElement>
+				<parametersMapExpression><![CDATA[$P{REPORT_PARAMETERS_MAP}]]></parametersMapExpression>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{devoirs}, false)]]></dataSourceExpression>
+				<subreportExpression><![CDATA[getClass().getResourceAsStream("org/crlr/report/devoirs.jasper")]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

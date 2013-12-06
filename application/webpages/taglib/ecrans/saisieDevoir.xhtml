@@ -1,0 +1,276 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:a4j="http://richfaces.org/a4j"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:cr="urn:crlr"
+      xmlns:crx="urn:crlr:ext"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:rich="http://richfaces.org/rich"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+  <ui:composition>
+    
+    <!-- 
+       idSaisieDevoirXX 
+       readOnly    
+       devoirDTO                : un DevoirDTO
+       listeTypeDevoir          : liste des TypeDevoirDTO
+       controleur               : le controleur qui herberge la page
+       cibleResetDevoir         : méthode sur le controleur qui est invoquée lors du reset d'un devoirDTO
+       cibleDeleteDevoir        : méthode sur le controleur qui est invoquée lors de la suppression d'un devoirDTO
+       cibleDeletePieceJointe   : méthode sur le controleur qui est invoquée lors de la suppression d'une piece jointe de devoirDTO 
+       cibleAjouterPieceJointe  : méthode sur le controleur qui est invoquée lors de l'ajout d'une piece jointe sur un devoirDTO
+       deleteDevoir             : affiche le bouton de suppression du devoir
+       checkModification        : positionne la variable de modification lors des modifications
+       
+       Doit être implémentée sur le controleur.form :
+            pieceJointeASupprimer : la piece jointe cible en vue d'etre supprimee   
+            devoirSelected : le devoirDTO qui est en cours d'edition (ajout pièce, reset, delete, delete piece)
+    -->
+    <c:set value="${empty statusPopup ? 'statuspop' : statusPopup}"
+           var="statuspop" />
+    <c:set value="${empty id_saisieDevoir ? cr:idcompteur('saisieDevoir') : id_saisieDevoir}"
+           var="idSaisieDevoirXX" />
+    <c:set value="#{empty readOnly ? true : readOnly}"
+           var="readOnly" />
+    <c:set value="#{empty checkModification or checkModification ? 'setModificationFormulaire(true);' : ''}"
+           var="verifieModification" />
+    <c:set value="${empty formulaire_contenant ? '#formulaire_principal' : cr:concat('#', formulaire_contenant)}"
+           var="formulaire_contenant" />
+    <c:set value="${empty id_popupChargeTravail ? 'idPopupChargeTravail' : id_popupChargeTravail}"
+           var="id_popupChargeTravail" />
+    <rich:panel>
+      <t:div id="#{idSaisieDevoirXX}_detailDevoir">
+        <t:panelGrid columns="4"
+                     style="">
+          <h:panelGroup>
+            <cr:saisieTexte desc="Intitulé du travail à faire"
+                            id="#{idSaisieDevoirXX}_intitule"
+                            largeur="100"
+                            modifiable="#{not readOnly}"
+                            onchange="#{verifieModification}"
+                            styleClassError="${fn:contains(controleur.form.listeChampsObligatoire, 'DEVOIR_00')}"
+                            titre="Intitulé"
+                            valeur="#{devoirDTO.intitule}">
+                            </cr:saisieTexte>
+          </h:panelGroup>
+          <h:panelGroup>
+            <cr:saisieTexte desc="Date de remise du travail à faire"
+                            id="#{idSaisieDevoirXX}_date"
+                            largeur="120"
+                            modifiable="#{not readOnly}"
+                            onchange="#{verifieModification}"
+                            rendered="#{readOnly}"
+                            style="vertical-align: bottom;"
+                            styleClassError="${fn:contains(controleur.form.listeChampsObligatoire, 'DEVOIR_00')}"
+                            titre="Date"
+                            valeur="#{cr:formatDate(devoirDTO.dateRemise, 'dd/MM/yyyy')}">
+            </cr:saisieTexte>
+            <h:outputLabel rendered="#{not readOnly}"
+                           style="padding-right: 10px; padding-left: 0px;"
+                           styleClass="libelle"
+                           title="Date de remise du travail à faire"
+                           value="Date" />
+            <cr:liena4j bean="#{controleur}"
+                        cible="chercherChargeTravail"
+                        idliena4j="#{idSaisieDevoirXX}_idChercherChargeTravail"
+                        render="#{idSaisieDevoirXX}_idIconeAfficherListeChargeTravail,#{idSaisieDevoirXX}_date2"
+                        rendered="#{not readOnly}"
+                        status="#{statuspop}">
+              <f:setPropertyActionListener target="#{controleur.form.devoirSelected}"
+                                           value="#{devoirDTO}" />
+            </cr:liena4j>
+            <cr:saisieDateListe bean="#{devoirDTO}"
+                                cibleResetDate="resetDateRemise"
+                                idSaisieDateListe="#{idSaisieDevoirXX}_date2"
+                                listeDate="#{listeDate}"
+                                oncomplete=" var nomLien = '#{formulaire_contenant}' + '\\:' + '#{idSaisieDevoirXX}_idChercherChargeTravail'; var lien = $(nomLien); lien.click(); #{verifieModification}"
+                                readOnly="#{readOnly}"
+                                rendered="#{not readOnly}"
+                                status="#{statuspop}"
+                                styleClassError="${fn:contains(controleur.form.listeChampsObligatoire, 'SEANCE_17')}"
+                                valeur="#{devoirDTO.dateRemiseCalendar}"
+                                valeurDTO="#{devoirDTO.dateRemiseDTO}"
+                                valeurFinal="#{devoirDTO.dateRemiseString}" />
+            <cr:lien bean="#{controleur}"
+                     cible="#{cibleAfficherChargeTravail}"
+                     desc="Afficher les autres travaux à rendre le même jour"
+                     id="#{idSaisieDevoirXX}_idIconeAfficherListeChargeTravail"
+                     image="informationWarning.png"
+                     oncomplete="#{rich:component(id_popupChargeTravail)}.show();"
+                     render=":formulaire_principal:#{id_popupChargeTravail}"
+                     rendered="true"
+                     style="#{devoirDTO.chargeTravail.affichageCharge ? '' : 'display: none;'}"
+                     >
+                     
+              <f:setPropertyActionListener target="#{controleur.form.devoirSelected}"
+                                           value="#{devoirDTO}" />
+            </cr:lien>
+          </h:panelGroup>
+          <h:panelGroup>
+            <cr:saisieTexte desc="Type du travail à faire"
+                            id="#{idSaisieDevoirXX}_intituleTypeDevoir"
+                            largeur="180"
+                            modifiable="#{not readOnly}"
+                            onchange="#{verifieModification}"
+                            rendered="#{readOnly}"
+                            style="vertical-align: bottom;"
+                            styleClassError="${fn:contains(controleur.form.listeChampsObligatoire, 'DEVOIR_00')}"
+                            titre="Type"
+                            valeur="#{devoirDTO.typeDevoirDTO.libelle}">
+                            </cr:saisieTexte>
+            <cr:saisieListe desc="Type du travail à faire"
+                            donnees=""
+                            id="#{idSaisieDevoirXX}_selectTypeTravail"
+                            onchange="#{verifieModification}"
+                            rendered="#{not readOnly}"
+                            style="width: 180px; vertical-align:middle;"
+                            titre="Type"
+                            valeur="#{devoirDTO.typeDevoirDTO}">
+              <f:converter converterId="selectOneDtoConverter" />
+              <f:selectItem itemLabel=""
+                            itemValue="" />
+              <f:selectItems itemLabel="#{typeDevoir.libelle}"
+                             itemValue="#{typeDevoir}"
+                             value="#{listeTypeDevoir}"
+                             var="typeDevoir" />
+              <f:attribute name="converterListe"
+                           value="#{listeTypeDevoir}" />
+            </cr:saisieListe>
+          </h:panelGroup>
+        </t:panelGrid>
+      </t:div>
+      <table class="grille"
+             style="">
+        <tr>
+          <td style="">
+
+            <cr:saisieEditeur desc="saisir le commentaire"
+                              hauteur="125px"
+                              id="#{idSaisieDevoirXX}_descriptionDevoir"
+                              largeur="100%"
+                              onchange="#{verifieModification}"
+                              rendered="#{not readOnly}"
+                              titre=""
+                              valeur="#{devoirDTO.description}" />
+            <h:outputText escape="false"
+                          id="#{idSaisieDevoirXX}_descriptionDevoirHTML"
+                          rendered="true"
+                          style="#{readOnly ? 'display:block' : 'display:none' }"
+                          styleClass="description"
+                          value="#{devoirDTO.descriptionHTML}" />
+          </td>
+          <td style="width: 20px; text-align:center; #{readOnly ? 'display:none;' : ''}">
+
+            <a4j:commandLink action="#{controleur[cibleAfterAjouterPieceJointe]}"
+                             id="#{idSaisieDevoirXX}_afterAjouterPieceJointe"
+                             oncomplete="#{verifieModification}"
+                             render="#{idSaisieDevoirXX}_ListeDesPiecesJointe">
+                             </a4j:commandLink>
+            <br />
+            <a4j:commandLink action="#{controleur[cibleAjouterPieceJointe]}"
+                             id="#{idSaisieDevoirXX}_ajouterPieceJointe"
+                             onclick="resetFormTarget(); desactiveClick(this.id, this.onclick);"
+                             oncomplete="#{rich:component(idPopupPiecesJointes)}.show();"
+                             render="#{idPopupPiecesJointes}_form:#{idPopupPiecesJointes}_panel"
+                             status="#{statuspop}"
+                             title="Ajouter une pièce jointe au travail à faire">
+                             
+              <f:setPropertyActionListener target="#{controleur.form.devoirSelected}"
+                                           value="#{devoirDTO}" />
+              <f:setPropertyActionListener target="#{controleur.form.raffraichirTabAfterUpload}"
+                                           value="${cr:concat(cr:concat(formulaire_contenant,'\\\\:'), idSaisieDevoirXX)}_afterAjouterPieceJointe" />
+              <h:graphicImage library="images/icones"
+                              name="iconePieceJointe.png" />
+            </a4j:commandLink>
+            <br />
+            <a4j:commandLink action="#{controleur[cibleResetDevoir]}"
+                             id="#{idSaisieDevoirXX}_resetDevoir"
+                             onclick="resetFormTarget(); if (!confirm('Voulez-vous vraiment effacer la description de ce travail à faire ?')) { return false;} desactiveClick(this.id, this.onclick);"
+                             oncomplete="#{verifieModification}"
+                             render="#{idSaisieDevoirXX}_detailDevoir,#{idSaisieDevoirXX}_descriptionDevoir"
+                             title="Effacer la description du travail à faire">
+                             
+              <f:setPropertyActionListener target="#{controleur.form.devoirSelected}"
+                                           value="#{devoirDTO}" />
+              <h:graphicImage library="images/icones"
+                              name="eraserSmall.png" />
+            </a4j:commandLink>
+            <br />
+            <a4j:commandLink action="#{controleur[cibleChargeImagesLatex]}"
+                             id="#{idSaisieDevoirXX}_viewLatex"
+                             onclick="resetFormTarget(); desactiveClick(this.id, this.onclick);"
+                             oncomplete=" visualiserLatex( '#{rich:clientId(cr:concat(idSaisieDevoirXX, '_viewLatex'))}', '_descriptionDevoir', '_descriptionDevoirHTML', 'la description du devoir' );"
+                             render="#{idSaisieDevoirXX}_descriptionDevoirHTML"
+                             rendered="#{not readOnly}">
+              <f:setPropertyActionListener target="#{controleur.form.devoirSelected}"
+                                           value="#{devoirDTO}" />
+              <h:graphicImage id="#{idSaisieDevoirXX}_viewLatex_image"
+                              library="images/icones"
+                              name="aide-saisie.png"
+                              title="Visualiser la description du devoir" />
+            </a4j:commandLink>
+            <br />
+            <a4j:commandLink action="#{controleur[cibleDeleteDevoir]}"
+                             id="#{idSaisieDevoirXX}_deleteDevoir"
+                             onclick="resetFormTarget(); if (!confirm('Voulez-vous vraiment supprimer ce travail à faire ?')) { return false; } desactiveClick(this.id, this.onclick);"
+                             oncomplete="#{verifieModification}"
+                             render="#{id_devoirConteneur}"
+                             rendered="#{(empty deleteDevoir) or (deleteDevoir)}"
+                             title="Supprimer le travail à faire">
+              <f:setPropertyActionListener target="#{controleur.form.devoirSelected}"
+                                           value="#{devoirDTO}" />
+              <h:graphicImage library="images/icones"
+                              name="delete.gif" />
+            </a4j:commandLink>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <t:div id="#{idSaisieDevoirXX}_ListeDesPiecesJointe">
+              <rich:panel id="#{idSaisieDevoirXX}_ListeDesPiecesJointePanel"
+                          rendered="#{not empty devoirDTO.files}"
+                          style="vertical-align:top; overflow:auto; width:100%; height:180px;">
+
+                <cr:table entete="Liste des pièces jointes ajoutées au travail à faire"
+                          idTable="#{idSaisieDevoirXX}_tableListingPieceJointeDev"
+                          liste="#{devoirDTO.files}"
+                          style="width:100%;">
+                  <cr:colonne id=""
+                              libelleColonne="Nom">
+                    <h:outputText value="#{ligne.nom}" />
+                  </cr:colonne>
+                  <cr:colonne align="center"
+                              id=""
+                              libelleColonne="Actions">
+                    <cr:lien bean=""
+                             chemin="#{ligne.pathFullDownload}"
+                             desc="Télécharger"
+                             id="#{idSaisieDevoirXX}_dlDevFichier"
+                             image="download.png"
+                             rendered="#{ligne.activerLien}" />
+                    <cr:lien bean="#{controleur}"
+                             cible="#{cibleDeletePieceJointe}"
+                             confirm="Etes-vous sur de vouloir supprimer cette pièce jointe ?"
+                             desc="Supprimer"
+                             id="#{idSaisieDevoirXX}_supprimer"
+                             image="delete.gif"
+                             oncomplete="#{verifieModification}"
+                             render="#{idSaisieDevoirXX}_ListeDesPiecesJointe"
+                             rendered="#{not readOnly}">
+                      <f:setPropertyActionListener target="#{controleur.form.pieceJointeASupprimer}"
+                                                   value="#{ligne}" />
+                      <f:setPropertyActionListener target="#{controleur.form.devoirSelected}"
+                                                   value="#{devoirDTO}" />
+                    </cr:lien>
+                  </cr:colonne>
+                </cr:table>
+              </rich:panel>
+            </t:div>
+          </td>
+        </tr>
+      </table>
+    </rich:panel>
+  </ui:composition>
+</html>

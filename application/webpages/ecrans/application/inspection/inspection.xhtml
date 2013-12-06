@@ -1,0 +1,231 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:a4j="http://richfaces.org/a4j" xmlns:cr="urn:crlr"
+    xmlns:rich="http://richfaces.org/rich"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+
+<cr:page titrePage="#{contexteUtilisateur.utilisateurDTO.profil eq 'INSPECTION_ACADEMIQUE' ? 'Mes droits' : 'Droits d\'inspection'} " >
+
+	<h:outputScript library="js" name="inspection.js" target="head" />
+	<h:outputScript library="css" name="inspection.css" target="head" />
+   
+    <cr:menuAction id="idMenuAction">
+        <cr:elemMenuAction 
+                idaction="idAjout" 
+                bean="#{inspection}"
+                cible="initNouveauDroit"
+                image="add.png" 
+                title="Ajouter"
+                oncomplete="#{rich:component('idPopupAjoutDroit')}.show(); onresize();"
+                render="idPopupAjoutDroitRegion" 
+                rendered="#{inspection.form.profilNavigation eq 'DIRECTION_ETABLISSEMENT'}"/>
+        <cr:elemMenuAction 
+              idaction="idSauver" bean="#{inspection}" cible="sauver"
+              image="save.png" 
+              title="Sauvegarder"
+              render="listingDroitsInspections" 
+              rendered="#{inspection.form.profilNavigation eq 'DIRECTION_ETABLISSEMENT'}"
+              oncomplete="setModificationFormulaire(false); onresize();" 
+        />    
+        <cr:elemMenuAction 
+              idaction="idRestaure" bean="#{inspection}" cible="reload"
+              image="reload.png" 
+              title="Annuler toutes les modifications"
+              render="listingDroitsInspections" 
+              rendered="#{inspection.form.profilNavigation eq 'DIRECTION_ETABLISSEMENT'}"
+              oncomplete="setModificationFormulaire(false); onresize();"  
+              confirm="Voulez-vous vraiment annuler toutes vos modifications ?"
+        />    
+                
+	</cr:menuAction>
+
+    <cr:liena4j 
+        idliena4j="idRefreshListing" 
+        bean="#{inspection}" 
+        cible="refreshListing" 
+        render="listingDroitsInspections" 
+        oncomplete="onresize(); setModificationFormulaire(true);"
+        status="statuspop"  
+     />
+
+	<rich:panel id="listingDroitsInspections" header="Consultation des droits d'inspection">
+		<t:div id="idDivListingDroitsInspections" style="height:200px; whidth:100%; overflow:auto;">
+		<cr:table idTable="tableListingDroitsInspections" style="margin: 15px auto auto;"
+			liste="#{inspection.form.droitsInspecteur}" entete="Liste des droits d'inspection donnés"
+			avecPagination="false">
+
+			<cr:colonne id="colInspecteur" taille="150" libelleColonne="Inspection pédagogique" align="center" rendered="#{inspection.form.profilNavigation eq 'DIRECTION_ETABLISSEMENT'}">
+				<h:outputText value="#{ligne.inspecteur.nom}" style="#{ligne.estModifiee or ligne.estSupprimee ? 'font-style: italic; ' : ''} #{ligne.estSupprimee ? 'text-decoration:line-through;' : '' }" />
+				
+			</cr:colonne>
+			<cr:colonne id="colDirecteur" taille="150" libelleColonne="Direction établissement" align="center">
+				<h:outputText value="#{ligne.directeur.nom}" style="#{ligne.estModifiee or ligne.estSupprimee ? 'font-style: italic;' : ''} #{ligne.estSupprimee ? 'text-decoration:line-through;' : '' }" />
+			</cr:colonne>
+			<cr:colonne id="colEnseignant" taille="150" libelleColonne="Enseignant" align="center">
+				<h:outputText value="#{ligne.enseignant.nomComplet}" style="#{ligne.estModifiee or ligne.estSupprimee ? 'font-style: italic;' : ''} #{ligne.estSupprimee ? 'text-decoration:line-through;' : '' }" />
+			</cr:colonne>
+			<cr:colonne id="colDateOuverture" taille="50" libelleColonne="Ouverture des droits" align="center">
+			 <c:choose>
+                <c:when test="${inspection.form.profilNavigation eq 'DIRECTION_ETABLISSEMENT'}">
+					<cr:saisieDate 
+	                    id="colDateOuvertureEdit"
+	                    largeur="65"
+	                    titre=""
+	                    style="#{ligne.estModifiee ? 'font-style: italic;' : ''}"
+	                    valeur="#{ligne.dateDebut}"
+	                    oncomplete="
+	                      setModificationFormulaire(true); 
+	                      refreshDate_#{ligne.inspecteur.identifiant}_#{ligne.enseignant.id}(); " 
+	                      
+	                      >
+	                </cr:saisieDate>
+	                
+					<a4j:jsFunction action="#{inspection.refreshDate}"
+					        execute="@this" name="refreshDate_#{ligne.inspecteur.identifiant}_#{ligne.enseignant.id}"
+					        render=""
+					        status="statuspop"
+					        oncomplete="lancerLienAjax('idRefreshListing'); "
+					        >
+					        <f:setPropertyActionListener value="#{ligne}" target="#{inspection.form.droitSelectionne}" />
+					</a4j:jsFunction>
+                </c:when>
+                <c:otherwise>
+                    <h:outputText value="#{cr:formatDate(ligne.dateDebut, 'dd/MM/yyyy')}" />
+                </c:otherwise>				       
+              </c:choose>         
+			</cr:colonne>
+            <cr:colonne id="colDateFermeture" taille="50" libelleColonne="Fin des droits" align="center">
+             <c:choose>
+                <c:when test="${inspection.form.profilNavigation eq 'DIRECTION_ETABLISSEMENT'}">
+                  <cr:saisieDate 
+                    id="colDateFermetureEdit" 
+                    largeur="65"
+                    titre=""
+                    style="#{ligne.estModifiee ? 'font-style: italic;' : ''}"
+                    valeur="#{ligne.dateFin}"
+                    oncomplete="
+                      setModificationFormulaire(true); 
+                      refreshDate_#{ligne.inspecteur.identifiant}_#{ligne.enseignant.id}();" >
+                </cr:saisieDate>
+               </c:when>
+               <c:otherwise>
+                 <h:outputText value="#{cr:formatDate(ligne.dateFin, 'dd/MM/yyyy')}" />
+               </c:otherwise>
+             </c:choose>
+            </cr:colonne>
+			<cr:colonne taille="50" libelleColonne="Actions" align="center" rendered="#{inspection.form.profilNavigation eq 'DIRECTION_ETABLISSEMENT'}" id="">
+				<cr:liena4j 
+				    idliena4j="supprimer" 
+                    bean="#{inspection}"
+                    cible="supprimerIHM"
+                    render=""
+                    rendered="true"
+                    status="statuspop"
+                    oncomplete="lancerLienAjax('idRefreshListing');  setModificationFormulaire(true);"
+                    >
+                    <h:graphicImage
+                        library="images/icones" 
+                        name="#{ligne.estSupprimee ? 'valider.gif' : 'delete.gif'}"
+                        title="#{ligne.estSupprimee ? 'Re-activer ce droit' : 'Supprimer ce droit'}" /> 
+                    <f:setPropertyActionListener value="#{ligne}" target="#{inspection.form.droitSelectionne}" />    
+                </cr:liena4j>
+			</cr:colonne>
+		</cr:table>
+		</t:div>
+	</rich:panel>
+
+    <cr:popupConfirmSauvegardeModification
+        libelleMessage=" Voulez-vous enregistrer vos modifications avant de quitter cette page ? "
+        bean="#{inspection}" 
+        cible="sauver"
+        oncancel=""
+        onErrorSauvegarde=""
+        render="listingDroitsInspections" action="" />
+
+</cr:page>
+
+
+<cr:popupModifiable idPopup="idPopupAjoutDroit" titrePopup="Ajout de droits" largeurPopup="670" hauteurPopup="390">
+    <a4j:outputPanel id="idPopupAjoutDroitRegion">
+        <cr:menuAction id="idMenuActionPopupAjoutDroit" surcharge="false">
+            <cr:lien id="idSave" 
+			          bean="#{inspection}"
+				      cible="ajoutDroitIHM"
+				      image="valider.png" desc="Valider" render="listingDroitsInspections"
+				      oncomplete="#{rich:component('idPopupAjoutDroit')}.hide(); setModificationFormulaire(true); onresize();" />
+        </cr:menuAction>
+	    <h:panelGrid  columns="4" >
+            <h:panelGroup id="panelInspecteurs" layout="block" style="overflow-y: auto; height: 300px;width: 320px;">
+                <cr:table idTable="tableInspecteur"
+				      liste="#{inspection.form.inspecteurs}" largeur="300" avecPagination="false">
+                    <cr:colonne id="idPopupColSelectInspecteur" taille="10" libelleColonne="Sél">
+					
+                        <h:selectBooleanCheckbox id="selectionInspecteur#{ligne.identifiant}" 
+						      value="#{ligne.vraiOuFauxSelectionne}" >
+                        </h:selectBooleanCheckbox>
+					
+                    </cr:colonne>
+                    <rich:column width="290px" filterBy="#{ligne.nom}"
+					      filterValue="#{inspection.form.filterInspecteur}"
+					      filterExpression="#{fn:containsIgnoreCase(ligne.nom,inspection.form.filterInspecteur)}">
+						<f:facet name="header">
+	                        <h:panelGroup>
+	                            <h:outputText value="Inspection pédagogique : " />
+	                            <h:inputText value="#{inspection.form.filterInspecteur}" id="filterText" style="width:100px;">
+	                                <a4j:ajax event="keyup"
+	                                            render="tableInspecteur"
+	                                            oncomplete="transfertFocus(null, '#{rich:clientId('filterText')}');"
+	                                            status="statuspop" 
+	                                            execute="@this">                         
+	                                    <a4j:attachQueue requestDelay="500" />
+	                                </a4j:ajax>
+	                            </h:inputText>
+	                        </h:panelGroup>
+	                    </f:facet>
+                        <h:outputText value="#{ligne.nom}" />
+                    </rich:column>
+                </cr:table>
+            </h:panelGroup>
+		
+	        <h:panelGroup id="panelEnseignants" layout="block" style="overflow-y: auto; height: 300px;width: 320px;">
+	            <cr:table idTable="tableEnseignants"
+					      liste="#{inspection.form.enseignants}" largeur="280" avecPagination="false">
+	                <cr:colonne id="idPopupColSelectEnseignant" taille="10" libelleColonne="Sél">
+	                    <h:selectBooleanCheckbox id="selectionInspecteur#{ligne.identifiant}" 
+							      value="#{ligne.vraiOuFauxSelectionne}" >
+	                    </h:selectBooleanCheckbox>
+	                </cr:colonne>
+	                <rich:column width="290px" filterBy="#{ligne.nomComplet}"
+						      filterValue="#{inspection.form.filterEnseignant}"
+						      filterExpression="#{fn:containsIgnoreCase(ligne.nom,inspection.form.filterEnseignant)}">
+		                <f:facet name="header">
+		                    <h:panelGroup>
+		                        <h:outputText value="Enseignant : " />
+		                            <h:inputText value="#{inspection.form.filterEnseignant}" id="filterTextEns">
+	                                    <a4j:ajax event="keyup"
+	                                                render="tableEnseignants"
+	                                                oncomplete="transfertFocus(null, '#{rich:clientId('filterTextEns')}');"
+	                                                status="statuspop" 
+	                                                execute="@this">                         
+	                                        <a4j:attachQueue requestDelay="500" />
+	                                    </a4j:ajax>
+		                            </h:inputText>
+		                        </h:panelGroup>
+	                    </f:facet>
+		                <h:outputText value="#{ligne.nomComplet}" />
+	                </rich:column>
+	            </cr:table>
+	        </h:panelGroup>
+	    </h:panelGrid>
+    </a4j:outputPanel>
+</cr:popupModifiable>
+
+
+<cr:popupStatus idStatus="statuspop" />
+
+</html>

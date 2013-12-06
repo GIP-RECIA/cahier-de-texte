@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+
+    <!DOCTYPE faces-config PUBLIC "-//Sun Microsystems, Inc.//DTD  JavaServer Faces Config 1.1//EN"
+
+    "http://java.sun.com/dtd/web-facesconfig_1_1.dtd">
+<faces-config>
+	<lifecycle>
+		<!-- gestion de l'authentification des utilisateurs -->
+		<phase-listener>org.crlr.web.servlet.listener.SecuritePhaseListener</phase-listener>
+	</lifecycle>
+
+	<managed-bean>
+		<managed-bean-name>skin</managed-bean-name>
+		<managed-bean-class>org.crlr.web.application.control.SkinControl</managed-bean-class>
+		<managed-bean-scope>session</managed-bean-scope>
+		<managed-property>
+			<property-name>skin</property-name>
+			<value>ruby</value>
+		</managed-property>
+	</managed-bean>
+
+	<managed-bean>
+		<managed-bean-name>securite</managed-bean-name>
+		<managed-bean-class>org.crlr.web.application.control.SecuriteControl</managed-bean-class>
+		<managed-bean-scope>request</managed-bean-scope>
+		<managed-property>
+			<property-name>confidentialiteService</property-name>
+			<value>#{confidentialiteService}</value>
+		</managed-property>
+        <managed-property>
+            <property-name>preferencesService</property-name>
+            <value>#{preferencesService}</value>
+        </managed-property>   
+		<managed-property>
+			<property-name>menuControl</property-name>
+			<value>#{menu}</value>
+		</managed-property>
+		<managed-property>
+			<property-name>contexteUtilisateur</property-name>
+			<value>#{contexteUtilisateur}</value>
+		</managed-property>
+		<managed-property>
+			<property-name>skinControl</property-name>
+			<value>#{skin}</value>
+		</managed-property>
+	</managed-bean>
+	
+	<managed-bean>
+        <managed-bean-name>deconnexion</managed-bean-name>
+        <managed-bean-class>org.crlr.web.application.control.DeconnexionControl</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>      
+        <managed-property>
+            <property-name>contexteUtilisateur</property-name>
+            <value>#{contexteUtilisateur}</value>
+        </managed-property>
+    </managed-bean>
+</faces-config>

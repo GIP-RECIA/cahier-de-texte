@@ -1,0 +1,426 @@
+<?xml version="1.0"?>
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+	<description>Cahier de texte</description>
+	<display-name>Cahier de texte</display-name>
+	<context-param>
+		<param-name>log4jConfigLocation</param-name>
+		<param-value>classpath:log4j.properties</param-value>
+	</context-param>
+	<context-param>
+		<param-name>javax.faces.DEFAULT_SUFFIX</param-name>
+		<param-value>.xhtml</param-value>
+	</context-param>
+	
+	<!--  Pour view scope, sinon, le bean est récréer 
+	http://java.net/jira/browse/JAVASERVERFACES-1492
+	http://balusc.blogspot.com/2011/09/communication-in-jsf-20.html#ViewScopedFailsInTagHandlers
+	
+	Une fois JSF 2.2 est finalisé, basucle en true
+	
+	drag / drop : https://issues.jboss.org/browse/RF-10967
+	 -->
+	<context-param>
+        <param-name>javax.faces.PARTIAL_STATE_SAVING</param-name>
+        <param-value>false</param-value>
+    </context-param>
+	
+	<context-param>
+		<param-name>facelets.REFRESH_PERIOD</param-name>
+		<param-value>2</param-value>
+	</context-param>
+	<context-param>
+		<description>
+            Stratégie de développement pour logguer les pages mal formée
+            a mettre à false ne production.
+  </description>
+		<param-name>facelets.DEVELOPMENT</param-name>
+		<param-value>false</param-value>
+	</context-param>
+	<!-- Ces 2 paramétrages obligent le conteneur à compresser toutes les ressources RichFaces y compris les images, feuilles de style et javascript.
+	     Cette étape de compression a lieu avant l'envois au client. (Gain : chargement des pages plus rapide). -->
+	<context-param>
+        <param-name>org.ajax4jsf.COMPRESS_SCRIPT</param-name>
+        <param-value>true</param-value>
+	</context-param>     
+	<context-param>
+		<param-name>org.ajax4jsf.COMPRESS_STYLE</param-name>
+		<param-value>true</param-value>
+	</context-param>
+	<!--  Optimisation de la stratégie de chargement du style (css), un seul fichier est transféré comportant toutes 
+	      les CSS (Gain : limitation du nombre de connexion -> une seule). Par défaut le chargement est fait à la demande. -->
+	<context-param>
+        <param-name>org.richfaces.LoadStyleStrategy</param-name>
+        <param-value>ALL</param-value>
+    </context-param>
+    <!--  Optimisation de la stratégie de chargement des scripts javascript (js), un seul fichier est transféré comportant tous 
+	      les JS (Gain : limitation du nombre de connexion -> une seule). Par défaut le chargement est fait à la demande. -->
+    <context-param>
+        <param-name>org.richfaces.LoadScriptStrategy</param-name>
+        <param-value>ALL</param-value>
+    </context-param>
+    <!-- Le parser de NEKO est beaucoup plus rapide, mais on ne peut pas l'utiliser à cause de problème de raffraichissement avec les composants riches -->
+    <context-param>
+		<param-name>org.ajax4jsf.xmlparser.ORDER</param-name>
+		<param-value>TIDY</param-value>
+	</context-param>	
+	<context-param>
+		<description>Bibliothèques de balises pour Facelets</description>
+		<param-name>facelets.LIBRARIES</param-name>
+		<param-value>
+            /WEB-INF/taglib/tomahawk.taglib.xml;          
+            /WEB-INF/taglib/crlr.taglib.xml;
+            /WEB-INF/taglib/crlr-web.taglib.xml
+        </param-value>
+	</context-param>
+	<context-param>
+		<description>
+            Stratégie de stockage de l'état des pages : server ou client
+            (la valeur server est plus efficace car les pages rendues sont moins lourdes,
+            mais elle ne permet de faire "Précédent" dans le navigateur)
+  </description>
+		<param-name>javax.faces.STATE_SAVING_METHOD</param-name>
+		<param-value>server</param-value>
+	</context-param>
+	<context-param>
+		<description>
+            Activation de la compression du stockage de l'état des pages
+            (si l'état est stocké sur le serveur, la compression est inutile,
+            et sa désactivation permet d'augmenter les performances)
+        </description>
+		<param-name>org.apache.myfaces.COMPRESS_STATE_SAVING_METHOD</param-name>
+		<param-value>false</param-value>
+	</context-param>
+	<context-param>
+		<param-name>javax.faces.CONFIG_FILES</param-name>
+		<param-value>/WEB-INF/faces-config.xml,/WEB-INF/conf/jsf/menu-faces-config.xml,/WEB-INF/conf/jsf/control-faces-config.xml,/WEB-INF/conf/jsf/test-faces.xml</param-value>
+	</context-param>
+    
+    <!-- Surcharge le timeout définit dans le web.xml de tomcat.  Il faut que cela corresponde à la valeur application.session dans build.properties -->
+	<session-config>
+		<session-timeout>20</session-timeout>
+	</session-config>
+	<!-- Gestion de l'expiration de la session 
+     <context-param>
+        <param-name>org.ajax4jsf.handleViewExpiredOnClient</param-name>
+        <param-value>true</param-value>
+    </context-param>-->
+    <!-- Suppression de la gestion des erreurs myfaces, l'expiration de session est gérée par A4J dans le composant pied.
+    <context-param>
+        <param-name>org.apache.myfaces.ERROR_HANDLING</param-name>
+        <param-value>false</param-value>
+    </context-param>   -->
+    
+	<context-param>
+    <param-name>org.richfaces.skin</param-name>
+    <param-value>#{skin.skin}</param-value>
+</context-param>
+    
+    <!-- Making the RichFaces skin spread to standard HTML controls -->
+ 
+    <context-param>
+        <param-name>org.richfaces.enableControlSkinning</param-name> 
+        <param-value>false</param-value>
+    </context-param>
+ 
+ 
+ 
+    <context-param>
+        <param-name>org.richfaces.enableControlSkinningClasses</param-name>
+        <param-value>false</param-value>
+    </context-param>
+	
+	<servlet>
+		<servlet-name>Faces Servlet</servlet-name>
+		<servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>Faces Servlet</servlet-name>
+		<url-pattern>*.xhtml</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<servlet-name>Images Servlet</servlet-name>
+		<servlet-class>org.crlr.services.ImagesServlet</servlet-class>
+		<load-on-startup>2</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>Images Servlet</servlet-name>
+		<url-pattern>/images/latex/*</url-pattern>
+	</servlet-mapping>
+	<login-config>
+		<auth-method>BASIC</auth-method>
+	</login-config>
+
+	<context-param>
+		<description>Fichiers de configuration Spring</description>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>
+            /WEB-INF/classes/applicationContext.xml      
+        </param-value>
+	</context-param>
+
+	<listener>
+		<description>Listener d'écoute pour l'injection de service spring</description>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+	
+	<listener>
+    	<listener-class>org.springframework.web.context.request.RequestContextListener</listener-class> 
+	</listener>
+	
+
+	<!--  réglage de tomahawk -->
+	<filter>
+		<filter-name>Extensions</filter-name>
+		<filter-class>org.apache.myfaces.webapp.filter.ExtensionsFilter</filter-class>
+		<init-param>
+			<param-name>uploadMaxFileSize</param-name>
+			<param-value>100m</param-value>
+		</init-param>
+		<init-param>
+			<param-name>uploadThresholdSize</param-name>
+			<param-value>100k</param-value>
+		</init-param>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>Extensions</filter-name>
+		<servlet-name>Faces</servlet-name>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>Extensions</filter-name>
+		<url-pattern>/faces/myFacesExtensionResource/*</url-pattern>
+	</filter-mapping>
+
+	@bg.use.cas.auth@
+    <context-param>
+        <description>
+            The logout URL of the CAS server.
+        </description>
+        <param-name>edu.yale.its.tp.cas.client.logoutUrl</param-name>
+        <param-value>
+            @cas.url.logoutURL@
+        </param-value>
+    </context-param>
+
+    	<filter>
+       		<filter-name>CAS SLO Cluster Filter</filter-name>
+       		<filter-class>org.esco.cas.client.CasSingleLogoutClusterFilter</filter-class>
+       		<init-param>
+           		<param-name>clientHostName</param-name>
+                <!-- #######################################
+                     # A DEFINIR                           #
+                     #                                     #
+                     # Exemple : my-server.com             #
+                     ####################################### -->
+           		<param-value>clientHostName.value</param-value>
+       		</init-param>
+       		<init-param>
+           		<param-name>peersUrls</param-name>
+                <!-- ############################################################
+                     # A DEFINIR                                                #
+                     #                                                          #
+                     # Exemple :                                                #
+                     # https://my-server.com:8080,https://my-server-2.com:9090  #
+                     ############################################################ -->
+           		<param-value>peersUrls.value</param-value>
+       		</init-param>
+   	</filter>
+
+   	<filter-mapping>
+       		<filter-name>CAS SLO Cluster Filter</filter-name>
+       		<url-pattern>/*</url-pattern>
+   	</filter-mapping>
+	
+	<filter>
+	   <filter-name>CAS Single Sign Out Filter</filter-name>
+	   <filter-class>org.jasig.cas.client.session.SingleSignOutFilter</filter-class>
+	</filter>
+	<filter-mapping>
+   		<filter-name>CAS Single Sign Out Filter</filter-name>
+   		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	
+	<listener>
+    		<listener-class>org.jasig.cas.client.session.SingleSignOutHttpSessionListener</listener-class>
+	</listener>
+	
+	<filter>
+        <filter-name>CAS Validation Filter</filter-name>
+        <!-- filter-class>org.jasig.cas.client.validation.Cas20ServiceTicketValidator</filter-class -->
+        <filter-class>org.jasig.cas.client.validation.Cas20ProxyReceivingTicketValidationFilter</filter-class>
+        <init-param>
+            <param-name>casServerUrlPrefix</param-name>
+            <param-value>@cas.url.serverPrefix@</param-value>
+        </init-param>
+        <!-- url serveur http  ; b016653.fr.ad.bull.net:8080 -->
+        <init-param>
+            <param-name>serverName</param-name>
+            <param-value>@cas.url.client@</param-value>
+        </init-param>
+        <init-param>
+            <param-name>acceptAnyProxy</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <init-param>
+            <param-name>proxyCallbackUrl</param-name>
+            <param-value>https://@cas.uri.client.proxy@/@application.name@/ecrans/proxyCallback</param-value>
+        </init-param> 
+        <init-param>
+            <param-name>proxyReceptorUrl</param-name>
+            <param-value>/ecrans/proxyCallback</param-value>
+        </init-param>
+	<init-param>
+            <param-name>redirectAfterValidation</param-name>
+            <param-value>false</param-value>
+        </init-param>
+    </filter>
+    
+    <filter-mapping>
+        <filter-name>CAS Validation Filter</filter-name>
+        <!-- MBD filter on all patterns
+        <url-pattern>/ecrans/proxyCallback</url-pattern>
+        -->
+        <url-pattern>/*</url-pattern>
+
+        <!-- 
+        @cas.filter.pattern@
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
+        <dispatcher>INCLUDE</dispatcher> -->
+    </filter-mapping>
+	
+	<filter>
+		<filter-name>CAS Authentication Filter</filter-name>
+  		<filter-class>org.jasig.cas.client.authentication.AuthenticationFilter</filter-class>
+  		<init-param>
+    		<param-name>casServerLoginUrl</param-name>
+    		<param-value>@cas.url.loginURL@</param-value>
+  		</init-param>
+  		<init-param>
+    		<param-name>serverName</param-name>
+    		<param-value>@cas.url.client@</param-value>
+  		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>CAS Authentication Filter</filter-name>
+		<url-pattern>@cas.filter.pattern@</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>FORWARD</dispatcher>
+		<dispatcher>INCLUDE</dispatcher>
+	</filter-mapping>
+
+	<!-- MBD: only one Validation Filter
+	<filter-mapping>
+        <filter-name>CAS Validation Filter</filter-name>
+        <url-pattern>/*</url-pattern>   
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
+        <dispatcher>INCLUDE</dispatcher>    
+    </filter-mapping>
+    	-->
+
+	<filter>
+  		<filter-name>CAS HttpServletRequest Wrapper Filter</filter-name>
+  		<filter-class>org.jasig.cas.client.util.HttpServletRequestWrapperFilter</filter-class>
+	</filter>
+	
+	<filter-mapping>
+   		<filter-name>CAS HttpServletRequest Wrapper Filter</filter-name>
+   		<url-pattern>@cas.filter.pattern@</url-pattern>
+   		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>FORWARD</dispatcher>
+		<dispatcher>INCLUDE</dispatcher>
+	</filter-mapping>
+	@end.use.cas.auth@
+	
+	<!--  filtre des éditions -->
+	<filter>
+        <filter-name>EditionFilter</filter-name>
+        <filter-class>
+            org.crlr.web.servlet.filter.EditionFilter
+        </filter-class>
+        
+    </filter>
+
+    <filter-mapping>
+        <filter-name>EditionFilter</filter-name>
+        <url-pattern>/edition.pdf</url-pattern>
+        <dispatcher>FORWARD</dispatcher>
+        <dispatcher>INCLUDE</dispatcher>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>ERROR</dispatcher>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>EditionFilter</filter-name>
+        <url-pattern>/edition</url-pattern>
+        <dispatcher>FORWARD</dispatcher>
+        <dispatcher>INCLUDE</dispatcher>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>ERROR</dispatcher>
+    </filter-mapping>
+	
+   
+    <!-- listener de chargement du fichier properties des messages -->
+    <listener>
+        <listener-class>
+            org.crlr.web.servlet.listener.MessagesValidationListener
+        </listener-class>
+    </listener>
+    
+    <filter>
+        <filter-name>Encoding</filter-name>
+        <filter-class>
+            org.springframework.web.filter.CharacterEncodingFilter
+        </filter-class>
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+        <init-param>
+            <param-name>forceEncoding</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>Encoding</filter-name>
+        <url-pattern>*.xhtml</url-pattern>
+    </filter-mapping>
+     
+     
+     <error-page>
+        <exception-type>java.lang.Exception</exception-type>
+        <location>/deconnexion.jsp</location>
+    </error-page>
+
+    <welcome-file-list>
+    <welcome-file>
+          index.jsp
+      </welcome-file>
+    </welcome-file-list>   
+    
+    <servlet>
+
+   <servlet-name>Resource Servlet</servlet-name>
+
+   <servlet-class>org.richfaces.webapp.ResourceServlet</servlet-class>
+
+   <load-on-startup>1</load-on-startup>
+
+</servlet>
+
+
+
+<servlet-mapping>
+
+   <servlet-name>Resource Servlet</servlet-name>
+
+   <url-pattern>/org.richfaces.resources/*</url-pattern>
+
+</servlet-mapping>
+   
+</web-app>

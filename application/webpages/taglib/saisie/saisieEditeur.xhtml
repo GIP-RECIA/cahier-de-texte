@@ -1,0 +1,80 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:rich="http://richfaces.org/rich"
+    xmlns:cr="urn:crlr">
+<ui:composition>
+	<ui:remove>
+        Attention ! Il est recommandé de fournir un identifiant pour le lien. Dans les tableaux par exemple,
+        un bug a été rencontré lorsque l'on n'en met pas.
+    </ui:remove>
+	<ui:remove>
+		<!-- 
+        saisieEditeur : composant permettant le rendu d'un
+        champ de formulaire de type éditeur html riche.
+        
+        propriétés : 
+        * id : identifiant du composant.
+        - titre : libellé (optionnel) du champ. 
+        - desc : description du champ (tooltip).
+        * valeur : valueBinding
+        - modifiable
+        - largeur : largeur du champ. par défaut 250 pixels. 
+        - hauteur : hauteur du champ. par défaut 50 pixels.        
+        - decalageTitreDroite : Décalage du libellé sur la droite.
+        - decalageTitreGauche : Décalage du libellé sur la gauche.
+    -->
+	</ui:remove>
+	<c:set var="modifiable" value="${empty modifiable ? true : modifiable}" />
+	<c:set var="largeur" value="${not empty largeur ? largeur : '600'}" />
+	<c:set var="hauteur" value="${not empty hauteur ? hauteur : '150'}" />
+	<c:set var="decalageTitreDroite" value="${empty decalageTitreDroite ? '10' : decalageTitreDroite}"/> 
+    <c:set var="decalageTitreGauche" value="${empty decalageTitreGauche ? '0' : decalageTitreGauche}"/>
+	<c:set var="id" value="${empty id ? cr:idcompteur('saisieEditor') : id}" />
+	<c:set var="rendered" value="${empty rendered ? true : rendered}" />
+	<c:set var="style" value="${empty rendered ? true : rendered}" />
+     <c:set var="styleClassError" value="${empty styleClassError or !styleClassError  ? '' : 'border-color:red;'}" />
+
+
+	<c:choose>
+		<c:when test="${not empty titre}">
+			<h:outputLabel value="#{titre}"
+				style="text-align: left;padding-right: ${decalageTitreDroite}px; padding-left: ${decalageTitreGauche}px;" rendered="#{rendered}"
+				styleClass="libelle" title="${desc}" />
+		</c:when>
+	</c:choose>
+  
+  <ui:remove>
+  customPlugins="tinyMCEPlugins"
+  plugins="fullscreen,dragmath" 
+  </ui:remove>
+  
+  
+	<rich:editor readonly="#{not modifiable}" theme="advanced" language="fr" style="#{styleClassError}"
+		rendered="#{rendered}" id="#{id}" width="#{largeur}"		            
+		plugins="fullscreen"	
+        toolbar="Custom"	
+        height="#{hauteur}" viewMode="" value="#{valeur}" useSeamText="false" onchange="#{onchange}"
+		
+		>
+		
+		<f:param name="theme_advanced_toolbar_location" value="top" />
+		<f:param name="theme_advanced_toolbar_align" value="left" />
+		<f:param name="content_css" value="#{resource['css:richeditor.css']}"/>
+		<f:param name="theme_advanced_font_sizes" value="10 pt=10px,12 pt=12px,14 pt=14px,16 pt=16px,20 pt=20px,24 pt=24px,26 pt=26px,30 pt=30px,36 pt=36px" />
+    
+    <c:choose>
+        <c:when test="#{modifiable}">
+	       <f:facet name="config">customConfig : '#{resource['js:editor.js']}'</f:facet>
+	    </c:when>
+	    <c:otherwise>
+	       <f:facet name="config">customConfig : '#{resource['js:editorReadOnly.js']}'</f:facet>
+	    </c:otherwise>
+    </c:choose>
+	</rich:editor> 
+  
+	
+</ui:composition>
+</html>

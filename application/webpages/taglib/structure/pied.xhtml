@@ -1,0 +1,72 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:t="http://myfaces.apache.org/tomahawk" 
+    xmlns:cr="urn:crlr"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:rich="http://richfaces.org/rich">
+<ui:composition>
+
+ 
+<h:outputScript library="js"
+                    name="jquery-ui-1.8.20.custom.js"
+                    target="head" />
+                    
+<h:outputStylesheet library="css/ui-lightness" name="jquery-ui-1.8.20.custom.css" target="head" />
+
+<h:outputScript library="js" name="erreurMessages.js" target="head"/>
+
+<div class="messagesDiv">
+    <table cellspacing="0" cellpadding="0" class="centpourcent">
+        <tr>
+                
+            <td class="boutonMessages"><a href="#"
+                onclick="afficherDetailMessages();"                   
+                title="Déplier/Replier la zone de messages"> <img
+                src="#{resource[ 'images/icones:plus.png' ]}"
+                id="listeMessagesAction" alt="Déplier/Replier la zone de messages" />
+            </a></td>
+            <td class="zoneMessages" id="zoneDeMessages">
+            
+                <a4j:outputPanel id="zoneMessages" layout="block" ajaxRendered="true">
+                        
+                    
+                    
+                        
+                    <div id="messages"
+                    onclick="afficherDetailMessages();"
+                    title="Déplier/Replier la zone de messages">
+                    
+                    <c:if test="${cr:haveMessagesError() and !cr:haveOneMessage()}">
+                        <div style="margin-bottom:5px;"><t:outputText value="${cr:messagesStatut()}"/></div>
+                    </c:if>
+                    
+                    <rich:messages passedLabel="Data is allowed to be stored." showDetail="true" showSummary="false" layout="table"  
+                        style="height:20px;"         
+                        errorStyle="background:url(#{resource['images/icones:message-erreur.gif']}) no-repeat;padding:0 0 2px 20px;"
+                        warnStyle="background: url(#{resource['images/icones:message-avertissant.gif']}) no-repeat; padding:0 0 2px 20px; color: #DD0000"
+                        infoStyle="background: url(#{resource['images/icones:message-information.gif']}) no-repeat;padding:0 0 2px 20px;"            
+                        />      
+                    </div>
+                    
+                    <rich:jQuery selector="#messages" query="data('haveMessagesAvertissant', ${cr:haveMessagesError()})" timing="immediate"/>               
+                    <rich:jQuery selector="#messages" query="data('haveMessages', ${cr:haveMessages()})" timing="immediate"/> 
+                    <rich:jQuery selector="#messages" query="data('haveMessagesBloquant', ${cr:haveMessagesBloquant()})" timing="immediate"/> 
+                    <rich:jQuery selector="#messages" query="data('plusImage', '#{resource['images/icones:plus.png']}' )"/>
+                    <rich:jQuery selector="#messages" query="data('minusImage', '#{resource['images/icones:minus.png']}' )"/>
+                    
+                    
+                    <script type="text/javascript">
+                        handleChargerZoneDeMessages();
+                    </script>
+                    
+                </a4j:outputPanel>                  
+            </td>
+            <td class="applicationSimulation" style="#{empty contexteUtilisateur.utilisateurDTOOrigine ? 'display: none;' : ''}">Simulation : #{contexteUtilisateur.utilisateurDTO.userDTO.nom} #{contexteUtilisateur.utilisateurDTO.userDTO.prenom}</td>
+        </tr>
+    </table>
+</div>
+</ui:composition>
+</html>

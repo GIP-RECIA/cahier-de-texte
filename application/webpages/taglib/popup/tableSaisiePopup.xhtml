@@ -1,0 +1,46 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:rich="http://richfaces.org/rich" 
+  xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:cr="urn:crlr">
+<ui:composition>
+	<ui:remove>
+		<!-- 
+        tableSaisiePopup : composant permettant le rendu d'un
+        d'un tableau au sein d'une popup.
+        Un lien selectionné est déjà présent, ainsi qu'une barre de paggination.
+        La variable ligne repésente chaque ligne de a liste.
+        
+        propriétés : 
+        * idPopup : identifiant unique de la popup qui embarque la table (ce composant).        
+        - liste : la liste des objets à afficher. 
+        - valeur : représente l'occurrence selectionnée (un objet de la liste).
+        - bean : le controleur        
+        - cible : la cible définie dans le contrôleur (méthode).
+        - render : la popup est automatique raffraichie, d'autres sections peuvent être renseignées.
+        - nbLignes : nombre de ligne par page. 
+        - largeur : largeur de la table (200 par defaut)      
+    -->
+
+	</ui:remove>
+    <c:set var="largeur" value="${empty largeur ? '400' : largeur}"/>
+    <c:set var="avecPagination" value="${empty avecPagination ? true : avecPagination}"/>
+    <c:set var="fermetureSiMsg" value="${empty fermetureSiMsg ? false : fermetureSiMsg}"/>
+    <cr:table idTable="#{idPopup}_table" liste="#{liste}" rows="#{nbLignes}" rendered="#{rendered}" largeur="#{largeur}"
+        avecPagination="#{avecPagination}">
+       
+        <cr:colonne id="#{idPopup}_liens_column" taille="16" libelleColonne="">
+            <cr:lien id="#{idPopup}_liens_select" bean="#{bean}" cible="#{cible}"
+                     image="selectionner.gif" desc="Sélectionner" render="#{render}"
+                     oncomplete="#{oncomplete} if (#{facesContext.maximumSeverity==null or fermetureSiMsg}) { #{rich:component(idPopup)}.hide(); }">
+                     <f:setPropertyActionListener value="#{ligne}" target="#{valeur}" />                        
+           </cr:lien>
+        </cr:colonne>
+        <ui:insert />
+        
+    </cr:table>
+
+</ui:composition>
+</html>

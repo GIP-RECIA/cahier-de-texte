@@ -1,0 +1,887 @@
+<?xml version="1.0"?>
+
+<project name="CRLR-ENT-NAME" default="deploy" basedir=".">
+  <taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="./ant_lib/ant-contrib.jar"/>
+  <!-- Fichier de configuration -->
+	<property file="./application/properties/version.properties"/>  
+	<property file="build.properties" />
+	<property file="dev.properties"/>
+	
+	<property name="dist.name" value="ENT-${dist.name.base}_V${application.version}" />
+	
+	
+	<!-- Options de compilation -->
+	<property name="compile.debug" value="true" />
+	<property name="compile.deprecation" value="true" />
+	<property name="compile.optimize" value="true" />
+  
+	<!-- Propriétés de common crlr-->
+  <property name="project.commun" value="./crlr-commons" />
+  <!-- Chemin des librairies communes -->
+	<property name="project.commun.lib" value="${project.commun}/lib" />
+	<!-- Chemins Sources -->
+	<property name="project.commun.src.dir" value="${project.commun}/src/main/java" />
+	<property name="project.commun.src.report" value="${project.commun}/src/main/jasperreport" />
+	<property name="project.commun.test.dir" value="${project.commun}/src/test/java" />
+	<!-- Chemins Compilations -->
+	<property name="project.commun.build" value="${project.commun}/build" />
+	<property name="project.commun.build.main.dir" value="${project.commun.build}/classes" />
+	<property name="project.commun.build.test.dir" value="${project.commun.build}/test" />
+	<property name="project.common.out.jar" value="${project.commun}/jar" />
+	
+	<!-- Chemin junit -->
+	<property name="junit_path" value="${project.commun.lib}/junit-3.8.2.jar"/>  
+  
+  <!-- projet.common -->  
+  <mkdir dir="${project.commun.build}"/>
+  <mkdir dir="${project.commun.build.main.dir}"/>
+  <mkdir dir="${project.commun.build.test.dir}"/>			
+	<mkdir dir="${project.common.out.jar}"/>
+	
+	<target name="info" description="Display configuration">
+			<echo message="********************" />
+			<echo message="*      Ant         *" />
+			<echo message="********************" />
+			<echo message="Ant  version          : ${ant.version}" />
+			<echo message="Java version          : ${ant.java.version}" />
+			<echo message="Java home directory   : ${java.home}" />
+			<echo message="Java classpath		     : ${java.class.path}" />
+		  <echo message="Java classpath		     : ${project.common.lib}" />
+   </target>
+	
+		<target name="clean_commun" depends="info" description="Removes all generated files">
+			<delete>
+				<fileset dir="${project.commun.build}" includes="**/*.class" />
+				<fileset dir="${project.common.out.jar}" includes="**/*.jar" />
+			</delete>			
+		</target>
+	
+	<!-- ClassPath -->
+		<path id="compile_commun.classpath">
+				<!-- Librairies locales -->
+				<fileset dir="${project.commun.lib}" includes="**/*.jar" />	
+        <fileset dir="${project.common.out.jar}" includes="**/*.jar" />			
+			</path>
+	
+		<target name="compile_common" depends="clean_commun">
+			<javac srcdir="${project.commun.src.dir}" destdir="${project.commun.build.main.dir}" debug="on" encoding="UTF-8" >
+				<classpath refid="compile_commun.classpath" />
+			</javac>			
+		</target>
+		
+		<!-- Build JAR files-->
+		<target name="buildJar_common" depends="compile_common">
+			<jar jarfile="${project.common.out.jar}/crlr-commons.jar" basedir="${project.commun.build.main.dir}" />			
+		</target>
+	
+		<target name="compile_common_test" depends="buildJar_common">
+			<javac srcdir="${project.commun.test.dir}" destdir="${project.commun.build.test.dir}" debug="on" encoding="UTF-8">
+				<classpath refid="compile_commun.classpath" />
+			</javac>
+			<copy todir="${project.commun.build.test.dir}">
+				<fileset dir="${project.commun.test.dir}" includes="**/*.txt,**/*.properties" />
+			</copy>	
+		</target>
+
+
+   <target name="common_test" depends="compile_common_test" description="Executer tests avec JUnit">
+    <junit fork="yes" haltonerror="false" printsummary="on">
+      <formatter type="plain" usefile="false" />
+      <batchtest>
+	        <fileset dir="${project.commun.test.dir}">
+                <include name="**/*Test.java"/>
+          </fileset>
+	    </batchtest>
+      <classpath>      
+        <pathelement location="${junit_path}"/> 
+        <pathelement location="${project.commun.build.main.dir}"/>
+        <pathelement location="${project.commun.build.test.dir}"/>
+        <pathelement location="${project.commun.lib}"/>
+      </classpath>
+    </junit>
+  </target>
+  
+  
+  <!-- Projet application --> 
+	
+	<!-- Propriétés de l'application -->
+  <property name="project.application" value="./application" />
+  <!-- Chemin des librairies de l'application -->
+  <property name="project.application.lib" value="${project.application}/lib" />
+	
+	<!-- Chemins Sources -->
+	<property name="project.application.src.dir" value="${project.application}/src/main/java" />
+	<property name="project.application.src.report" value="${project.application}/src/main/jasperreport" />
+	<property name="project.application.src.dir.meta-inf" value="${project.application.src.dir}/META-INF" />
+
+	<property name="project.application.test.dir" value="${project.application}/src/test/java" />
+	
+	<!-- Chemins Annexes -->
+	<property name="project.application.properties" value="${project.application}/properties" />
+	<property name="project.application.db" value="${project.application}/db" />
+	<property name="project.application.webpages" value="${project.application}/webpages" />	
+	<property name="project.application.webpages.css" value="${project.application.webpages}/css" />
+	<property name="project.application.webpages.dragmath" value="${project.application.webpages}/dragmath" />
+	<property name="project.application.webpages.ecrans" value="${project.application.webpages}/ecrans" />
+	<property name="project.application.webpages.images" value="${project.application.webpages}/images" />
+	<property name="project.application.webpages.taglib" value="${project.application.webpages}/taglib" />
+	<property name="project.application.webpages.js" value="${project.application.webpages}/js" />
+	<property name="project.application.webpages.conf" value="${project.application.webpages}/conf" />
+	<property name="project.application.importEDT" value="${project.application}/importEDT" />
+	
+	<!-- Chemins Compilations -->
+	<property name="project.application.build" value="${project.application}/build" />
+	<property name="project.application.build.test.dir" value="${project.application.build}/test" />
+	<property name="project.application.build.web" value="${project.application.build}/WEB-INF" />
+	<property name="project.application.build.main.dir" value="${project.application.build.web}/classes" />	
+	<property name="project.application.build.main.dir.meta-inf" value="${project.application.build.main.dir}/META-INF" />
+	<property name="project.application.build.css" value="${project.application.build}/resources/css" />	
+	<property name="project.application.build.dragmath" value="${project.application.build}/dragmath" />
+	<property name="project.application.build.ecrans" value="${project.application.build}/ecrans" />
+	<property name="project.application.build.images" value="${project.application.build}/resources/images" />
+	<property name="project.application.build.js" value="${project.application.build}/resources/js" />
+	<property name="project.application.build.taglib" value="${project.application.build.web}/taglib" />
+	<property name="project.application.build.conf" value="${project.application.build.web}/conf" />
+	<property name="project.application.build.lib" value="${project.application.build.web}/lib" />
+	
+	<!-- Chemin distribution WAR -->
+	<property name="project.dist" value="dist" />
+	
+	<!-- Properties de l'application -->
+	<property file="${project.application.properties}/config.properties" />
+	
+	<!-- ClassPath -->
+	<path id="compile_application.classpath">	
+		<!-- Librairies Tomcat -->
+		<fileset dir="${tomcat.home}/lib" includes="**/*.jar" />
+		<!-- Librairies locales -->
+		<fileset dir="${project.application.lib}" includes="**/*.jar" />
+		<!-- Librairies communes -->
+    <fileset dir="${project.commun.lib}" includes="**/*.jar" />	
+    <fileset dir="${project.common.out.jar}" includes="**/*.jar" />			
+	</path>	
+	
+	<!-- Target clean -->
+	<target name="clean" description="Suppression des répertoires ${project.application.build}">
+		<delete dir="${project.application.build}" />		
+	</target>
+	
+	<!-- Target prepare -->
+	<available file="CHANGELOG" type="file" property="changelogExists" />
+	<target name="prepareCHANGELOG" unless="changelogExists">
+		<echo message="Le fichier CHANGELOG contient l'historique des modifications de la Portlet" level="info" />
+		<touch file="CHANGELOG" />
+	</target>
+	
+	<target name="prepare" description="Preparation de l'environnement de travail" >
+		<mkdir dir="${project.application.build.main.dir}" />
+		<mkdir dir="${project.application.build.main.dir.meta-inf}" />		
+		<mkdir dir="${project.application.src.dir}" />
+		<mkdir dir="${project.application.properties}" />
+		<mkdir dir="${project.application.lib}" />
+		<mkdir dir="${project.application.webpages.images}" />
+		<mkdir dir="${project.application.build.css}" />
+		<mkdir dir="${project.application.build}/importEDT" />
+		<mkdir dir="${project.application.db}" />
+		<mkdir dir="${project.application.webpages.taglib}" />
+		<mkdir dir="${project.dist}" />		
+		
+		<antcall target="prepareCHANGELOG" />
+		
+	</target>
+	
+	<!-- Target compile -->
+	<target name="compile" description="Compilation" depends="prepare">
+		<javac srcdir="${project.application.src.dir}" destdir="${project.application.build.main.dir}" debug="${compile.debug}" 
+			deprecation="${compile.deprecation}" optimize="${compile.optimize}" encoding="UTF-8">
+			<classpath refid="compile_application.classpath" />
+		</javac>
+		<copy todir="${project.application.build.main.dir.meta-inf}" overwrite="true">
+			<fileset dir="${project.application.src.dir.meta-inf}" />
+		</copy>
+		<antcall target="compileJRXML" />		
+		<copy todir="${project.application.build.main.dir}" overwrite="true">
+			<fileset dir="${project.application.src.report}" includes="**/*.jasper" />
+			
+			<fileset dir="${project.application.src.report}" includes="**/*.jrxml" />
+		</copy>	
+		
+		<copy todir="${project.application.build.main.dir}" overwrite="true">
+			<fileset dir="${project.application.src.dir}" includes="**/*.sql" />
+		</copy>	 
+	</target>
+	
+	<!-- Target init -->
+	<target name="init" depends="compile">
+		<!-- Copie des fichiers de configuration -->
+		<copy todir="${project.application.build.main.dir}" overwrite="true">
+			<fileset dir="${project.application.properties}" />
+			<fileset file="dev.properties" />
+		</copy>
+		<replace file="${project.application.build.main.dir}/log4j.properties" token="[APPLICATION.NAME]" value="${application.name}" />
+		<replace file="${project.application.build.main.dir}/log4j.properties" token="[DEPLOY.HOME]" value="${deploy.home}" />
+		
+		<replace file="${project.application.build.main.dir}/logging.properties" token="[APPLICATION.NAME]" value="${application.name}" />
+		<replace file="${project.application.build.main.dir}/logging.properties" token="[DEPLOY.HOME]" value="${deploy.home}" />
+		
+		<!-- Copie des feuilles de style -->
+		<copy todir="${project.application.build.css}">
+			<fileset dir="${project.application.webpages.css}" />
+		</copy>
+		
+		<copy todir="${project.application.build.dragmath}">
+			<fileset dir="${project.application.webpages.dragmath}" />
+		</copy>
+		
+		<copy todir="${project.application.build.ecrans}">
+			<fileset dir="${project.application.webpages.ecrans}" />
+	    </copy>
+		<!-- Copie des ressources statiques -->
+		<copy todir="${project.application.build.images}">
+		     <fileset dir="${project.application.webpages.images}" />
+		</copy>
+		
+		<copy todir="${project.application.build.js}">
+		     <fileset dir="${project.application.webpages.js}" />
+		</copy>		
+
+		<!-- Copie des taglibs -->
+		<copy todir="${project.application.build.taglib}">
+			<fileset dir="${project.application.webpages.taglib}" />
+		</copy>
+		
+		<copy todir="${project.application.build.conf}">
+			<fileset dir="${project.application.webpages.conf}" />
+		</copy>
+		<copy todir="${project.application.build}/importEDT">
+			<fileset dir="${project.application.importEDT}" />
+		</copy>
+		<!-- Copie des librairies -->
+		<copy todir="${project.application.build.lib}">
+			<fileset dir="${project.application.lib}" excludes="servlet-api-2.5.jar,el-api-2.2.jar" />
+			<fileset dir="${project.common.out.jar}" />
+			<fileset dir="${project.commun.lib}" />
+		</copy>
+    
+    
+    <!-- traitement de la taglib page.xhtml -->
+    <filterset id="session.timeout">
+		        <filter token="application.session.timeout" value="${application.session}"/>		      	     	
+	  </filterset>  
+    <copy file="${project.application.webpages.taglib}/presentation/page.xhtml" tofile="${project.application.build.taglib}/presentation/page.xhtml" filtering="true" encoding="UTF-8" overwrite="yes">
+		    <filterset refid="session.timeout"/>
+		</copy>
+  
+		
+		<!-- traitement du web.xml -->
+		<if>
+		 <istrue value="${cas.auth}"/>
+		   <then>
+		     <filterset id="auth.cas">
+		        <filter token="bg.use.cas.auth" value=""/>
+		        <filter token="end.use.cas.auth" value=""/>
+		     	<filter token="cas.url.logoutURL" value="${cas.finalURL}/logout?service=%s"/>
+		        <filter token="cas.url.loginURL" value="${cas.finalURL}${cas.uri.login}"/>
+		        <filter token="cas.url.validate" value="${cas.finalURL}${cas.uri.validate}"/>
+			<filter token="cas.url.serverPrefix" value="${cas.finalURL}"/>
+		        <filter token="cas.url.client" value="${cas.uri.client}"/>
+		        <filter token="cas.uri.client.proxy" value="${cas.uri.client.proxy}"/>
+		        
+		     	<filter token="cas.filter.pattern" value="${cas.filter.pattern}"/>		    
+		     	
+		     	<filter token="application.name" value="${application.name}" />
+		     </filterset>                                                    
+		   </then>
+		   <else>
+		     <filterset id="auth.cas" >
+		    	<filter token="bg.use.cas.auth" value="&lt;!--"/>
+		        <filter token="end.use.cas.auth" value="--&gt;"/>
+		     	<filter token="cas.url.logoutURL" value=""/>
+			<filter token="cas.url.loginURL" value=""/>
+			<filter token="cas.url.validate" value=""/>
+			<filter token="cas.url.serverPrefix" value=""/>
+			<filter token="cas.url.client" value=""/>
+		     	<filter token="cas.filter.pattern" value=""/>	
+		      </filterset>
+		   </else> 
+		</if>
+		<!-- Copie web.xml -->
+		<copy file="${project.application.webpages}/web.xml" tofile="${project.application.build.web}/web.xml" filtering="true" encoding="UTF-8" overwrite="yes">
+		    <filterset refid="auth.cas"/>
+		</copy>
+		
+		<copy file="${project.application.webpages}/faces-config.xml" tofile="${project.application.build.web}/faces-config.xml" overwrite="true" />
+		<copy file="${project.application.webpages}/index.jsp" tofile="${project.application.build}/index.jsp" overwrite="true" />
+		<copy file="${project.application.webpages}/deconnexion.jsp" tofile="${project.application.build}/deconnexion.jsp" overwrite="true" />
+		<copy file="${project.application.webpages}/deconnexionCas.jsp" tofile="${project.application.build}/deconnexionCas.jsp" overwrite="true" />
+		<copy file="${project.application.webpages}/edition" tofile="${project.application.build}/edition" />
+		<copy file="${project.application.webpages}/edition.pdf" tofile="${project.application.build}/edition.pdf" />
+		<copy file="${project.application.webpages}/racvision.jsp" tofile="${project.application.build}/racvision.jsp" overwrite="true" />
+		
+		<replace file="${project.application.build}/deconnexion.jsp" token="[APPLICATION.NAME]" value="${application.name}" />
+		
+	</target>
+	
+	<target name="copy" description="Utilisé dans eclipse pour éviter le délai d'un deploiment pour tester les
+  petits changements">
+		<copy todir="${deploy.home}/${application.name}/resources/js">
+			<fileset dir=".\application\webpages\js" includes="**/*.js, **/*.css, **/*.gif, **/*.png" />
+			
+		</copy>
+		
+		<copy todir="${deploy.home}/${application.name}/WEB-INF/classes">
+		    <fileset dir="${project.application.src.report}">
+                    <include name="**/*.jrxml" />
+                     <include name="**/*.jasper" />
+                     <include name="**/*.sql" />
+                </fileset>
+		</copy>
+		
+		        
+        <copy todir="${deploy.home}/${application.name}/resources/css">
+			<fileset dir=".\application\webpages\css">
+                    <include name="**/*.css" />
+                    <include name="**/*.png" />
+                </fileset>
+        </copy>
+        
+        <copy todir="${deploy.home}/${application.name}/resources/images">
+			<fileset dir=".\application\webpages\images">
+                    <include name="**/*.gif" />
+                </fileset>
+        </copy>
+        
+        <copy todir="${deploy.home}/${application.name}/ecrans">
+			<fileset dir=".\application\webpages\ecrans">
+                    <include name="**/*.xhtml" />
+                </fileset>
+        </copy>
+        
+        
+        <copy todir="${deploy.home}/${application.name}/WEB-INF/taglib">
+			<fileset dir=".\application\webpages\taglib">
+                    <include name="**/*.xhtml" />
+                </fileset>
+        </copy>
+                
+        <copy todir="${deploy.home}/${application.name}/dragmath">
+			<fileset dir=".\application\webpages\dragmath" includes="**/*.js,**/*.html,**/*.jar" />
+                    
+        </copy>
+
+    </target>
+	
+	<!-- Target deploy -->
+	<target name="deploy" description="Déploiement" depends="buildJar_common,init">		
+		<!-- Copie webapps -->
+		<copy todir="${deploy.home}/${application.name}/resources/css">
+			   <fileset dir="${project.application.build.css}" />			   
+		</copy>
+		<copy todir="${deploy.home}/${application.name}/resources/js">
+			  <fileset dir="${project.application.build.js}" />		   
+		</copy>
+		<copy todir="${deploy.home}/${application.name}/dragmath">
+			  <fileset dir="${project.application.build}/dragmath" />		   
+		</copy>
+		<copy todir="${deploy.home}/${application.name}/ecrans">
+			   <fileset dir="${project.application.build}/ecrans" />	   
+		</copy>
+		<copy todir="${deploy.home}/${application.name}/resources/images">
+			   <fileset dir="${project.application.build.images}" />	   
+		</copy>
+		<copy todir="${deploy.home}/${application.name}/WEB-INF">
+			  <fileset dir="${project.application.build}/WEB-INF" excludes="test/*" />		   
+		</copy>
+		<copy todir="${deploy.home}/${application.name}/importEDT">
+			  <fileset dir="${project.application.build}/importEDT" />		   
+		</copy>
+		<copy file="${project.application.build}/index.jsp" tofile="${deploy.home}/${application.name}/index.jsp" overwrite="true" />
+		<copy file="${project.application.build}/deconnexion.jsp" tofile="${deploy.home}/${application.name}/deconnexion.jsp" overwrite="true" />
+		<copy file="${project.application.build}/deconnexionCas.jsp" tofile="${deploy.home}/${application.name}/deconnexionCas.jsp" overwrite="true" />
+		
+		
+		<copy file="${project.application.build}/edition" tofile="${deploy.home}/${application.name}/edition" />
+		<copy file="${project.application.build}/edition.pdf" tofile="${deploy.home}/${application.name}/edition.pdf" />
+		<copy file="${project.application.build}/racvision.jsp" tofile="${deploy.home}/${application.name}/racvision.jsp" overwrite="true" />
+		
+		<chmod file="${deploy.home}/${application.name}/dragmath/mimetex/mimetex.linux" perm="755"/>
+		
+		
+		
+        <if>
+          <isset property="owner"/>
+          <then>
+            <chown owner="${owner}" type="dir">
+              <fileset dir="${deploy.home}/${application.name}" />
+            </chown>
+            <chown owner="${owner}" type="file">
+              <fileset dir="${deploy.home}/${application.name}" />
+            </chown>
+          </then>
+        </if>
+        <if>
+          <isset property="group"/>
+          <then>
+            <chgrp group="${group}" type="dir">
+              <fileset dir="${deploy.home}/${application.name}" />
+            </chgrp>
+            <chgrp group="${group}" type="file">
+              <fileset dir="${deploy.home}/${application.name}" />
+            </chgrp>
+          </then>
+        </if>
+		    
+	</target>
+	
+	<!-- Target undeploy -->
+	<target name="undeploy" description="Suppression du déploiement mais pas des pièces jointes">
+			<delete dir="${deploy.home}/${application.name}/css" />
+			<delete dir="${deploy.home}/${application.name}/dragmath" />
+			<delete dir="${deploy.home}/${application.name}/ecrans" />
+			<delete dir="${deploy.home}/${application.name}/images" />
+			<delete dir="${deploy.home}/${application.name}/js" />
+			<delete dir="${deploy.home}/${application.name}/WEB-INF" />
+			<delete dir="${deploy.home}/${application.name}/importEDT" />
+			<delete file="${deploy.home}/${application.name}/deconnexion.jsp" />
+			<delete file="${deploy.home}/${application.name}/deconnexionCas.jsp" />
+			<delete file="${deploy.home}/${application.name}/edition" />
+			<delete file="${deploy.home}/${application.name}/edition.pdf" />
+			<delete file="${deploy.home}/${application.name}/index.jsp" />
+			<delete file="${deploy.home}/${application.name}/racvision.jsp" />
+	</target>
+	
+	<target name="undeploy-all" description="Suppression de la partie déployée">
+	    <delete dir="${deploy.home}/${application.name}"/>
+	</target>
+	
+	
+	<!-- Target buildwar -->
+	<target name="buildwar" description="Construit une archive WAR" depends="common_test,init">
+		<jar basedir="${project.application.build}" destfile="${project.dist}/${application.name}.war" />
+	</target>
+	
+	<target name="init-database" description="Initialisation de la base de données.">
+	   <sql
+        driver="${db.driver}"
+        url="${db.url}"
+        userid="${db.user}"
+        password="${db.password}"
+         keepformat="true"
+        encoding="UTF-8"
+    delimiter="une chaine pour empecher des erreurs"
+        strictDelimiterMatching="false"
+        src="${project.application.db}/database.sql"
+        print="yes" >
+    
+        <classpath>
+	         <pathelement location="${project.application.lib}/${db.jar}"/>
+        </classpath>
+     </sql>
+  </target>
+  
+  <target name="ent3-0-update-database" description="Mise à jour de la base de données pour l' ent 3.0.">
+	   <sql
+        driver="${db.driver}"
+        url="${db.url}"
+        userid="${db.user}"
+        password="${db.password}"
+        src="${project.application.db}/update_ent_3_0.sql"
+        print="yes" >
+    
+        <classpath>
+	         <pathelement location="${project.application.lib}/${db.jar}"/>
+        </classpath>
+     </sql>
+  </target>
+
+  <target name="ent3-2-update-database" description="Mise à jour de la base de données pour l' ent 3.2.">
+	   <sql
+        driver="${db.driver}"
+        url="${db.url}"
+        userid="${db.user}"
+        password="${db.password}"
+        src="${project.application.db}/update_ent_3_2.sql"
+        print="yes" >    
+        <classpath>
+	         <pathelement location="${project.application.lib}/${db.jar}"/>
+        </classpath>
+     </sql>
+  </target>
+  
+  <target name="ent3-5-update-database" description="Mise à jour de la base de données pour l' ent 3.5.">
+	   <sql
+        driver="${db.driver}"
+        url="${db.url}"
+        userid="${db.user}"
+        password="${db.password}"
+        src="${project.application.db}/update_ent_3_5.sql"
+        print="yes" >    
+        <classpath>
+	         <pathelement location="${project.application.lib}/${db.jar}"/>
+        </classpath>
+     </sql>
+  </target>
+
+  <target name="ent4-1-update-database" description="Mise à jour de la base de données pour l' ent 4.1.">
+	   <sql
+        driver="${db.driver}"
+        url="${db.url}"
+        userid="${db.user}"
+        password="${db.password}"
+        src="${project.application.db}/update_ent_4_1.sql"
+        print="yes" >    
+        <classpath>
+	         <pathelement location="${project.application.lib}/${db.jar}"/>
+        </classpath>
+     </sql>
+  </target>
+  
+  <target name="ent5-0-update-database" description="Mise à jour de la base de données pour l' ent 5.0.">
+	   <sql
+        driver="${db.driver}"
+        url="${db.url}"
+        userid="${db.user}"
+        password="${db.password}"
+
+        src="${project.application.db}/update_ent_5_0.sql"
+        print="yes" >    
+        <classpath>
+	         <pathelement location="${project.application.lib}/${db.jar}"/>
+        </classpath>
+     </sql>
+  </target>
+
+  <target name="ent5-0-update-database-crlr" description="Mise à jour de la base de données pour l' ent 5.0.2">
+     <sql
+        driver="${db.driver}"
+        url="${db.url}"
+        userid="${db.user}"
+        password="${db.password}"
+
+        src="${project.application.db}/update_ent_5_0.sql"
+        print="yes" >    
+        <classpath>
+	         <pathelement location="${project.application.lib}/${db.jar}"/>
+        </classpath>
+     </sql>
+     <sql
+        driver="${db.driver}"
+        url="${db.url}"
+        userid="${db.user}"
+        password="${db.password}"
+
+        src="${project.application.db}/update_ent_5_01.sql"
+        print="yes" >    
+        <classpath>
+	         <pathelement location="${project.application.lib}/${db.jar}"/>
+        </classpath>
+     </sql>
+	   <sql
+        driver="${db.driver}"
+        url="${db.url}"
+        userid="${db.user}"
+        password="${db.password}"
+
+        src="${project.application.db}/update_ent_5_0-archive2009-2010.sql"
+        print="yes" >    
+        <classpath>
+	         <pathelement location="${project.application.lib}/${db.jar}"/>
+        </classpath>
+     </sql>
+     <sql
+        driver="${db.driver}"
+        url="${db.url}"
+        userid="${db.user}"
+        password="${db.password}"
+
+        src="${project.application.db}/update_ent_5_0-archive2010-2011.sql"
+        print="yes" >    
+        <classpath>
+	         <pathelement location="${project.application.lib}/${db.jar}"/>
+        </classpath>
+     </sql>
+  </target>
+  
+    <target name="ent5-1-update-database-crlr" description="Mise à jour de la base de données pour l' ent 5.1.0">
+        <sql
+            driver="${db.driver}"
+            url="${db.url}"
+            userid="${db.user}"
+            password="${db.password}"
+
+            src="${project.application.db}/update_ent_5_01.sql"
+            print="yes" >    
+            <classpath>
+                <pathelement location="${project.application.lib}/${db.jar}"/>
+            </classpath>
+        </sql>
+
+        <sql
+            driver="${db.driver}"
+            url="${db.url}"
+            userid="${db.user}"
+            password="${db.password}"
+
+            src="${project.application.db}/update_ent_5_1_0.sql"
+            print="yes" >    
+            <classpath>
+                <pathelement location="${project.application.lib}/${db.jar}"/>
+            </classpath>
+        </sql>
+    </target>
+  
+  <target name="ent5-1-update-database" description="Mise à jour de la base de données pour l' ent 5.1.">
+	   <sql
+        driver="${db.driver}"
+        url="${db.url}"
+        userid="${db.user}"
+        password="${db.password}"
+        keepformat="true"
+        encoding="UTF-8"
+    delimiter="une chaine pour empecher des erreurs"
+        strictDelimiterMatching="false"
+        src="${project.application.db}/update_ent_5_1_0.sql"
+        print="yes" >    
+        <classpath>
+	         <pathelement location="${project.application.lib}/${db.jar}"/>
+        </classpath>
+     </sql>
+  </target>
+  
+  <target name="switchEnv" description="Changer l'environment">
+    <copy file="build.properties.${targetEnv}" 
+              tofile="build.properties" overwrite="true"/>
+    
+    <copy file="./application/properties/config.properties.${targetEnv}" 
+              tofile="./application/properties/config.properties" overwrite="true"/>
+  
+    <copy file="build.properties.${targetEnv}.prod" 
+              tofile="build.properties.prod" overwrite="true"/>
+    <copy file="dev.properties.${targetEnv}" 
+              tofile="dev.properties" overwrite="true"/>
+    <copy file="./application/properties/config.properties.${targetEnv}.prod" 
+              tofile="./application/properties/config.properties.prod" overwrite="true"/>
+  </target>
+  
+  <!-- Target alimentation pour Recia (CRLR est un projet à part) -->
+	<target name="alimentation" description="Alimentation du cahier de texte" depends="buildJar_common,init">		
+		  <java classname="org.crlr.alimentation.Alimentation" fork="yes">
+         <arg value="${exercice}"/>
+         <arg value="${dateDebut}"/>
+         <arg value="${dateFin}"/>
+         <classpath>     
+           <pathelement path="${project.application.build.main.dir}"/>
+                   
+           <!-- Librairies Tomcat -->
+		       <fileset dir="${tomcat.home}/lib" includes="**/*.jar" />
+		       <!-- Librairies locales -->
+		       <fileset dir="${project.application.lib}" includes="**/*.jar" />
+	         <!-- Librairies communes -->
+           <fileset dir="${project.commun.lib}" includes="**/*.jar" />	
+           <fileset dir="${project.common.out.jar}" includes="**/*.jar" />			
+         </classpath>               
+      </java>
+	</target>
+
+
+       <target name="update_database" description="Mise à jour de la BD de cahier de texte" depends="buildJar_common,init">		
+		  <java classname="org.crlr.alimentation.MiseAJour" fork="yes">
+         <classpath>     
+           <pathelement path="${project.application.build.main.dir}"/>
+                   
+           <!-- Librairies Tomcat -->
+		       <fileset dir="${tomcat.home}/lib" includes="**/*.jar" />
+		       <!-- Librairies locales -->
+		       <fileset dir="${project.application.lib}" includes="**/*.jar" />
+	         <!-- Librairies communes -->
+           <fileset dir="${project.commun.lib}" includes="**/*.jar" />	
+           <fileset dir="${project.common.out.jar}" includes="**/*.jar" />			
+         </classpath>               
+      </java>
+	</target>
+
+	<target name="archive-database" description="Archivage du schéma courant du cahier de texte" depends="buildJar_common,init">		
+	  <java classname="org.crlr.alimentation.Archive" fork="yes">
+            <classpath>     
+              <pathelement path="${project.application.build.main.dir}"/>
+              <!-- Librairies Tomcat -->
+	      <fileset dir="${tomcat.home}/lib" includes="**/*.jar" />
+	      <!-- Librairies locales -->
+	      <fileset dir="${project.application.lib}" includes="**/*.jar" />
+	      <!-- Librairies communes -->
+              <fileset dir="${project.commun.lib}" includes="**/*.jar" />	
+              <fileset dir="${project.common.out.jar}" includes="**/*.jar" />			
+           </classpath>               
+         </java>
+        </target>
+	
+	
+	  <!-- 
+          Editions ###########################################################
+     -->
+  
+  
+    <!-- 
+          Le ClassPath où se trouve JasperReport et ses dépendances
+     -->
+    <path id="classpathJR">        
+        <fileset dir="${project.commun.lib}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>   
+    <!-- 
+          target: Info Reporting
+     -->
+    <target name="InfoReport">
+        <echo>Compilation des reports (jrxml -> jasper)</echo>        
+    </target>
+ 
+    <!--
+          Définition d''une tâche ant JRC qui correspond à JRAntCompileTask
+     -->
+    <taskdef name="jrc" classname="net.sf.jasperreports.ant.JRAntCompileTask"> 
+        <classpath refid="classpathJR"/>
+    </taskdef>
+ 
+    <!--
+          Tâche Ant de compilation de tous les jrxml en jasper
+     -->
+    <target name="compileJRXML" depends="InfoReport">
+        <jrc srcdir="${project.application.src.report}" includes="**/*.jrxml" destdir="${project.application.src.report}" xmlvalidation="true">
+            <classpath refid="compile_application.classpath"/>
+            <classpath refid="classpathJR"/>
+            <classpath>
+                <pathelement location="${project.application.build.main.dir}"/>
+            </classpath>
+        </jrc>
+        
+        <copy todir="${project.application.build.main.dir}" overwrite="true">
+			<fileset dir="${project.application.src.report}" includes="**/*.jasper" />
+			
+			<fileset dir="${project.application.src.report}" includes="**/*.jrxml" />
+		</copy>	
+    </target>
+    
+     <target name="cleanJRXML" depends="">
+     <echo message="Hello, world ${project.application.src.report}"/>
+        <delete>
+        
+            <fileset dir="${project.application.src.report}" includes="**/*.jasper"/>
+        </delete>
+     </target>
+    
+    <target name="compileJRXMLPourTestCommons" depends="InfoReport">
+        <jrc srcdir="${project.commun.src.report}" includes="**/*.jrxml" destdir="${project.commun.src.report}">
+            <classpath refid="compile_application.classpath"/>
+            <classpath refid="classpathJR"/>
+        </jrc>
+    </target>
+  	
+    <target name="dist" depends="">
+        <delete dir="./dist"/>
+        <mkdir dir="./dist"/>
+        
+        <delete file="./${dist.name}.tar.gz"/>
+        
+        <copy todir="./dist/${dist.name}" >
+        
+        <fileset dir="." excludes="dist/**, target/**, bin/**, .svn, ant.cmd, notes.txt, etc/**, target, build, crlr-commons/build/**, crlr-commons/target/**, application/build/**, application/bin/**, application/target/**, maven_jars/**, logs/**, log/**, application/log/**, crlr-commons/jar/**, crlr-commons/log/**, **/*.aquitain*, **/*.crlr*, **/*.recia*, plink-java.txt, plink.bat, winscp.txt, spy.log, dev.properties"/>
+        </copy>
+        
+        <move file="./dist/${dist.name}/build.properties.prod"
+              tofile="./dist/${dist.name}/build.properties"
+              failonerror="false"/>
+              
+       <move file="./dist/${dist.name}/application/properties/config.properties.prod"
+              tofile="./dist/${dist.name}/application/properties/config.properties"
+              failonerror="false"/>
+                            
+        <tar destfile="./${dist.name}.tar.gz"
+            longfile="gnu" compression="gzip">
+            <tarfileset filemode="666" dir="./dist"/>
+               </tar>
+	</target>
+	
+	<target name="publish" >
+	    <delete file="winscp.txt"/>
+	    
+	    <echo file="winscp.txt">
+# Automatically abort script on errors
+option batch continue
+# Disable overwrite confirmations that conflict with the previous
+option confirm off
+
+open sftp://root:entent@${entarchive.machine.address}
+
+put ${dist.name}.tar.gz  "${archives.dir}/"
+
+close
+
+	    	
+open sftp://root:entent@${vserver.machine.address}
+
+put ${dist.name}.tar.gz  "${vserver.dir}/"
+
+close
+
+exit
+	    </echo>
+	    
+	    <delete file="plink.txt"/>
+	    
+
+
+<echo file="plink-java.txt">
+. /etc/profile.d/jdk.sh
+. /etc/profile.d/java.sh
+. /etc/profile.d/ant.sh
+	
+	#rm -f ${vserver.dir}/${dist.name}.tar.gz
+rm -rf ${vserver.dir}/${dist.name}
+
+	tar --directory=${vserver.dir} -xvzf ${vserver.dir}/${dist.name}.tar.gz 
+
+cd /opt
+echo "Is running?"
+./is_running.sh
+sleep 1
+#rm -rf ${tomcat.deploy.dir}
+rm -rf ${tomcat.work.dir}
+cd /opt/${dist.name}
+ant undeploy
+ant deploy
+cd /opt
+echo "Is running?"
+./is_running.sh
+./start-apache.sh
+
+</echo>
+
+<delete file="plink.bat"/>
+
+<echo file="plink.bat">
+"c:\Program Files\WinSCP\WinSCP.exe" /console /script="winscp.txt"
+
+
+"c:\ent\plink.exe" -ssh -pw entent -noagent -m plink-java.txt root@${vserver.machine.address}
+
+
+</echo>
+
+<exec dir="." executable="cmd">
+  <arg line="/c plink.bat"/>
+</exec>
+
+<delete file="./${dist.name}.tar.gz"/>
+
+<!--
+<delete file="plink.bat"/>
+<delete file="winscp.txt"/>
+<delete file="plink.txt"/>
+	-->
+	</target>
+	
+	
+
+</project>
+

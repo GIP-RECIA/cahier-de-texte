@@ -1,0 +1,55 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"  
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:a4j="http://richfaces.org/a4j" 
+    xmlns:f="http://java.sun.com/jsf/core"      
+    xmlns:cr="urn:crlr"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:rich="http://richfaces.org/rich">
+
+<ui:composition>
+  <cr:popupListeFiltrable idPopup="idPopupEnseignement"
+                            tailleAuto="true"
+                            largeurPopup="400"
+                            hauteur="200"
+                            titrePopup="Liste des enseignements">
+      <t:div id="idPopupEnseignementRegion" >
+      <cr:tableSaisiePopup bean="#{enseignement}"
+                           cible="selectionnerEnseignement"
+                           liste="#{enseignement.form.listeEnseignement}"
+                           largeur="375"
+                           render="#{render}"
+                           valeur="#{enseignement.form.enseignementSelectionne}"
+                           status="statuspop"
+                           avecPagination="false">
+        <rich:column width="275px"
+                     filterValue="#{enseignement.form.filtreEnseignement}"
+                     filterExpression="#{fn:containsIgnoreCase(ligne.intitule,enseignement.form.filtreEnseignement)}"
+                     >
+                     
+          <f:facet name="header">
+            <h:panelGroup>
+              <h:outputText value="Intitulé : " />
+              <h:inputText value="#{enseignement.form.filtreEnseignement}"
+                           id="filterEnseignementTextId">
+                <a4j:ajax event="keyup"
+                          render="idPopupEnseignement_panel"
+                          status="statuspop"
+                          oncomplete="transfertFocus(null, '#{rich:clientId('filterEnseignementTextId')}');" >
+                          <a4j:attachQueue requestDelay="500" />
+                          </a4j:ajax>
+              </h:inputText>
+            </h:panelGroup>
+          </f:facet>
+          <h:outputText value="#{ligne.intitule}" />
+        </rich:column>
+      </cr:tableSaisiePopup>
+      </t:div>
+      
+    </cr:popupListeFiltrable>
+    
+</ui:composition>
+
+</html>

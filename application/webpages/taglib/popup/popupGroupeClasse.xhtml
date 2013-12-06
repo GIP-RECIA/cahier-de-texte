@@ -1,0 +1,57 @@
+ <html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"  
+    xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:a4j="http://richfaces.org/a4j" 
+    xmlns:f="http://java.sun.com/jsf/core"      
+    xmlns:cr="urn:crlr"
+    xmlns:rich="http://richfaces.org/rich">
+
+<ui:composition>
+
+ <cr:popupListeFiltrable idPopup="idPopupGroupeClasse"
+                          tailleAuto="true"
+                          largeurPopup="310"
+                          hauteur="200"
+                          titrePopup="Liste des #{classeGroupe.form.typeGroupeSelectionne eq 'GROUPE' ? 'groupes' : 'classes'}">
+
+    <cr:tableSaisiePopup bean="#{classeGroupe}"
+                         liste="#{classeGroupe.form.listeGroupeClasse}"
+                         cible="classeGroupeSelectionnee"
+                         largeur="275"
+                         render="#{render}"
+                         valeur="#{classeGroupe.form.groupeClasseSelectionne}"
+                         status="statuspop"
+                         avecPagination="false"
+                         oncomplete="#{oncomplete}"
+                         >
+            
+      <rich:column width="275px"
+                   filterValue="#{classeGroupe.form.filtreClasseGroupe}"                                            
+                   filterExpression="#{fn:containsIgnoreCase(ligne.intitule,classeGroupe.form.filtreClasseGroupe)}"
+                   >
+                   
+        <f:facet name="header">
+          <h:panelGroup>
+            <h:outputText value="Intitulé : " />
+            <h:inputText value="#{classeGroupe.form.filtreClasseGroupe}"
+            id="filtreClasseGroupeTextId"
+                         >
+              <a4j:ajax event="keyup"
+                        render="idPopupGroupeClasse_table"
+                        oncomplete="transfertFocus(null, '#{rich:clientId('filtreClasseGroupeTextId')}');"
+                        status="statuspop" 
+                        execute="@this">                         
+                            <a4j:attachQueue requestDelay="500" />
+                        </a4j:ajax>
+            </h:inputText>
+          </h:panelGroup>
+        </f:facet>
+        <h:outputText value="#{ligne.intitule}" />
+      </rich:column>
+    </cr:tableSaisiePopup>
+  </cr:popupListeFiltrable>
+  
+  </ui:composition>
+  </html>

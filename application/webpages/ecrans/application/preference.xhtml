@@ -1,0 +1,173 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:cr="urn:crlr"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:rich="http://richfaces.org/rich"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:ui="http://java.sun.com/jsf/facelets" 
+    >
+    
+
+<cr:page titrePage="Préférences" bean="#{pref}" form="#{pref.form}" fishEye="false">
+    <h:outputScript library="js" name="jquery-ui-1.8.17.custom.min.js" target="head" />
+    <cr:menuAction id="idMenuAction" autreAction="false" />
+        
+    <rich:panel rendered="#{contexteUtilisateur.utilisateurDTO.profil eq 'ENSEIGNANT'}" 
+        header="Préférence du cahier de texte pour l'établissement #{contexteUtilisateur.utilisateurDTO.designationEtablissement}" 
+        id="prefCahier">
+
+        <h:panelGrid columns="2" class="table">
+            <h:panelGrid columns="1" class="table">
+                <h:outputLabel value="Activation de la génération automatique des séquences"
+                        styleClass="libelle" style="text-align: center" />
+                <t:div style="text-align: center" >
+                    (Ajout de séquence impossible)
+                </t:div>
+            </h:panelGrid>
+            <h:panelGrid columns="2" class="table">
+                <h:selectBooleanCheckbox
+                    value="#{pref.form.vraiOuFauxSaisieSimplifiee}"
+                    id="checkboxSaisieSimp" />
+                <cr:lien id="idSaveSaisieSimp" bean="#{pref}" oncomplete="#{rich:component('idPopupConfirmSaisieSimp')}.show();"
+                    cible="empty" image="save.png" desc="Sauvegarder." render="idPopupConfirmSaisieSimp" />
+            </h:panelGrid>
+            <t:div rendered="#{not pref.form.vraiOuFauxSaisieSimplifieeBdd}">
+                <table style="margin:auto">
+                    <tr>
+                        <td style="vertical-align:middle;">
+				            Suppression des séquences sans séance
+				        </td>
+				        <td> 
+				            <cr:liena4j  
+					            idliena4j="idDeleteSequence" 
+					            bean="#{pref}"
+					            cible="supprimerSequenceLibre" 
+					            confirm="Voulez-vous vraiement supprimer toutes les séquences qui ne sont pas associées à une séance ?" 
+					            title="Supprimer séquences les séquences sans séance"
+					            render="prefCahier" >
+					            <h:graphicImage library="images/icones" name="delete.png" />
+			                </cr:liena4j>
+			            </td>
+			        </tr>
+			    </table>
+	        </t:div>
+        </h:panelGrid>
+    </rich:panel>
+
+    <rich:panel rendered="#{contexteUtilisateur.utilisateurDTO.profil eq 'ELEVE' or contexteUtilisateur.utilisateurDTO.profil eq 'PARENT' or contexteUtilisateur.utilisateurDTO.profil eq 'ENSEIGNANT'}" 
+        header="Préférences générales du cahier de texte" id="prefCahierTexteUser">
+
+        <p style="text-align:center;">Préférences relatives à la page d'accueil</p>
+        <center>
+        <p>
+            <h:panelGroup rendered="#{contexteUtilisateur.utilisateurDTO.profil eq 'ELEVE' or contexteUtilisateur.utilisateurDTO.profil eq 'PARENT'}">
+                <h:selectOneRadio id="selectionOutilAccueil" value="#{pref.form.typePreferences}">
+                 <f:selectItem itemLabel="Emploi du temps" itemValue="EMPLOI" />
+                 <f:selectItem itemLabel="Liste des devoirs" itemValue="DEVOIRS" />
+                 <f:selectItem itemLabel="Cahier de texte mensuel" itemValue="EDTMENSUEL" />
+                </h:selectOneRadio>
+            </h:panelGroup> 
+            <h:panelGroup rendered="#{contexteUtilisateur.utilisateurDTO.profil eq 'ENSEIGNANT'}" >
+                <h:selectOneRadio id="selectionOutilAccueilEnseignant" value="#{pref.form.typePreferences}">
+                 <f:selectItem itemLabel="Remplir le cahier de texte" itemValue="SAISIR_EMP" />
+                 <f:selectItem itemLabel="Liste des séances" itemValue="SEANCES" />
+                 <f:selectItem itemLabel="Cahier de texte mensuel" itemValue="EDTMENSUEL" />
+                </h:selectOneRadio>
+            </h:panelGroup> 
+        </p>
+    </center>
+        <p style="text-align:center;">
+            <cr:lien id="idSavePreference" 
+                status="statuspop" bean="#{pref}" cible="savePreferences" image="save.png" desc="Sauvegarder."
+                render="prefCahier"
+                 />
+        </p>
+    </rich:panel>
+
+<ui:remove>    
+     <cr:popupConfirm idPopupConfirm="idPopupConfirmSaisieSimp"
+        libelleMessage="Etes-vous sûr de vouloir #{pref.form.vraiOuFauxSaisieSimplifiee ? 'activer' : 'désactiver'} la génération automatique des séquences ?"
+        libelleMessage2="#{not pref.form.vraiOuFauxSaisieSimplifiee ? 'Attention, si vous confirmez, il vous sera ensuite impossible de réactiver la génération automatique des séquences' : 'Si vous confirmez, il vous sera ensuite impossible d\'ajouter manuellement de nouvelles séquences'}"
+        libelleMessage3="#{not pref.form.vraiOuFauxSaisieSimplifiee ? '(à moins de supprimer manuellement et unitairement l\'ensemble des séquences et séances existant)' : ''}"
+        bean="#{pref}" 
+        cible="saveSaisieSimplifiee"
+        render="prefCahier,zoneMenu" />
+</ui:remove>        
+        
+    <cr:popup idPopup="idPopupConfirmSaisieSimp" tailleAuto="true" 
+        titrePopup="Changement du mode saisie simplifiée">
+        
+        <p style="text-align: center; white-space: nowrap;">Etes-vous sûr de vouloir #{pref.form.vraiOuFauxSaisieSimplifiee ? 'activer' : 'désactiver'} la génération automatique des séquences ?</p>
+        <p style="text-align: center; white-space: nowrap;">#{not pref.form.vraiOuFauxSaisieSimplifiee ? 
+        'Lors de cette désactivation, voulez-vous que les séquences existantes sans séance associée soient également supprimées :' :  
+        'Si vous confirmez, il vous sera ensuite impossible d\'ajouter manuellement de nouvelles séquences' }
+        </p>
+        
+        <t:div rendered="#{not pref.form.vraiOuFauxSaisieSimplifiee}" >
+	        <table style="width:80%; margin:auto">
+	            <tr>
+	                <td style="vertical-align:middle;">
+			            <ul>
+			                <li>
+				              <cr:lien bean="#{pref}"
+				                 id="idPopupConfirmSaisieSimp_supprime" 
+				                 titre="Supprimer" 
+				                 cible="saveSaisieSimplifieeAvecSuppression"
+				                 oncomplete="#{rich:component('idPopupConfirmSaisieSimp')}.hide();"
+				                 render="prefCahier,zoneMenu" 
+				                 /> 
+			                 </li>
+			                 <li>
+				              <cr:lien bean="#{pref}"
+				                 id="idPopupConfirmSaisieSimp_valide" 
+				                 titre="Ne rien supprimer" 
+				                 cible="saveSaisieSimplifiee"
+				                 oncomplete="#{rich:component('idPopupConfirmSaisieSimp')}.hide();"
+				                 render="prefCahier,zoneMenu" 
+				                 /> 
+			                 </li>
+			            </ul>            
+				    </td>
+				    <td style="vertical-align:middle; text-align:center;">
+				        <t:div style="display:inline;">
+				            <cr:lien bean="#{pref}"
+				               id="idPopupConfirmSaisieSimp_annuler" titre="Annuler"
+				               style="padding-left:10px;" cible="empty"
+				               oncomplete="#{rich:component('idPopupConfirmSaisieSimp')}.hide(); " />
+				        </t:div>
+				    </td>
+				</tr>
+			</table>
+        </t:div>
+		<t:div rendered="#{pref.form.vraiOuFauxSaisieSimplifiee}" >
+	        <table style="width:80%; margin:auto">
+	            <tr>
+	                <td style="vertical-align:middle; text-align:center; width:50%;">
+                        <cr:lien bean="#{pref}"
+                           id="idPopupConfirmSaisieSimp_valideSimple" 
+                           titre="Oui" 
+                           cible="saveSaisieSimplifiee"
+                           oncomplete="#{rich:component('idPopupConfirmSaisieSimp')}.hide();"
+                           render="prefCahier,zoneMenu" 
+                           /> 
+	                </td>
+	                <td style="vertical-align:middle; text-align:center; width:50%;">
+                        <cr:lien bean="#{pref}"
+                           id="idPopupConfirmSaisieSimp_annuler2" titre="Annuler"
+                           style="padding-left:10px;" cible="empty"
+                           oncomplete="#{rich:component('idPopupConfirmSaisieSimp')}.hide(); " />
+	                </td>
+	            </tr>
+	        </table>
+	    </t:div>
+		
+    </cr:popup>
+</cr:page>    
+
+<cr:popupStatus idStatus="statuspop" />
+
+
+</html>

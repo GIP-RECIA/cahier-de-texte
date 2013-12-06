@@ -1,0 +1,41 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"  
+    xmlns:rich="http://richfaces.org/rich"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:cr="urn:crlr">
+<ui:composition>
+    <ui:remove>
+        <!-- 
+        popup : composant permettant le rendu d'un
+        d'une popup modal
+        
+        propriétés : 
+        * idPopup : identifiant unique de la popup.        
+        - tailleAuto : ajustement automatique de la taille de la popup. 
+        - largeurPopup : largeur de la popup.     
+        - hauteurPopup : hauteur de la popup.
+        - rendered : true ou false (rendu ou non rendu)
+        - titrePopup : titre de la popup. 
+             
+    -->
+    
+    </ui:remove>
+    
+    <c:set var="hauteur" value="${empty hauteur ? '400' : hauteur}" />
+    <cr:popupModifiable
+        idPopup="#{idPopup}" 
+        tailleAuto="true" 
+        largeurPopup="#{largeurPopup}"
+        titrePopup="#{titrePopup}">
+     
+        <h:panelGroup 
+            layout="block" 
+            style="height: #{hauteur}px;">
+            <ui:insert />
+        </h:panelGroup>
+</cr:popupModifiable>
+</ui:composition>
+</html>

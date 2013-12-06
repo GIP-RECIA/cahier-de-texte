@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:a4j="http://richfaces.org/a4j"
+      xmlns:crx="urn:crlr:ext"
+      xmlns:cr="urn:crlr"
+      xmlns:rich="http://richfaces.org/rich">
+  <cr:page titrePage="Gestion Séquence"
+           bean="#{consulterSequence}"
+           form="#{consulterSequence.form}">
+    <ui:include src="common.xhtml" />
+  
+  <cr:popupListeFiltrable idPopup="idPopupGroupeClasse"
+                          tailleAuto="true"
+                          largeurPopup="300"
+                          hauteur="200"
+                          titrePopup="Liste des #{consulterSequence.form.typeGroupeSelectionne eq GROUPES ? 'groupes' : 'classes'}">
+
+    <cr:tableSaisiePopup bean="#{consulterSequence}"
+                         cible="selectionnerGroupeClasse"
+                         liste="#{consulterSequence.listeGroupeClasse}"
+                         largeur="275"
+                         render="consulterSequence"
+                         valeur="#{consulterSequence.form.groupeClasseSelectionne}"
+                         status="statuspop"
+                         avecPagination="false">
+      <rich:column width="275px"
+                   filterBy="#{ligne.intitule}"
+                   filterEvent="onkeyup"
+                   filterValue="#{consulterSequence.form.filtreClasseGroupe}"
+                   filterMethod="#{consulterSequence.form.doFilterClasseGroupe}">
+
+        <f:facet name="header">
+          <h:panelGroup>
+            <h:outputText value="Intitulé : " />
+            <h:inputText value="#{consulterSequence.form.filtreClasseGroupe}"
+                         id="filterText">
+              <a4j:ajax event="keyup"
+                        render="panelidPopupGroupeClasse"
+                        status="statuspop"
+                        requestDelay="500"
+                        oncomplete="transfertFocus(this.id,this.id);" />
+            </h:inputText>
+          </h:panelGroup>
+        </f:facet>
+        <h:outputText value="#{ligne.intitule}" />
+      </rich:column>
+    </cr:tableSaisiePopup>
+  </cr:popupListeFiltrable>
+  <cr:popupListeFiltrable idPopup="idPopupEnseignement"
+                          tailleAuto="true"
+                          largeurPopup="400"
+                          hauteur="200"
+                          titrePopup="Liste des enseignements">
+    <cr:tableSaisiePopup bean="#{consulterSequence}"
+                         cible="selectionnerEnseignement"
+                         liste="#{consulterSequence.form.listeEnseignement}"
+                         largeur="375"
+                         render="consulterSequence"
+                         valeur="#{consulterSequence.form.enseignementSelectionne}"
+                         status="statuspop"
+                         avecPagination="false">
+      <rich:column width="275px"
+                   filterBy="#{ligne.intitule}"
+                   filterEvent="onkeyup"
+                   filterValue="#{consulterSequence.form.filtreEnseignement}"
+                   filterMethod="#{consulterSequence.form.doFilterEnseignement}">
+
+        <f:facet name="header">
+          <h:panelGroup>
+            <h:outputText value="Intitulé : " />
+            <h:inputText value="#{consulterSequence.form.filtreEnseignement}"
+                         id="filterText">
+              <a4j:ajax event="keyup"
+                        render="panelidPopupEnseignement"
+                        status="statuspop"
+                        requestDelay="500"
+                        oncomplete="transfertFocus(this.id,this.id);" />
+            </h:inputText>
+          </h:panelGroup>
+        </f:facet>
+        <h:outputText value="#{ligne.intitule}" />
+      </rich:column>
+    </cr:tableSaisiePopup>
+  </cr:popupListeFiltrable>
+  </cr:page>
+</html>

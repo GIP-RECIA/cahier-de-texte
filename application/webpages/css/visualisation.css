@@ -1,0 +1,99 @@
+/*Print sequence / print séance*/
+
+.description {
+	word-wrap: break-word; 
+	border: 1px dotted #000000; 
+	padding: 3px 10px 3px 10px; 
+	white-space: normal;
+	 width: 80%;
+	  display: block;
+}
+
+.description a:link {
+	white-space: normal;
+}
+
+.description a:hover {
+	white-space: normal;
+}
+
+.listSequencesPanel, .listSeancesPanel {
+    width:100%; 
+    margin:auto; 
+    overflow-y:auto; 
+    height:100%; 
+    display:block;
+}
+
+.seqSeanceDiv, .panelSeance {
+	width:49%;
+	clear: both;
+	float: left;
+}
+
+.seqDevoirDiv, .seanceDevoirDiv {
+	width: 49%;
+	float: left;
+}
+
+.panelSequence {
+	margin:auto; 
+	overflow:auto;
+}
+
+.panelSequence {
+	width:98%; 
+    
+}
+
+.panelSequenceDetail, .panelSeanceDetail {
+	border: 1px solid #000000; 
+	padding: 0px;
+	overflow:auto;
+	width: 100%;
+}
+
+.panelSequenceDetail {
+	width: 98%;
+}
+
+.panelDevoir {
+	width:100%; 
+	margin:auto; 
+	overflow:auto;
+}
+
+.panelPiecesJointe {
+	padding-left: 0px; 
+	width:390px; 
+	overflow:auto;
+}
+
+.panelPieceJointeDetail {
+	border: 0px solid #000000; 
+	padding: 0px 0px 0px 20px;
+	overflow:auto;
+}
+
+.pieceJointeLien {
+	display: block;
+	padding: 2px 0px 2px 0px;
+}
+
+.boutonResize {
+	float:right; 
+	margin-top: -1px;
+}
+
+div.rf-p.panelSeance div.rf-p-hdr {
+    text-align: left;	
+}
+
+div.rf-p.panelDevoir div.rf-p-hdr {
+    text-align: left;   
+}
+
+div.rf-p.seqSeanceDiv div.rf-p-hdr {
+    text-align: left;   
+}
+

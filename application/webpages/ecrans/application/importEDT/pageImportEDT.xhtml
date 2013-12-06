@@ -1,0 +1,213 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:a4j="http://richfaces.org/a4j" xmlns:crx="urn:crlr:ext"
+	xmlns:cr="urn:crlr" xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:rich="http://richfaces.org/rich">
+
+<cr:page titrePage="Import emploi du temps" id="idPageImport" >
+    <h:outputScript library="js" name="jquery-ui-1.8.18.custom.min.js" target="head" />
+    <h:outputScript library="js" name="jquery.qtip.js" target="head" />
+    <h:outputScript library="js" name="fileupload.js" target="head" />
+
+	<cr:menuAction id="idMenuAction">
+		<cr:elemMenuAction idaction="idBoutonRefresh" bean="#{importEDT}"
+			cible="refresh" image="eraser.png" title="Réinitialiser"
+			render="idPanelPrincipal" />
+		
+		<h:graphicImage
+            library="images/icones" 
+            name="aide.png" 
+            desc="Aide contextuelle"
+            id="idAide"
+            onclick="#{rich:component('idPopupAide')}.show();" /> 
+		<ui:remove>
+		<cr:elemMenuAction idaction="idAide" bean="#{importEDT}" image="aide.png"
+			title="Aide" render="idPopupAide"
+			oncomplete="#{rich:component('idPopupAide')}.show();" />*
+			</ui:remove>
+		<cr:elemMenuAction 
+		    idaction="idBoutonVider" bean="#{importEDT}"
+			cible="viderEmploiDuTempsEtab" image="delete.png"
+			rendered="#{importEDT.form.supprNecessaire}"
+			confirm="Voulez-vous vraiment supprimer définitivement l\'emploi du temps de cet établissement débutant le #{cr:formatDate(importEDT.form.dateDebutPeriode, 'dd/MM/yyyy')} ? (actuellement #{importEDT.form.nbEmploiEnBdd} enregistrements )"
+			title="Vider" render="idPanelPrincipal" />
+		<cr:elemMenuAction 
+		    idaction="idBoutonDemarre" 
+		    bean="#{importEDT}"
+			cible="demarrageImport" 
+			image="start.png"
+			confirm="#{importEDT.form.texteInfoImport}" 
+			title="Démarrer import"
+			render="idPanelPrincipal"
+			rendered="#{importEDT.form.readyImport}">
+		</cr:elemMenuAction>
+		<cr:elemMenuAction idaction="idBoutonInsertion" bean="#{importEDT}"
+			cible="demarreInsertion" image="insertbdd.png"
+			title="Exécuter l'insertion"
+			render="idPanelPrincipal"
+			confirm="#{importEDT.form.confirmInsert}"
+			rendered="#{importEDT.form.goInsertion}" />
+        <cr:lienEdition 
+            bean="#{importEDT}"
+            cible="print"
+            rendered="#{importEDT.form.goInsertion}"
+            id="idRapportImport"
+            desc="Cliquez sur cet icone pour visualiser le rapport suite à l'import"
+            image="pdf.png"
+            sansImage="true"/>
+			
+
+	</cr:menuAction>
+	<style>
+.corpsCalTable {
+	background-color: #FFFFFF;
+	border: 1px dotted #900000;
+	font-weight: bold;
+	height: 40px;
+	margin: 0;
+	text-decoration: none;
+	white-space: normal;
+	width: 100%;
+}
+
+.corpsOuvre {
+	padding: 0;
+	width: 17px;
+	font-weight: bold;
+}
+</style>
+
+    <cr:liena4j 
+        idliena4j="idRecalculDate" 
+        bean="#{importEDT}" 
+        cible="verifieDate" 
+        render="idPanelPrincipal" 
+        status="statuspop"  
+     />
+
+	<rich:panel id="idPanelPrincipal" header="Import d'emploi du temps"
+		style="margin:auto;">
+		
+		<table class="grille" style="width:100%; #{importEDT.form.insertionTerminee ? 'display:none;' : ''}">
+		    <tr>
+		      <td style="width: 150px;">
+		          <h:outputLabel value="Effectif à partir du : " styleClass="libelle" title="Date à partir de la laquelle l'emploi du est effectif" />
+		      </td>
+		      <td>
+	            <cr:saisieDate 
+	                id="dateDebut" 
+	                largeur="65"
+	                titre=""
+	                valeur="#{importEDT.form.dateDebutPeriode}"
+	                oncomplete="lancerLienAjax('idRecalculDate'); " />
+                </td>  		      
+            </tr>
+            <tr>
+                <td style="width: 150px;">
+                    <h:outputLabel value="Fichier 1 : " styleClass="libelle" title="Fichier généralement d'extension XML nommé EDT_*" />
+                </td>
+                <td>
+	                <h:inputText value="#{importEDT.form.nomOrigineFicEdt}"  
+	                    id="idnomFichierEDT"
+	                    styleClass="champ"
+	                    readonly="true"
+	                    style="width:99%;" 
+	                    />
+                </td>
+            </tr>
+            <tr>
+                <td style="width: 150px;">
+                    <h:outputLabel value="Fichier 2 : " styleClass="libelle" title="Fichier généralement d'extension XML nommé STS_*" />
+                </td>
+                <td>
+                    <h:inputText value="#{importEDT.form.nomOrigineFicSts}"  
+                        id="idnomFichierSTS"
+                        styleClass="champ"
+                        readonly="true"
+                        style="width:99%;" 
+                        />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <rich:fileUpload 
+                        rendered="#{(not importEDT.form.readyImport) and (not importEDT.form.goInsertion)}"
+	                    addControlLabel=""     
+	                    addLabel="Ajouter" 
+	                    uploadLabel="Télécharger" 
+	                    clearAllLabel="Tout supprimer"                  
+	                    onsizerejected=""
+	                    fileUploadListener="#{importEDT.listener1}"
+	                    maxFilesQuantity="200"
+	                    immediateUpload="true"
+	                    listHeight="0px" 
+	                    listWidth="50px"
+	                    allowFlash="true" 
+	                    style="width:100%"
+	                    autoclear="true"
+	                    noDuplicate="false" 
+	                    >
+	                    <a4j:ajax 
+	                        event="uploadcomplete" 
+	                        render="idPanelPrincipal" 
+	                        oncomplete=""
+	                        listener="" />
+	                        
+	                    <a4j:ajax event="clear" 
+	                        render="idnomFichierEDT,idnomFichierSTS"
+	                        listener="#{importEDT['clear1']}"
+	                        oncomplete="" />
+                    </rich:fileUpload>
+                </td>
+            </tr>
+		</table>
+
+		<t:div id="idLienRapport" rendered="#{importEDT.form.vraiOuFauxRapportTermine and (not importEDT.form.insertionTerminee)}">
+			<cr:table idTable="tableFichiersXML" style="width:100%;"
+				entete="Fichiers XML" avecPagination="false" liste="#{importEDT.form.infosFicXML}">
+
+				<cr:colonne id="colTypeFichier" style="width:120px;"
+					libelleColonne="Type de fichier" align="center">
+					<h:outputText value="#{ligne.valeur1}" />
+				</cr:colonne>
+				<cr:colonne id="colnomFicXML" style="width:100%;" libelleColonne="Nom" align="center">
+					<h:outputText value="#{ligne.valeur2}" />
+				</cr:colonne>
+			</cr:table>
+		</t:div>
+		
+		<h:panelGrid id="idInfoBddPleine"
+			style="margin:auto; margin-top:30px;"
+			rendered="#{importEDT.form.supprNecessaire}">
+			<h:outputLabel style="font-size:14px;line-height:16px;"
+				value="Pour la période débutant au #{cr:formatDate(importEDT.form.dateDebutPeriode, 'dd/MM/yyyy')}, il y a #{importEDT.form.nbEmploiEnBdd} enregistrements pour l'emploi du temps de l'établissement." />
+			<h:outputLabel style="font-size:14px;line-height:16px;"
+				value="Vous devez d'abord supprimer l'emploi du temps débutant à cette date avant de pouvoir effectuer un import." />
+		</h:panelGrid>
+        <h:panelGrid id="idInfoInsertionTerminee"
+            style="margin:auto; margin-top:30px;"
+            rendered="#{importEDT.form.insertionTerminee}">
+            <h:outputLabel style="font-size:14px;line-height:16px;"
+                value="L'import de l'emploi du temps s'est achevé avec succès pour la période débutant le #{cr:formatDate(importEDT.form.dateDebutPeriode, 'dd/MM/yyyy')}" />
+        </h:panelGrid>
+	</rich:panel>
+
+    <cr:popup idPopup="idPopupAide" 
+        titrePopup="Aide pour l'import d'emploi du temp"
+        largeurPopup="820" 
+        tailleAuto="true" 
+        popupUseRichEditor="false">
+        <div style="overflow: auto; width: 100%; height: 300px;" >
+            <span style="word-wrap: break-word; width:780px;display: block;float:left;white-space:normal;">
+	           <h:outputText value="#{importEDT.form.texteAide}" escape="false" />
+	        </span>
+	    </div>
+    </cr:popup>
+</cr:page>
+
+<cr:popupStatus idStatus="statuspop" />
+
+</html>

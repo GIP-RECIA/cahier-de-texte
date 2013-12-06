@@ -1,0 +1,50 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:crx="urn:crlr:ext"
+    xmlns:cr="urn:crlr"
+    xmlns:rich="http://richfaces.org/rich">
+
+<cr:page titrePage="Consulter les séances" form="#{cahier.form}" bean="#{cahier}">
+
+   <ui:include src="common.xhtml"/>
+
+</cr:page>
+<cr:popupListeFiltrable idPopup="idPopupGroupeClasse" 
+        tailleAuto="true"
+        largeurPopup="300"
+        hauteur="200"
+        titrePopup="Liste des #{cahier.form.typeGroupeSelectionne eq GROUPES ? 'groupes' : 'classes'}">
+        <cr:tableSaisiePopup 
+            bean="#{cahier}" 
+            cible="selectionnerGroupeClasse"
+            liste="#{cahier.listeGroupeClasse}" largeur="275"
+            render="outilRecherche,tableDevoirsListing"
+            status="statuspop"
+            valeur="#{cahier.form.groupeClasseSelectionne}"
+            avecPagination="false">
+            <rich:column 
+                    width="275px" 
+                    filterBy="#{ligne.intitule}" 
+                    filterEvent="onkeyup" 
+                    filterValue="#{cahier.form.filtre}" 
+                    filterMethod="#{cahier.form.doFilter}">
+                    <f:facet name="header">
+                        <h:panelGroup>
+                            <h:outputText value="Intitulé : " />
+                            <h:inputText value="#{cahier.form.filtre}"
+                                        id="filterText">
+                                <a4j:ajax event="keyup" render="panelidPopupGroupeClasse" requestDelay="500" status="statuspop" oncomplete="transfertFocus(this.id,this.id);"/>  
+                            </h:inputText>
+                        </h:panelGroup>
+                    </f:facet>
+                    <h:outputText value="#{ligne.intitule}"/>
+                </rich:column>
+        </cr:tableSaisiePopup>
+</cr:popupListeFiltrable>
+
+<cr:popupStatus idStatus="statuspop" />
+</html>

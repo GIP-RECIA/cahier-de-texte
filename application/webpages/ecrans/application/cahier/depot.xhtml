@@ -1,0 +1,221 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:rich="http://richfaces.org/rich"
+      xmlns:a4j="http://richfaces.org/a4j"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:cr="urn:crlr">
+  <cr:page titrePage="Mes pièces jointes" >
+    <h:outputScript library="js" name="jquery-ui-1.8.20.custom.js" target="head" />
+    <h:outputScript library="js" name="jquery.qtip.js" target="head" />
+    <h:outputStylesheet library="css" name="depot.css" target="head" />
+    <h:outputStylesheet library="css" name="jquery.qtip.css" target="head" />
+    <h:outputScript library="js" name="depot.js" target="head" />
+    
+    
+  
+    <cr:menuAction id="idMenuAction">
+      <cr:elemMenuAction idaction="id"
+                         bean="#{depot}"
+                         cible="nouveauDossier"
+                         image="folder_new.png"
+                         title="Créer dossier"
+                         oncomplete="gestionDragDropDepot();"
+                         render="monDepot" />
+    </cr:menuAction>
+    <c:set var="iconesApplicationsDir"
+           value="/iconesApplications/" />
+    <c:set var="status"
+           value="statusPopup" />
+    <c:set var="idCheckFileUpload"
+           value="#{idPopup}checksizeFileUpload" />
+    <c:set var="iconesDir"
+           value="/resources/images/icones/" />
+    <cr:lien id="#{idCheckFileUpload}"
+             bean="#{depot}"
+             cible="checkMessageSizeFileUpload"
+             render="#{idCheckFileUpload},DossierSelected"
+             titre="" />
+    <c:set var="raffraichirListe"
+           value="#{raffraichirTabAfterUpload}" />
+    <t:div id="espaceStockageNotActive"
+           rendered="#{not depot.form.espaceStockageActive and depot.form.vraixOuFauxAffichageStockage}">
+
+      <rich:panel header="Gestion de Mon dépôt"></rich:panel>
+      <p style="font-weight: bold;">Votre espace de stockage
+      n'existe pas. 
+      <br />Veuillez vous connecter une première fois à
+      l'application espace de stockage pour l'activer.</p>
+    </t:div>
+    
+    <a4j:jsFunction action="#{depot.deplacerFichier}"
+                    execute="@this"
+                    status="statuspop"
+                    name="deplacerFichier"
+                    oncomplete="gestionDragDropDepot();"
+                    render="monDepot"
+                    >
+      <a4j:param assignTo="#{depot.form.nomFichierDrag}" name="fichier" />
+      <a4j:param assignTo="#{depot.form.nomDossierDrop}" name="dossier" />
+    </a4j:jsFunction>
+    
+    <t:div id="monDepot" >
+      <h:panelGrid columns="2"
+                   class="table" style="border:1px solid gray; width:100%">
+        <rich:panel header="Parcourir Mon dépôt"
+                    id="listingRepertoireCahier" >
+          <t:div id="listingRepertoireCahierScroll" 
+                 styleClass="panelTree">
+            <cr:lien id="raffraichirDepot"
+                     bean="#{depot}"
+                     cible="empty"
+                     oncomplete="gestionDragDropDepot();"
+                     render="containerRepertoireCahier" />
+            <rich:tree toggleType="client"
+                       var="item">
+              <rich:treeModelRecursiveAdaptor roots="#{depot.form.sourceRootsDepotCahier}"
+                                              nodes="#{item.nodes}">
+                                              
+                <rich:treeNode icon="#{iconesDir}iconFolder.gif"
+                               iconLeaf="#{iconesDir}iconFolder.gif">
+                    <input type="text" 
+                           disabled="disabled" 
+                           style="display:none;" 
+                           class="treeNodeData" 
+                           value="#{item.path}"/>                  
+               
+                  <a4j:outputPanel layout="block">
+                    
+                      <cr:lien id="idRepertoire"
+                               bean="#{depot}"
+                               status="status"
+                               cible="selectionnerRepertoireCahier"
+                               render="containerRepertoireCahier,DossierSelected,listingRepertoireCahierScroll"
+                               titre="#{item.name}"
+                               oncomplete="gestionDragDropDepot();"
+                               style="#{item.path eq depot.form.pathRepertoireEnCoursCahier ? 'background:#0A246A;color:#FFFFFF;' : ''}">
+
+                        <f:setPropertyActionListener value="#{item.path}"
+                                                     target="#{depot.form.pathRepertoireEnCoursCahier}" />
+                      </cr:lien>
+                   
+                  </a4j:outputPanel>
+                </rich:treeNode>
+              </rich:treeModelRecursiveAdaptor>
+            </rich:tree>
+          </t:div>
+        </rich:panel>
+    
+        <rich:panel id="containerRepertoireCahier"
+                    header="Contenu du dossier '#{empty depot.form.nameDossierSel ? depot.form.nameRepSel : depot.form.nameDossierSel}'">
+                    
+       
+          <t:div id="containerRepertoireCahierScroll" style="width: 100%; height: 280px; overflow: auto;">
+            
+            <t:div rendered="#{empty depot.form.files}" styleClass="panelVide">
+                <h:outputText value="Ce dossier ne comptient aucun fichier" styleClass="texteCentre" /> 
+            </t:div>
+            <cr:table idTable="listeFichierDossier"
+                      style="width:100%;"
+                      avecPagination="false"
+                      rendered="#{not empty depot.form.files}"
+                      liste="#{depot.form.files}">
+
+              <rich:column styleClass="colonneIcone">
+                <f:facet name="header" styleClass="colonneIcone">
+                    <h:outputText value="" styleClass="headerText" />
+                </f:facet>
+                <h:graphicImage class="fichierDrag" library="images/icones" name="iconLeaf.gif" title="#{ligne.nom}"/>
+              </rich:column>
+
+              <rich:column styleClass="colonneLibelle">
+                <f:facet name="header">
+                    <h:outputText value="Fichier" styleClass="headerText" />
+                </f:facet>
+                <h:outputText value="#{ligne.nom}" />
+              </rich:column>
+
+              <rich:column styleClass="colonneAction" >
+                <f:facet name="header">
+                    <h:outputText value="Actions" styleClass="headerText" />
+                </f:facet>
+                <cr:lien id="dlFichier"
+                         chemin="#{ligne.pathFullDownload}"
+                         rendered="#{ligne.activerLien}"
+                         bean=""
+                         image="download.png"
+                         desc="Télécharger" />
+                <cr:lien bean="#{depot}"
+                         id="supprimer"
+                         rendered="#{not ligne.enBase}"
+                         confirm="Etes-vous sur de vouloir supprimer le fichier : #{ligne.nom} ?"
+                         cible="supprimerFichier"
+                         image="delete.gif"
+                         desc="Supprimer"
+                         oncomplete="gestionDragDropDepot();"
+                         render="containerRepertoireCahier">
+                  <f:setPropertyActionListener value="#{ligne}"
+                                               target="#{depot.form.fichierSelectionne}" />
+                </cr:lien>
+              </rich:column>
+            </cr:table>
+          </t:div>
+        </rich:panel>
+      </h:panelGrid>
+      
+      <t:div id="DossierSelected" >
+        <table class="panelEditionDossier">
+            <tr>
+                <td style="width: 150px;">
+                    <h:outputLabel value="Dossier sélectionné" />
+                </td>
+                <td style="text-align: right;">
+                    <h:outputLabel value="#{depot.form.nameDossierParentSel}" style="font-weight: normal; "/>
+                </td>
+                <td style="#{depot.form.nameDossierParentSel eq depot.form.nameRepSel ? 'display: none;' : 'width: 200px;'}">
+                    <h:inputText 
+                        value="#{depot.form.nameDossierSel}" 
+                        styleClass="editionDossier ${styleClassError}"
+                        maxlength="50" 
+                        rendered="true"
+                        disabled="#{not depot.form.isDossierModifiable}" readonly="#{not depot.form.isDossierModifiable}" >
+                    </h:inputText>
+                </td>
+                <td style="#{depot.form.nameDossierParentSel eq depot.form.nameRepSel ? 'display: none;' : 'width: 20px;'}">
+                    <cr:lien id="idRenomer"
+                        image="valider.gif"
+                        rendered="#{depot.form.isDossierModifiable}"
+						bean="#{depot}"
+						cible="renomerDossier"
+						sansImage="false"
+						confirm="Voulez-vous vraiment renommer ce sous-dossier ?"
+						desc="Valider la modification du nom du sous-dossier"
+						oncomplete="gestionDragDropDepot();"
+						render="monDepot" />    
+                </td>
+                <td style="#{depot.form.nameDossierParentSel eq depot.form.nameRepSel ? 'display: none;' : 'width: 20px;'}">
+					<cr:lien id="idSupprimer"
+						image="delete.gif"
+						rendered="#{depot.form.isDossierModifiable}"
+						bean="#{depot}"
+						cible="deleteDossier"
+						sansImage="false"
+						confirm="Voulez-vous vraiment supprimer ce sous-dossier : #{depot.form.nameDossierSel} ?"
+						desc="Supprimer le sous-dossier"
+						oncomplete="gestionDragDropDepot();"
+						render="monDepot" />
+                </td>
+            </tr>
+        </table>
+      </t:div>
+    </t:div>
+  </cr:page>
+  
+  <cr:popupStatus idStatus="statuspop" />
+  
+</html>

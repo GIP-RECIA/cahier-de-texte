@@ -1,0 +1,28 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"    
+    xmlns:c="http://java.sun.com/jsp/jstl/core"             
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:cr="urn:crlr">
+<ui:composition>
+    
+    <!--  Un lien qui ne utilise pas le serveur, que le côté client en JS 
+    
+    style est utilisé car rendered à causé des problèmes au niveau de menu où les actions ne déclenchent plus. -->
+    
+    
+    <h:graphicImage
+      library="images/icones" name="#{image}" 
+      title="#{titre}"
+      id="#{idLienClientJS}"
+      onclick="#{onclick}" 
+      style="#{renderedFeinte ? 'display:inline' : 'display:none'}"
+      /> 
+
+      
+
+</ui:composition>
+</html>

@@ -1,0 +1,23 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:rich="http://richfaces.org/rich"
+    xmlns:a4j="http://richfaces.org/a4j" 
+    xmlns:cr="urn:crlr">
+<ui:composition>
+	<c:set var="iconesApplicationsDir" value="/iconesApplications/" />
+	<c:set var="status" value="statusPopup"/>
+	
+	<cr:popup idPopup="#{idPopup}" titrePopup="#{titrePopup}" popupUseRichEditor="#{popupUseRichEditor}"
+		iconesDir="/images/icones/" tailleAuto="true" hauteurPopup="#{hauteurPopup}" largeurPopup="#{largeurPopup}">
+		<h:form id="#{idPopup}_form">
+            <a4j:outputPanel id="#{idPopup}_panel">
+            <ui:insert />
+            </a4j:outputPanel>
+		</h:form>
+	</cr:popup>
+
+</ui:composition>
+</html>

@@ -1,0 +1,388 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:a4j="http://richfaces.org/a4j" xmlns:crx="urn:crlr:ext"
+	xmlns:cr="urn:crlr" xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	xmlns:rich="http://richfaces.org/rich">
+<ui:composition>
+
+<h:outputScript library="js" name="saisieSeance.js" target="head" />
+
+    <style>
+input.rf-sel-inp {
+    width: 25px;
+}
+</style>
+	<!-- 
+        composant permettant le rendu du formulaire de modification de seance.
+        - readOnly 
+        - affichageSequence
+        - listeSequence
+        - sequenceSelected      : la sequence correspondant a la seance
+        - controleur            : le controleur du formulaire
+        - seance                : le SeanceDTO contenant les info de la seance
+        - formulaire_contenant  : nom du formulaire qui herberge le composant
+        - checkModification     : positionne la variable de modification lors des modifications
+        - afficheDate           : affichage de la saisie de date
+        - onchangedate          : code js a executer si la date est modifiee
+        
+        le controleur doit implementer l'acces à la propriete : form.raffraichirTabAfterUpload de type String 
+          Cette propriete est utilisee pour stocker l'id du lien qui va être click par la popupPieceJointe 
+          quand le fichier a ete choisi. Dans le contexte de saisie d'une seance, cette propriete 
+          a pour valeur le lien cache #{idSaisieSeanceXX}_afterAjouterPieceJointeSeance
+    -->
+
+    <c:set var="idSaisieSeanceXX" value="${empty id_saisieSeance ? cr:idcompteur('saisieSeance') : id_saisieSeance}" />
+	<c:set var="readOnly" value="${empty readOnly  ? 'false' : readOnly}" />
+	<c:set var="formulaire_contenant"
+		value="${empty formulaire_contenant ? '#formulaire_principal' : cr:concat('#',formulaire_contenant)}" />
+    <c:set var="verifieModification" value="#{empty checkModification or checkModification ? 'setModificationFormulaire(true);' : ''}" />
+    <c:set var="showAnnotations" value="#{empty showAnnotations ? true : showAnnotations}" />
+    
+	<rich:panel>
+		<cr:lien id="#{idSaisieSeanceXX}_idRefreshDateSequence" bean="#{bean}" cible="#{cible}"
+			render="#{idSaisieSeanceXX}_dateDeb,#{idSaisieSeanceXX}_dateFin,#{idSaisieSeanceXX}_idEnteteSeance,#{render}" titre="" />
+        <t:div id="#{idSaisieSeanceXX}_idEnteteSeance" rendered="#{afficheDate}" >
+	        <table class="grille" style="">
+	            <tr>
+	                <td style="width: 100px;">
+	                    <h:outputLabel value="Date" styleClass="libelle" title="Date de la séance" />
+	                </td>
+	                <td style="width: 120px;">
+	                   <c:choose>
+                           <c:when test="#{readOnly}">
+                               <cr:saisieTexte id="#{idSaisieSeanceXX}_date2" modifiable="false"
+                                    largeur="65" 
+                                    valeur="#{cr:formatDate(seance.date, 'dd/MM/yyyy')}" />
+                           </c:when>
+                           <c:otherwise>
+                           
+				               <cr:saisieDate 
+				                        id="#{idSaisieSeanceXX}_idDateSeance" 
+				                        decalageTitreGauche="15" 
+				                        largeur="65"
+				                        titre=""
+				                        valeur="#{seance.date}"
+				                        oncomplete="#{onchangedate}"
+				                    >
+				                </cr:saisieDate>
+				            </c:otherwise>
+                        </c:choose>                
+	                </td>
+	                <td style="width: 100px;">
+	                    <h:outputLabel value="#{seance.typeGroupe eq 'GROUPE' ? 'Groupe' : 'Classe'}" styleClass="libelle" title="" />
+	                    #{empty seance.designationGroupe ? seance.designationClasse : seance.designationGroupe}
+	                </td>
+	                <td style="width: 50px;">
+	                    <h:outputLabel value="Enseignement" styleClass="libelle" title="" />
+	                </td>
+	                <td>
+	                    <h:outputText value="#{empty sequenceSelected ? '' : sequenceSelected.designationEnseignement}" 
+	                        id="#{idSaisieSeanceXX}_idEnseignementLibelle"
+	                        readonly="true"
+	                        style="width:100%;">
+	                    </h:outputText>
+	                </td>
+	            </tr>
+	        </table>
+        </t:div>      	   
+		<table class="grille" style="">
+            <c:choose>
+                <c:when test="#{affichageSequence}">
+                    <tr>
+                        <td style="width: 100px;">
+                            <h:outputLabel value="Séquence*" styleClass="libelle" title="Séquence" />
+                        </td>
+                        <td>
+                            <c:choose>
+                                <c:when test="#{readOnly}">
+                                    <h:inputText value="#{sequenceSelected.intitule}" 
+                                        readonly="true"
+                                        style="width:100%;" />
+                                </c:when>
+                                <c:otherwise>               
+									<cr:saisieListe id="#{idSaisieSeanceXX}_idSelectSequence" styleClassError="${fn:contains(controleur.form.listeChampsObligatoire, 'SEANCE_20')}"
+										valeur="#{sequenceSelected}" titre=""
+										style="width: 99% !important;  #{empty sequenceSelected or empty sequenceSelected.id ? 'width: 300px;' : 'width: auto;'}" 
+                                        donnees=""
+										onchange="
+										    var idlien =  '#{formulaire_contenant}';
+										    idlien += '\\:' +'#{idSaisieSeanceXX}';
+										    idlien += '_idRefreshDateSequence';
+										    jQuery(idlien).click(); 
+										    #{verifieModification}"
+										rendered="#{affichageSequence}">
+						
+										<f:converter converterId="selectOneDtoConverter" />
+										<f:selectItem itemLabel="" itemValue="" />
+										<f:selectItems itemLabel="#{sequence.intitule}"	itemValue="#{sequence}" value="#{listeSequence}" var="sequence" />
+										<f:attribute name="converterListe" value="#{listeSequence}" />
+									</cr:saisieListe>
+						         </c:otherwise>
+						     </c:choose>
+						</td>
+						<td style="width: 120px;">
+							<cr:saisieTexte id="#{idSaisieSeanceXX}_dateDeb" titre="Début" modifiable="false" 
+								largeur="50" decalageTitreDroite="2" 
+								valeur="#{cr:formatDate(sequenceSelected.dateDebut, 'dd/MM/yyyy')}" />
+					    </td>
+						<td style="width: 100px;">
+							<cr:saisieTexte id="#{idSaisieSeanceXX}_dateFin" titre="Fin" modifiable="false"
+								largeur="50" decalageTitreDroite="2" 
+								valeur="#{cr:formatDate(sequenceSelected.dateFin, 'dd/MM/yyyy')}" />
+						</td>
+                    </tr>
+                </c:when>
+            </c:choose>
+            <tr>
+                <td style="width: 100px;">
+                    <h:outputLabel value="Intitulé" styleClass="libelle" title="Initulé de la séance" />
+                </td>
+                <td colspan="3">
+                    <h:inputText value="#{seance.intitule}" 
+                        id="#{idSaisieSeanceXX}_idSeance_intitule"
+                        onchange="#{verifieModification}"
+                        disabled="#{readOnly}"
+                        readonly="#{readOnly}"
+                        style="width: 99% !important;  #{empty seance.intitule ? 'width: 300px;' : 'width: 99%;'}" 
+                        >
+                    </h:inputText>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">
+                    <table class="grille" style="border-collapse: collapse;">
+                        <tr>
+                            <td style="padding-left: 0px;">
+                                <table class="grille" style="border-collapse: collapse; width: 300px;">
+                                    <tr>
+						                <td style="width: 102px;">
+						                    <h:outputLabel value="Heure début*" styleClass="libelle" title="Heure de début de la séance" />                    
+						                </td>
+						                <td>
+						                    <t:div rendered="#{readOnly}" style="display: inline;">
+						                            #{seance.horaireDebut} 
+						                    </t:div>
+						                    <t:div rendered="#{not readOnly}" style="display: inline;">
+						                        <cr:saisieHeureMinute avecMinute="true" bean="#{controleur}"  styleClassError="${fn:contains(controleur.form.listeChampsObligatoire, 'SEANCE_07')}"
+						                            id="#{idSaisieSeanceXX}_heureMinuteDebut" 
+						                            modifiable="true" titre="" largeur="25"
+						                            valeurHeure="#{seance.heureDebut}"
+						                            valeurMinute="#{seance.minuteDebut}"
+						                            onchange="#{verifieModification} if (#{decalFinEnSaisieDebut == true}) {decalFin('#{cr:concat(idSaisieSeanceXX,'_heureMinuteDebut')}', '#{cr:concat(idSaisieSeanceXX,'_heureMinuteFin')}', event); }"
+						                            >
+						                        </cr:saisieHeureMinute>
+						                     </t:div>
+						                </td>
+                                    </tr>
+                                    <tr>
+						                <td style="width: 102px;">
+						                    <h:outputLabel value="Heure fin*" styleClass="libelle" title="Heure de fin de la séance" />
+						                </td>
+						                <td colspan="3">
+						                    <t:div rendered="#{readOnly}" style="display: inline;">
+						                            #{seance.horaireFin}
+						                    </t:div>
+						                    <t:div rendered="#{not readOnly}" style="display: inline;">                        
+						                        <cr:saisieHeureMinute avecMinute="true" bean="#{controleur}" largeur="25" styleClassError="${fn:contains(controleur.form.listeChampsObligatoire, 'SEANCE_08')}"
+						                            id="#{idSaisieSeanceXX}_heureMinuteFin" modifiable="true" titre=""  
+						                            valeurHeure="#{seance.heureFin}"
+						                            valeurMinute="#{seance.minuteFin}"
+						                            onchange="#{verifieModification}"
+						                            >
+						                        </cr:saisieHeureMinute>
+						                     </t:div>
+						                </td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td>
+                                <t:div id="displayDuTampon" rendered="#{(not empty seance.visaDirecteur or not empty seance.visaInspecteur) and (not readOnly)}">
+                                    <cr:tamponVisa
+				                        dateVisaDirecteur="#{seance.visaDirecteur.dateVisa}"
+				                        typeVisaDirecteur="#{seance.visaDirecteur.typeVisa}"
+				                        dateVisaInspecteur="#{seance.visaInspecteur.dateVisa}"
+				                        typeVisaInspecteur="#{seance.visaInspecteur.typeVisa}"
+                                    />
+                                </t:div>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+        <table class="grille" style="">
+            <tr>
+                <td style="">
+                    <cr:saisieEditeur id="#{idSaisieSeanceXX}_idSaisieDescriptionSeance"
+                        rendered="#{not readOnly}"  
+                        hauteur="127px" 
+                        largeur="100%" 
+                        titre="" desc="saisir le commentaire" valeur="#{seance.description}"
+                        onchange="#{verifieModification}"  
+                    />            
+                    <h:outputText rendered="true" escape="false"
+                        styleClass="description champLatex"
+                        id= "#{idSaisieSeanceXX}_idSaisieDescriptionHTMLSeance"
+                        style="#{readOnly ? 'display:block' : 'display:none' }" 
+                        value="#{seance.descriptionHTML}" />    
+                </td>
+                <td style="width: 20px; text-align:center; #{readOnly ? 'display:none;' : ''}">
+                    <cr:lien id="#{idSaisieSeanceXX}_afterAjouterPieceJointeSeance" bean="#{controleur}"
+                        cible="#{cibleAfterAjouterPieceJointeSeance}"
+                        render="#{idSaisieSeanceXX}_ListeDesPiecesJointe"
+                        oncomplete="#{verifieModification}"
+                        titre="" />
+                    <cr:lien id="#{idSaisieSeanceXX}_ajouterPieceJointeSeance" 
+                        bean="#{controleur}"
+                        cible="#{cibleAjouterPieceJointeSeance}"
+                        render="#{idPopupPiecesJointes}_form:#{idPopupPiecesJointes}_panel"
+                        image="iconePieceJointe.png"
+                        oncomplete="#{rich:component(idPopupPiecesJointes)}.show();"
+                        desc="Ajouter une pièce jointe à la séance">
+                        <f:setPropertyActionListener 
+                            value="${cr:concat(cr:concat(formulaire_contenant,'\\\\:'), idSaisieSeanceXX)}_afterAjouterPieceJointeSeance" 
+                            target="#{controleur.form.raffraichirTabAfterUpload}" />
+                    </cr:lien> 
+                    <br/>
+                    <cr:lien id="#{idSaisieSeanceXX}_idSeance_resetSeance" 
+                        bean="#{controleur}"
+                        cible="#{cibleResetSeance}"
+                        confirm="Voulez-vous vraiment réinitialiser cette séance ?"
+                        render="#{idSaisieSeanceXX}_idSaisieDescriptionSeance,#{idSaisieSeanceXX}_idSeance_intitule,#{idSaisieSeanceXX}_ListeDesPiecesJointe,#{idSaisieSeanceXX}_idAnnotationPersonnelleEdtiteur"
+                        image="eraserSmall.png"
+                        desc="Effacer la description de la séance" 
+                        oncomplete="#{verifieModification}"
+                        >
+                    </cr:lien>
+                    <br/>
+                    <cr:liena4j 
+                     idliena4j="#{idSaisieSeanceXX}_viewLatex"
+                     bean="#{controleur}"
+                     cible="#{cibleChargeImagesLatex}"
+                     oncomplete="
+                        visualiserLatex(
+                            '#{rich:clientId(cr:concat(idSaisieSeanceXX, '_viewLatex'))}',
+                            '_idSaisieDescriptionSeance',
+                            '_idSaisieDescriptionHTMLSeance',
+                            'la description de la séance'
+                            );
+                        "
+                     rendered="#{not readOnly}"
+                     render="#{idSaisieSeanceXX}_idSaisieDescriptionHTMLSeance"
+                     >
+                     
+                     <h:graphicImage
+                        id="#{idSaisieSeanceXX}_viewLatex_image"
+                        library="images/icones" 
+                        name="aide-saisie.png"
+                        title="Visualiser la description de la séance"
+                        /> 
+                    </cr:liena4j>
+                </td>                    
+            </tr>
+            <tr style="#{showAnnotations and  not readOnly ? '' : 'display:none;'}">
+                <td colspan="2">
+                    <h:outputLabel
+                        rendered="#{showAnnotations and  not readOnly}"
+                        value="Annotations personnelles de l'enseignant (qui ne sont visibles que par lui)"
+                        style="padding-right: 10px; padding-left: 10px;"
+                        styleClass="libelle">
+                    </h:outputLabel>
+                    <h:graphicImage 
+                        id="#{idSaisieSeanceXX}_idIconeAnnotationPersonnelle" library="images/icones" name="arrowUp.png"
+                        rendered="#{showAnnotations and  not readOnly}" 
+                        onclick="basculeAnnotations('${formulaire_contenant}','${idSaisieSeanceXX}');"
+                        title="Afficher les annotations personnelles de l'enseignant">
+                    </h:graphicImage>
+                </td>
+            </tr>
+            <tr id="#{idSaisieSeanceXX}_idAnnotationPersonnelle" style="#{showAnnotations and not readOnly ? '' : 'display:none;'}">
+                <td>    
+			        <cr:saisieEditeur id="#{idSaisieSeanceXX}_idAnnotationPersonnelleEdtiteur" 
+			             hauteur="50px" 
+			             largeur="100%" titre="" 
+			             desc="saisir le commentaire" 
+			             valeur="#{seance.annotations}"
+			             onchange="#{verifieModification}"  
+			             rendered="#{not readOnly}" 
+			             />
+                    <h:outputText 
+                        rendered="#{showAnnotations and  not readOnly}" 
+                        escape="false"
+                        styleClass="description champLatex"
+                        id= "#{idSaisieSeanceXX}_idAnnotationPersonnelleHTML"
+                        style="#{readOnly ? 'display:block' : 'display:none' }" 
+                        value="#{seance.annotationsHTML}" />    
+                </td>
+                <td style="width: 20px; text-align:center;">
+                    <cr:lien id="#{idSaisieSeanceXX}_idSeance_resetAnnotation" 
+                        bean="#{controleur}"
+                        cible="#{cibleResetSeanceAnnotations}"
+                        confirm="Voulez-vous vraiment effacer les annotations de cette séance ?"
+                        render="#{idSaisieSeanceXX}_idAnnotationPersonnelleEdtiteur"
+                        rendered="#{!readOnly}"
+                        image="eraserSmall.png"
+                        titre="Effacer les annotations personnelles de la séance" 
+                        oncomplete="#{verifieModification}"
+                        >
+                    </cr:lien>
+                    <br/>
+                    <cr:liena4j 
+                         idliena4j="#{idSaisieSeanceXX}_viewLatexAnnotations"
+                         bean="#{controleur}"
+                         cible="#{cibleChargeImagesLatexAnnotations}"
+                         oncomplete="
+                            visualiserLatex(
+                                '#{rich:clientId(cr:concat(idSaisieSeanceXX, '_viewLatexAnnotations'))}',
+                                '_idAnnotationPersonnelleEdtiteur',
+                                '_idAnnotationPersonnelleHTML',
+                                'les annotations personnelles de la séance'
+                                );
+                            "
+                         rendered="#{not readOnly}"
+                         render="#{idSaisieSeanceXX}_idAnnotationPersonnelleHTML"
+                         >
+                         
+                         <h:graphicImage
+                            library="images/icones" 
+                            name="aide-saisie.png"
+                            title="Visualiser les annotations personnelles de la séance" /> 
+                    </cr:liena4j>                       
+                </td>                    
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <t:div id="#{idSaisieSeanceXX}_ListeDesPiecesJointe">
+                        <rich:panel id="#{idSaisieSeanceXX}_ListeDesPiecesJointePanel"  rendered="#{not empty seance.files}" 
+                                 style="vertical-align:top; overflow:auto; width:100%; height:180px;">
+                            <cr:table idTable="#{idSaisieSeanceXX}_tableListingPieceJointeSea" style="width:100%;"
+                                liste="#{seance.files}" entete="Liste des pièces jointes ajoutées à la séance" >
+                                <cr:colonne libelleColonne="nom" id="">
+                                    <h:outputText value="#{ligne.nom}" />
+                                </cr:colonne>
+                                <cr:colonne libelleColonne="Actions" align="center" id="">
+                                    <cr:lien id="#{idSaisieSeanceXX}_dlSeaFichier" chemin="#{ligne.pathFullDownload}" rendered="#{ligne.activerLien}" bean=""
+                                         image="download.png" desc="Télécharger"/>   
+                                    <cr:lien bean="#{controleur}" id="#{idSaisieSeanceXX}_supprimer" 
+                                        confirm="Etes-vous sur de vouloir supprimer cette pièce jointe ?"
+                                        cible="#{cibleDeletePieceJointeSeance}" image="delete.gif" desc="Supprimer"
+                                        render="#{idSaisieSeanceXX}_ListeDesPiecesJointe" 
+                                        oncomplete="#{verifieModification}"
+                                        rendered="#{not readOnly}"
+                                         >
+                                        <f:setPropertyActionListener value="#{ligne}" target="#{controleur.form.pieceJointeASupprimer}" />
+                                    </cr:lien>
+                                </cr:colonne>
+                            </cr:table>
+                        </rich:panel>
+                    </t:div>
+                </td>            
+            </tr>
+        </table>
+	</rich:panel>
+</ui:composition>
+</html>

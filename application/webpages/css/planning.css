@@ -1,0 +1,26 @@
+
+.corpsOuvre {
+    padding: 0;
+    width: 17px;
+    font-weight: bold;
+}
+
+input.rf-sel-inp { width: 25px; }
+
+
+/* composant planning */
+.corpsPlanning {
+    margin: 0;
+    width: 90%;
+    text-decoration: none;
+    white-space: normal;
+}
+
+.corpsPlanning .numJour {
+    font-weight: bold;  
+}
+
+.corpsPlanning .numJourCourant {
+    font-weight: bold;  
+    color : red;
+}

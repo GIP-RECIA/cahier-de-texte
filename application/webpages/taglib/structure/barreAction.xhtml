@@ -1,0 +1,16 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:rich="http://richfaces.org/rich"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:cr="urn:crlr"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    >
+    
+<ui:composition>
+    <c:set var="rendered" value="${empty rendered ? true : rendered}"/>
+    <rich:toolBar height="32px" id="#{empty id ? 'barreAction' : id}" rendered="#{rendered}" style="background: #c3c9cd;border: 1px solid  #000000; vertical-align:middle;" >
+        <ui:insert/>
+    </rich:toolBar>    
+</ui:composition>
+</html>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx" xmlns:aop="http://www.springframework.org/schema/aop" xmlns:p="http://www.springframework.org/schema/p" 
+xsi:schemaLocation=" 
+   http://www.springframework.org/schema/beans 
+   http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+   http://www.springframework.org/schema/tx 
+   http://www.springframework.org/schema/tx/spring-tx-3.0.xsd 
+   http://www.springframework.org/schema/aop 
+   http://www.springframework.org/schema/aop/spring-aop-3.0.xsd"> 
+ 
+    
+    <!-- Implémentation couche d'accès aux données-->
+    <bean id="confidentialiteService" class="org.crlr.services.ConfidentialiteDelegate" />
+    <bean id="ldapService" class="org.crlr.services.LdapDelegate"/>
+    <bean id="seanceService" class="org.crlr.services.SeanceDelegate"/>
+    <bean id="sequenceService" class="org.crlr.services.SequenceDelegate"/>
+    <bean id="groupeClasseService" class="org.crlr.services.GroupeClasseDelegate"/>
+    <bean id="devoirService" class="org.crlr.services.DevoirDelegate"/>
+    <bean id="depotService" class="org.crlr.services.DepotDelegate"/>
+    <bean id="enseignementService" class="org.crlr.services.EnseignementDelegate"/>
+    <bean id="anneeScolaireService" class="org.crlr.services.AnneeScolaireDelegate"/>
+    <bean id="etablissementService" class="org.crlr.services.EtablissementDelegate"/>
+    <bean id="emploiService" class="org.crlr.services.EmploiDelegate"/>
+    
+    <bean id="emploiFacade" class="org.crlr.metier.facade.EmploiFacade"/>
+    <bean id="seanceFacade" class="org.crlr.metier.facade.SeanceFacade"/>
+    <bean id="visaFacade" class="org.crlr.metier.facade.VisaFacade"/>
+        
+    <bean id="preferencesService" class="org.crlr.services.PreferencesDelegate"/>
+    <bean id="inspectionService" class="org.crlr.services.InspectionDelegate"/>
+    <bean id="visaService" class="org.crlr.services.VisaDelegate"/>
+    <bean id="importEDTService" class="org.crlr.services.ImportEDTDelegate"/>
+    
+    
+</beans>

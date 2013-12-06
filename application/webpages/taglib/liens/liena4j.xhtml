@@ -1,0 +1,29 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"    
+    xmlns:c="http://java.sun.com/jsp/jstl/core"             
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:cr="urn:crlr">
+<ui:composition>
+    
+    <c:set var="_js" value="resetFormTarget();"/>
+    <c:set var="confirmation" value="#{empty confirm ? '' : cr:concat(cr:concat('if (!confirm(\'', confirm), '\')) {return false;}')}"/>
+    
+    <a4j:commandLink id="#{idliena4j}" 
+           action="#{bean[cible]}"
+           oncomplete="#{oncomplete}"
+           onclick="#{_js} #{onclick}; #{confirmation} desactiveClick(this.id, this.onclick);"
+           render="#{render}"
+           title="#{title}" 
+           status="#{status}"
+           style="#{style}"
+           rendered="#{empty rendered or rendered}"
+           >
+        <ui:insert />           
+    </a4j:commandLink>
+
+</ui:composition>
+</html>

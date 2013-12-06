@@ -1,0 +1,56 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:rich="http://richfaces.org/rich"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:a4j="http://richfaces.org/a4j" >
+<ui:composition>
+	<ui:remove>
+		<!-- 
+        popup : composant permettant le rendu d'un
+        d'une popup modal
+        
+        propriétés : 
+        * idPopup : identifiant unique de la popup.        
+        - tailleAuto : ajustement automatique de la taille de la popup. 
+        - largeurPopup : largeur de la popup.     
+        - hauteurPopup : hauteur de la popup.
+        - rendered : true ou false (rendu ou non rendu)
+        - titrePopup : titre de la popup.       
+        
+    -->
+    
+    
+	</ui:remove>
+	
+  <!-- Peut être plus besoin, vient de richfaces 3 / rich:editor -->
+  <c:set var="domElementAttachment" value="${empty domElementAttachment ? 'body' : domElementAttachment}"/>
+    
+	<c:set var="domElementAttachment" value="${empty popupUseRichEditor ? domElementAttachment : 'parent'}"/>
+	<c:set var="closeButton" value="${empty closeButton ? 'true' : closeButton}"/>
+	 
+   
+	
+	<rich:popupPanel id="#{idPopup}" autosized="#{tailleAuto}"
+		width="#{largeurPopup}" height="#{hauteurPopup}"
+		rendered="#{empty rendered ? true : rendered}" onhide="#{onhide}"
+		domElementAttachment="#{domElementAttachment}">
+        
+        
+		<f:facet name="header">
+			<h:outputText id = "#{idPopup}_titre" value="#{titrePopup}" style="padding-right:15px;" />
+		</f:facet>
+		<f:facet name="controls">
+			<h:panelGroup> 
+				<h:graphicImage library = "images/icones" name = "close.png" rendered="#{closeButton}"
+					styleClass="hidelink" id="#{idPopup}_hidelink" onclick="#{rich:component(idPopup)}.hide()" />
+          
+			</h:panelGroup>
+		</f:facet>
+		<ui:insert />
+        
+	</rich:popupPanel>
+  
+</ui:composition>
+</html>

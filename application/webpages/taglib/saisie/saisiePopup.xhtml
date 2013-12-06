@@ -1,0 +1,69 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:a4j="http://richfaces.org/a4j" xmlns:cr="urn:crlr">
+<ui:composition>
+	<ui:remove>
+        Attention ! Il est recommandé de fournir un identifiant pour le lien. Dans les tableaux par exemple,
+        un bug a été rencontré lorsque l'on n'en met pas.
+    </ui:remove>
+	<ui:remove>
+		<!-- 
+        saisiePopup : composant permettant le rendu d'un
+        champ de formulaire de type texte avec un lien popup.
+        
+        propriétés : 
+        * id : identifiant du composant.
+        - titre : libellé (optionnel) du champ. 
+        - desc : description du champ (tooltip).
+        * valeur : valueBinding
+        - modifiable
+        - lienModifiable : active ou non le lien de saisie pop-up
+        - maxlength : taille max en caractères affichable.
+        - largeur : largeur du champ. par défaut 150 pixels.    
+        - styleClass : class pour le champ ( redéfinit celui par défaut )   
+        - decalageTitreDroite : Décalage du libellé sur la droite.
+        - decalageTitreGauche : Décalage du libellé sur la gauche.
+    -->
+	</ui:remove>
+	<c:set var="maxlength" value="${empty maxlength ? '50' : 'maxlength'}" />
+	<c:set var="modifiable" value="${empty modifiable ? true : modifiable}" />
+	<c:set var="lienModifiable" value="${empty lienModifiable ? modifiable : lienModifiable}" />
+	<c:set var="largeur" value="${empty largeur ? '100' : largeur}" />
+	<c:set var="decalageTitreDroite" value="${empty decalageTitreDroite ? '10' : decalageTitreDroite}"/> 
+    <c:set var="decalageTitreGauche" value="${empty decalageTitreGauche ? '0' : decalageTitreGauche}"/> 
+	<c:set var="id" value="${empty id ? cr:idcompteur('saisiePopup') : id}"/>
+	<c:set var="rendered" value="${empty rendered ? true : rendered}" />
+	<c:set var="styleClassError" value="${empty styleClassError or !styleClassError  ? '' : 'messageErreur'}" />
+
+	<c:choose>
+		<c:when test="${not empty titre}">
+			<h:outputLabel value="#{titre}"
+				style="padding-right: ${decalageTitreDroite}px; padding-left: ${decalageTitreGauche}px;" rendered="#{rendered}"
+				styleClass="libelle" title="${desc}" />
+		</c:when>
+	</c:choose>
+
+	<h:inputText value="#{valeur}" id="#{id}"
+		onkeypress="#{onkeypress};if(checkReturnKey(event,13)){return false}"
+		styleClass="${not empty rendered and not rendered ? 'cachee' : empty styleClass ? (modifiable ? 'champ' : 'inactif') : styleClass} ${styleClassError}"
+		maxlength="#{maxlength}" rendered="#{rendered}"
+		disabled="#{not modifiable}" readonly="#{not modifiable}"
+		style="width:${largeur}px">
+		<ui:insert/>
+	</h:inputText>
+
+    <ui:remove>Marche seulement avec popupListeFiltrable pour l'instant due a _panel dans la balise render</ui:remove>
+	<c:if test="#{not empty idPopup}">
+	  <cr:lien id="lien_as_#{id}" modifiable="#{modifiable or lienModifiable}"
+          oncomplete="#{rich:component(idPopup)}.show()" cible="#{cible}" bean="#{bean}"
+          render="#{idPopup}_panel" image="#{(modifiable or lienModifiable) ? 'aide-saisie.png' : 'aide-saisie-grise.png'}" 
+          style="padding-left:2px;"
+          />
+    </c:if>                       
+
+</ui:composition>
+</html>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="devoirs" pageWidth="535" pageHeight="595" columnWidth="535" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<field name="code" class="java.lang.String"/>
+	<field name="description" class="java.lang.String"/>
+	<field name="dateRemise" class="java.util.Date"/>
+	<field name="intitule" class="java.lang.String"/>
+	<field name="typeDevoirDTO" class="org.crlr.dto.application.devoir.TypeDevoirDTO"/>
+	<field name="listeImages" class="java.util.List"/>
+	<field name="files" class="java.util.List"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="57" splitType="Stretch">
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement key="textField-3" x="0" y="0" width="366" height="19" isPrintInFirstWholeBand="true"/>
+				<box topPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="SansSerif" size="10" isUnderline="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Pour le " + org.crlr.utils.DateUtils.format($F{dateRemise}) + " : "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-4" x="0" y="19" width="492" height="19"/>
+				<box topPadding="0" leftPadding="0"/>
+				<textElement>
+					<font fontName="SansSerif" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{intitule}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false">
+				<reportElement key="textField-5" stretchType="RelativeToTallestObject" x="0" y="38" width="492" height="19" isPrintInFirstWholeBand="true" isPrintWhenDetailOverflows="true"/>
+				<box topPadding="2"/>
+				<textElement textAlignment="Justified" markup="styled">
+					<font fontName="SansSerif"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{description} + "\n"]]></textFieldExpression>
+			</textField>
+			<image onErrorType="Icon">
+				<reportElement x="505" y="41" width="16" height="16">
+					<printWhenExpression><![CDATA[$F{files}.size() > 0]]></printWhenExpression>
+				</reportElement>
+				<imageExpression><![CDATA[getClass().getResourceAsStream("/org/crlr/report/attachment.gif")]]></imageExpression>
+			</image>
+		</band>
+		<band height="20" splitType="Stretch">
+			<subreport>
+				<reportElement stretchType="RelativeToTallestObject" x="-1" y="0" width="536" height="20"/>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{listeImages})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[getClass().getResourceAsStream("/org/crlr/report/imageList_subreport.jasper")]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

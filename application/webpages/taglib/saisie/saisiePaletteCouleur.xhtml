@@ -1,0 +1,38 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:rich="http://richfaces.org/rich"
+	xmlns:a4j="http://richfaces.org/a4j" xmlns:cr="urn:crlr">
+<ui:composition>
+	<ui:remove>
+		<!-- 
+        saisieListe : composant permettant le rendu d'un
+        champ de formulaire de type liste.
+        
+        propriétés : 
+        * id : identifiant du composant.
+        - titre : libellé (optionnel) du champ. 
+        - desc : description du champ (tooltip).
+        * valeur : valueBinding
+        * donnees : la liste d'objet DTO ou selectItem
+        - modifiable      
+        - largeur : largeur du champ. par défaut 150 pixels.        
+    -->
+	</ui:remove>
+	<rich:dataGrid columnClasses="corpsOuvre" columns="12" elements="12"
+		id="listeCoul" value="#{listeCouleur}" var="coul">
+		<a4j:commandLink onclick="" render="couleurSelection">
+			<h:panelGrid columns="1" onclick="#{onClick}"
+				style="cursor:pointer;width:100%;background-color : #{coul.id};"
+				title="">
+				<cr:spacer height="2" width="1" />
+			</h:panelGrid>
+			<a4j:param assignTo="#{valeur}" name="couleur" value="#{coul}" />
+		</a4j:commandLink>
+	</rich:dataGrid>
+
+</ui:composition>
+</html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"> 
+
+<ui:composition>
+
+<c:set var="width" value="${not empty width ? width : '0'}"/> 
+<c:set var="height" value="${not empty height ? height : '0'}"/> 
+	
+	<h:panelGroup rendered="#{cc.attrs.height > 0}">
+		<br/>
+	</h:panelGroup>
+	
+	<h:graphicImage  
+					name="images/spacer.gif"
+					width="#{width}px"
+					height="#{height}px"/>
+
+</ui:composition>
+</html>
+
