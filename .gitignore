@@ -10,6 +10,7 @@
 # Build directories
 ###################
 build/
+crlr-commons/jar/
 
 ###################
 # Eclipse 
