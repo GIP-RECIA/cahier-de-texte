@@ -51,6 +51,8 @@ public class EnseignantDTO {
     
     private Integer id;
     
+    private String uid;
+    
     /**
      * Pour l'inspection.
      */
@@ -246,4 +248,31 @@ public class EnseignantDTO {
     public void setVraiOuFauxSelectionne(Boolean vraiOuFauxSelectionne) {
         this.vraiOuFauxSelectionne = vraiOuFauxSelectionne;
     }
+
+    /**
+     * Accesseur de uid {@link #uid}.
+     * @return retourne uid
+     */
+    public String getUid() {
+        return uid;
+    }
+
+    /**
+     * Mutateur de uid {@link #uid}.
+     * @param uid le uid to set
+     */
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return "EnseignantDTO [nom=" + nom + ", prenom=" + prenom
+                + ", civilite=" + civilite + ", id=" + id + ", uid=" + uid
+                + "]";
+    }
+    
 }

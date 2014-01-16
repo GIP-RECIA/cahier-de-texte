@@ -721,12 +721,22 @@ function transfertFocus(source, destination, hasErrors) {
  */
 function changeFocus(id) {
 	try {
-		var obj = document.getElementById(id);
-		if (obj) {
-			if(!obj.disabled) {
-				obj.focus(); 
-			}
+		var jqObj = jQuery('[id="' + id + '"]')
+		console.log(jqObj.length);
+		//var obj = document.getElementById(id);
+		console.log(!jqObj.is(":disabled"));
+		
+		if(jqObj.length > 0 && !jqObj.is(":disabled")) {
+			//obj.focus(); 
+			
+			logFormat("boh changefocus {0}", jqObj.val());
+			var value = jqObj.val();
+			jqObj.focus();
+			jqObj.val('');
+			jqObj.val(value);
+			
 		}
+	
 	} catch(e) {
 		if (isDebug) {
 			alert("Erreur dans le transfert de focus : " + e.description);
@@ -774,6 +784,29 @@ function lancerLienAjax(nomLien, params){
 	}
 }
 
+ /**
+  * Lancement d'un lien ajax existant a partir de son selecteur jQuery
+  * dans la page. L'attribut params permet
+  * de passer des valeurs qui seront positionnÃ©s dans les 
+  * champs de saisie correspondant avant appel du lien d'action.
+  * Ex params = {'lig':'valLig', 'col':'valCol', ...}
+  * NB : les champs de saisie (pouvant être des champs cachés)
+  * doivent être déclarés.
+  */
+ function lancerLienSelecteurAjax(selecteur, params){       
+     try{
+     for( var i in params){
+         var paramElem = jQuery(i);
+         if (paramElem != null) {
+             paramElem.val(params[i]);
+         }
+     }
+     var lien = jQuery(selecteur);
+     lien.click();
+     } catch(e){
+         console.log("Exception!!" + e);
+     }
+ }
 /**
  * Fonction utilisee par le composant saisieDeuxOptionsExclu de maniere 
  * a ne laisser qu'un choix possible parmi les deux checkbox
@@ -1229,7 +1262,8 @@ function visualiserLatex(
 ) {
    
    // Recupere les objets
-   var escapedLienObjId = lienObjId.replace(/:/, '\\:');
+   var reg=new RegExp(":", "g");
+   var escapedLienObjId = lienObjId.replace(reg, '\\:');
    var lien = jQuery('#' + escapedLienObjId);
    var parent = lien.closest('table');
    var saisieEditor = parent.find('[id$="' + subIdSaisieEditeur + '"]');
@@ -1266,4 +1300,18 @@ function visualiserLatex(
        icone[0].src = scrNouveau;
    }
 
+}
+
+/** 
+ * Fonction declenchée suite à une sélection d'un fichier. 
+ * Ferme la popup de sélection de fichier puis 
+ * Déclenche le click sur le idlien. */ 
+
+function lienAfterSelectFile(idpopup, idlien) { 
+    var popup = RichFaces.$(idpopup); 
+    var lien = jQuery(idlien);
+    popup.hide();
+    if (lien != null) {
+        lien.click();
+    } 
 }

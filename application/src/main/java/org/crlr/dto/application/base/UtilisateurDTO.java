@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.crlr.dto.UserDTO;
+import org.crlr.dto.application.remplacement.RemplacementDTO;
 
 /**
  * DTO contenant les informations d'un utilisateur de l'ENT.
@@ -83,6 +84,8 @@ public class UtilisateurDTO implements Serializable {
     private Set<String> adminLocalSiren = new HashSet<String>();
     
     private String ticketAlfresco;
+    
+    private RemplacementDTO periodeRemplacement;
     
     /**
      * Accesseur profil.
@@ -424,5 +427,19 @@ public class UtilisateurDTO implements Serializable {
      */
     public void setTicketAlfresco(String ticketAlfresco) {
         this.ticketAlfresco = ticketAlfresco;
+    }
+
+    /**
+     * @return the periodeRemplacement
+     */
+    public RemplacementDTO getPeriodeRemplacement() {
+        return periodeRemplacement;
+    }
+
+    /**
+     * @param periodeRemplacement the periodeRemplacement to set
+     */
+    public void setPeriodeRemplacement(RemplacementDTO periodeRemplacement) {
+        this.periodeRemplacement = periodeRemplacement;
     }
 }

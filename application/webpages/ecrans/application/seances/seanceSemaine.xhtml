@@ -151,18 +151,18 @@ render="idPanelResultat idPanelResultatListeDiv outilRecherche outilRecherche2" 
                     <h:outputText value="#{ligne.denomination} #{ligne.nom} " />
                 </cr:colonne>
                 <cr:colonne libelleColonne="Intitulé" id="" taille="150">
-                    <h:outputText value="#{ligne.intituleSeance}" />
+                    <h:outputText value="#{ligne.seance.intitule}" />
                 </cr:colonne>
                 <cr:colonne libelleColonne="Date" id="" taille="50">
-                    <h:outputText value="#{cr:formatDate(ligne.date, 'dd/MM/yyyy')}" />
+                    <h:outputText value="#{cr:formatDate(ligne.seance.date, 'dd/MM/yyyy')}" />
                 </cr:colonne>
                 <cr:colonne libelleColonne="" align="center" id="" taille="20">
                     <cr:lien id="iddlSeaFichier" 
                         rendered="true" 
                         bean="#{seanceSemaine}" 
                         cible="naviguerDetailSeance" 
-                        image="#{ligne.vraiOuFauxModifiable ? 'edit.gif' : 'loupe-icone.png' }" 
-                        desc="#{ligne.vraiOuFauxModifiable ? 'Modifier la séance' : 'Consulter la séance' }"
+                        image="#{ligne.seance.accesEcriture ? 'edit.gif' : 'loupe-icone.png' }" 
+                        desc="#{ligne.seance.accesEcriture ? 'Modifier la séance' : 'Consulter la séance' }"
                         render="idPopupConsulterSeance_form:idPopupConsulterSeance_panel,idPopupConsulterSeance_form:idtabPanelDetailJourSeance "
                         oncomplete="#{rich:component('idPopupConsulterSeance')}.show(); appliqueRotationTampon();">
                         <f:setPropertyActionListener value="#{ligne}" target="#{seanceSemaine.form.selectSeance}" />         
@@ -197,7 +197,7 @@ render="idPanelResultat idPanelResultatListeDiv outilRecherche outilRecherche2" 
     largeurPopup="800" maxlength="50" statusPopup="statuspop"
     titrePopup="Détail de la séance">
     <a4j:outputPanel id="idPopupConsulterSeanceRegion">
-        <cr:menuAction id="idMenuActionPopupSeance" surcharge="false" rendered="#{seanceSemaine.form.selectSeance.vraiOuFauxModifiable}">
+        <cr:menuAction id="idMenuActionPopupSeance" surcharge="false" rendered="#{seanceSemaine.form.selectSeance.seance.accesEcriture}">
             <cr:elemMenuAction 
               idaction="idSauverSeance" 
               bean="#{ajoutSeance}" cible="sauver"
@@ -209,7 +209,7 @@ render="idPanelResultat idPanelResultatListeDiv outilRecherche outilRecherche2" 
                 lancerLienAjax('idChercher');
                 #{rich:component('idPopupConsulterSeance')}.hide();  
               }" 
-              rendered="true" 
+              rendered="#{ajoutSeance.form.seance.accesEcriture}"
             />
             <cr:elemMenuAction 
               idaction="idDeleteSeance" bean="#{ajoutSeance}" cible="deleteSeance"
@@ -221,7 +221,7 @@ render="idPanelResultat idPanelResultatListeDiv outilRecherche outilRecherche2" 
                 lancerLienAjax('idChercher'); 
                 #{rich:component('idPopupConsulterSeance')}.hide();
               }" 
-              rendered="true" 
+              rendered="#{ajoutSeance.form.seance.accesEcriture}"
             />
             <cr:elemMenuAction 
               idaction="idCopierSeance" 
@@ -229,7 +229,7 @@ render="idPanelResultat idPanelResultatListeDiv outilRecherche outilRecherche2" 
               image="copy.png" 
               title="Copier la séance"
               oncomplete="" 
-              rendered="true" 
+              rendered="#{contexteUtilisateur.utilisateurDTO.profil eq 'ENSEIGNANT'}" 
             />
             <cr:elemMenuAction 
               idaction="idCollerSeance" 
@@ -239,7 +239,7 @@ render="idPanelResultat idPanelResultatListeDiv outilRecherche outilRecherche2" 
               image="coller.png" 
               title="Coller la séance"
               oncomplete="" 
-              rendered="#{ajoutSeance.form.seanceCopie != null}" 
+              rendered="#{ajoutSeance.form.seance.accesEcriture and ajoutSeance.form.seanceCopie != null}" 
             />
         </cr:menuAction>
         <rich:tabPanel selectedTab="tabSeance" switchType="client" activeItem="TAB_SEANCE" 
@@ -248,8 +248,8 @@ render="idPanelResultat idPanelResultatListeDiv outilRecherche outilRecherche2" 
                 <t:div style="height:450px; overflow:auto;">
                     <cr:saisieSeance
                         seance="#{ajoutSeance.form.seance}"
-                        readOnly="#{not seanceSemaine.form.selectSeance.vraiOuFauxModifiable}"
-                        showAnnotations="#{seanceSemaine.form.selectSeance.vraiOuFauxModifiable}"
+                        readOnly="#{not ajoutSeance.form.seance.accesEcriture}"
+                        showAnnotations="#{ajoutSeance.form.seance.accesEcriture}"
                         formulaire_contenant="idPopupConsulterSeance_form"
                         idPopupPiecesJointes="idPopupPiecesJointes"
                         id_saisieSeance="idSaisieSeance"
@@ -277,7 +277,7 @@ render="idPanelResultat idPanelResultatListeDiv outilRecherche outilRecherche2" 
                            formulaire_contenant="idPopupConsulterSeance_form"
                            id_saisieDevoir="idSaisieDevoirSeance${status.index}"
                            devoirDTO="#{devoir}"
-                           readOnly="#{not seanceSemaine.form.selectSeance.vraiOuFauxModifiable}"
+                           readOnly="#{not ajoutSeance.form.seance.accesEcriture}"
                            id_devoirConteneur="idListeDesDevoirsSeance"
                            idPopupPiecesJointes="idPopupPiecesJointes"
                            listeTypeDevoir="#{ajoutSeance.form.listeTypeDevoir}"
@@ -293,11 +293,11 @@ render="idPanelResultat idPanelResultatListeDiv outilRecherche outilRecherche2" 
                         /> 
                     </c:forEach>
                 </t:div>
-                <t:div style="height:32px; padding-top:5px; #{seanceSemaine.form.selectSeance.vraiOuFauxModifiable ? '' : 'display:none;'}">
+                <t:div style="height:32px; padding-top:5px; #{ajoutSeance.form.seance.accesEcriture ? '' : 'display:none;'}">
                     <cr:lien id="idAjouterDevoirSeance" bean="#{ajoutSeance}"
                         cible="ajouterDevoir"
                         render="idListeDesDevoirsSeance"
-                        showAnnotations="#{seanceSemaine.form.selectSeance.vraiOuFauxModifiable}"
+                        showAnnotations="#{ajoutSeance.form.seance.accesEcriture}"
                         image="add.png"
                         desc="Ajouter un travail à faire" />
                 </t:div>

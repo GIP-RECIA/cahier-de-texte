@@ -91,7 +91,7 @@
     <a4j:jsFunction action="#{consoliderEmp.chargerDetailJourEmploiDTOSel}"
                     execute="@this"
                     name="afficherEventPopup"
-                    oncomplete="#{rich:component('idPopupDetail')}.show(); "
+                    oncomplete="#{rich:component('statuspop_wait')}.hide();#{rich:component('idPopupDetail')}.show(); "
                     render="idPopupDetail">
       <a4j:param assignTo="#{consoliderEmp.form.detailJourEmploiDTOSelIndex}"
                  name="index" />

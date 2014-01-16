@@ -12,7 +12,9 @@ package org.crlr.dto.application.base;
  * @author breytond.
  *
  */
-public enum TypeSkin {DEFAULT("ruby"), CG48("cg48"), CG30("cg30"), CG66("cg66"), CG34("cg34"), CG11("cg11"), CRC("crc"), AQUITAINE("aquitaine");
+public enum TypeSkin {
+    DEFAULT("ruby"), CG48("cg48"), CG30("cg30"), CG66("cg66"), CG34("cg34"), CG11("cg11"), CRC("crc"), 
+    AQUITAINE("aquitaine");
 /** Valeur du mode. */
 private final String valeur;
 

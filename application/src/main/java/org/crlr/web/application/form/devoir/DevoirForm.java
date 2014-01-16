@@ -41,6 +41,8 @@ public class DevoirForm extends AbstractPopupForm {
     /** Liste des jours qui sont ouvres pour l etablissement. */
     private Map<TypeJour,Boolean> jourOuvreAccessible;
     
+    private List<TypeJour> listeJoursOuvre;
+    
     /** La barre de semaine pour l'alternance des semaines. */ 
     private List<BarreSemaineDTO> listeBarreSemaine;
 
@@ -464,13 +466,27 @@ public class DevoirForm extends AbstractPopupForm {
             return true;
         } else {
             for (final DetailJourDTO detail : listeDevoir) {
-                final TypeJour jourDevoir = TypeJour.getTypeJourFromDate(detail.getDate());
+                final TypeJour jourDevoir = TypeJour.getTypeJourFromDate(detail.getDateRemise());
                 if (jourDevoir != null && jourDevoir.equals(jour)) {
                     return true;
                 }
             }
         }
         return false;
+    }
+    
+    /**
+     * @return the listeJoursOuvre
+     */
+    public List<TypeJour> getListeJoursOuvre() {
+        return listeJoursOuvre;
+    }
+
+    /**
+     * @param listeJoursOuvre the listeJoursOuvre to set
+     */
+    public void setListeJoursOuvre(List<TypeJour> listeJoursOuvre) {
+        this.listeJoursOuvre = listeJoursOuvre;
     }
     
     /**

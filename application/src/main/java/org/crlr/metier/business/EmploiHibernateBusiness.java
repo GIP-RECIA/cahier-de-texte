@@ -122,7 +122,7 @@ public class EmploiHibernateBusiness extends AbstractBusiness implements
 
                 beanUtilsBean.copyProperties(emploiBean, element);
             } catch (Exception ex) {
-                log.error(ex, "exception");
+                log.error("exception", ex);
             }
 
             if (element.getTypeCouleur() == null) {
@@ -186,7 +186,7 @@ public class EmploiHibernateBusiness extends AbstractBusiness implements
                 + "   e.idPeriodeEmploi = :idPeriode ";
 
         getEntityManager().createQuery(query)
-            .setParameter("typeSemaine",typeSemaine)
+            .setParameter("typeSemaine",typeSemaine.getValeur())
             .setParameter("idEtablissement", idEtablissement)
             .setParameter("idEnseignant", idEnseignant)
             .setParameter("idPeriode", idPeriode)
@@ -253,7 +253,7 @@ public class EmploiHibernateBusiness extends AbstractBusiness implements
         Query queryObj = getEntityManager().createQuery(query);
 
         if (typeSemaine != null) {
-            queryObj.setParameter("typeSemaine", typeSemaine.toString());
+            queryObj.setParameter("typeSemaine", typeSemaine.getValeur());
         }
 
         queryObj = queryObj.setParameter("idEtablissement", idEtablissement)
@@ -276,7 +276,7 @@ public class EmploiHibernateBusiness extends AbstractBusiness implements
 
                 beanUtilsBean.copyProperties(detailJourEmploiDTO, result);
             } catch (Exception ex) {
-                log.error(ex, "Exception");
+                log.error( "Exception", ex);
             }
 
             Set<Integer> matierIds = new HashSet<Integer>();
@@ -337,6 +337,7 @@ public class EmploiHibernateBusiness extends AbstractBusiness implements
         final ResultatDTO<List<DetailJourEmploiDTO>> resultat = new ResultatDTO<List<DetailJourEmploiDTO>>();
 
         final TypeSemaine typeSemaine = rechercheEmploiQO.getTypeSemaine();
+        
         final Integer idEtablissement = rechercheEmploiQO.getIdEtablissement();
         final Set<Integer> listeGroupes = rechercheEmploiQO.getListeDeGroupes();
 
@@ -352,7 +353,7 @@ public class EmploiHibernateBusiness extends AbstractBusiness implements
         // lié à des périodes distinctes
         while (queryCal.compareTo(queryEndCal) <= 0) {
             final Date queryDate = queryCal.getTime();
-            log.debug("Query date {0}", DateUtils.format(queryDate, "yyyy-MM-dd"));
+            log.debug("Query date {}", DateUtils.format(queryDate, "yyyy-MM-dd"));
 
             final TypeJour jour = TypeJour.getTypeJour(queryCal.get(Calendar.DAY_OF_WEEK));
 
@@ -423,9 +424,9 @@ public class EmploiHibernateBusiness extends AbstractBusiness implements
             query += " ORDER BY e.heureDebut ASC, e.minuteDebut ASC";
 
             final Query queryObject = getEntityManager().createQuery(query);
-
+            final Character typeSemaineChar = typeSemaine.getValeur();
             queryObject
-                .setParameter("typeSemaine", typeSemaine)
+                .setParameter("typeSemaine", typeSemaineChar)
                 .setParameter("idEtablissement", idEtablissement)
                 .setParameter("jourDate", queryDate)
                 .setParameter("jour", jour);
@@ -517,7 +518,7 @@ public class EmploiHibernateBusiness extends AbstractBusiness implements
                 }
             }
 
-            log.debug("Ajouter {0} résultats", celluleDetailJour.size());
+            log.debug("Ajouter {} résultats", celluleDetailJour.size());
             listeEvents.addAll(celluleDetailJour);
 
             queryCal.add(Calendar.DATE, 1);
@@ -808,9 +809,9 @@ public class EmploiHibernateBusiness extends AbstractBusiness implements
             try {
                 BeanUtils.copyProperties(dto, bean);
             } catch (InvocationTargetException ex) {
-                log.error(ex, "findPeriodes");
+                log.error( "findPeriodes", ex);
             } catch (IllegalAccessException ex) {
-                log.error(ex, "findPeriodes");
+                log.error( "findPeriodes", ex);
             }
             listeDto.add(dto);
         }
@@ -835,7 +836,7 @@ public class EmploiHibernateBusiness extends AbstractBusiness implements
         try {
             BeanUtils.copyProperties(bean, periode);
         } catch (Exception ex) {
-            log.error(ex, "ex");
+            log.error( "Exception", ex);
         }
 
         final BaseHibernateBusiness baseHibernateBusiness = new BaseHibernateBusiness(
@@ -966,7 +967,7 @@ public class EmploiHibernateBusiness extends AbstractBusiness implements
      * @return une chaine.
      */
     @SuppressWarnings("unchecked")
-    private String findAlternanceSemaine(final Integer idEtablissement) {
+    public String findAlternanceSemaine(final Integer idEtablissement) {
         Assert.isNotNull("idEtablissement", idEtablissement);
 
         final String query =

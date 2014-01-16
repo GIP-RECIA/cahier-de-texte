@@ -55,13 +55,21 @@ public class BaseHibernateBusiness {
         final String query = "SELECT nextval('"+ nomSequence + "')";
         BigInteger newId;
 
-        newId = (BigInteger) entityManager.createNativeQuery(query).getSingleResult();
+        Object idObj = entityManager.createNativeQuery(query).getSingleResult();
         
-        if (newId == null) {
+        if (idObj == null) {
             throw new CrlrRuntimeException("Aucune séquence nommée {0} n'est présente dans la base de données", nomSequence);
         }
+        
+        if (idObj instanceof BigInteger) {
+            return ((BigInteger) idObj).intValue(); 
+        }
+        
+        if (idObj instanceof Integer) {
+            return (Integer) idObj;
+        }
 
-        return newId.intValue();
+        throw new CrlrRuntimeException("séquence nommée {0} renvoyer un type pas connu", nomSequence);
     }
     
     /**

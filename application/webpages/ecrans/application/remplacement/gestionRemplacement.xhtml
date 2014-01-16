@@ -1,0 +1,247 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html" xmlns:cr="urn:crlr"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	xmlns:rich="http://richfaces.org/rich"
+	xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:enseignant="http://java.sun.com/jsf/composite/enseignant"
+	xmlns:a4j="http://richfaces.org/a4j">
+
+
+<cr:page titrePage="Gestion des remplacements">
+
+	<h:outputScript library="js" name="jquery-ui-1.8.17.custom.min.js" target="head" />
+	<h:outputScript library="js" name="gestionRemplacement.js" target="head" />
+    <h:outputScript library="css" name="gestionRemplacement.css" target="head" />
+	
+
+	<cr:menuAction id="idMenuAction" autreAction="true">
+
+		<cr:lien id="idSauver" bean="#{gestionRemplacement}"
+			style="#{empty contexteUtilisateur.utilisateurDTOOrigine ? '' : 'display: none;'}"
+			cible="sauver" image="save.png"
+			desc="Enregistrer les modifications" oncomplete="setModificationFormulaire(false);"
+			render="idGestionRemplacement" status="status" />
+
+		<cr:lien id="idAjouter" bean="#{gestionRemplacement}"
+			style="#{empty contexteUtilisateur.utilisateurDTOOrigine ? '' : 'display: none;'}"
+			cible="ajouterRemplacement" image="add.png"
+			desc="Ajouter un remplacement" oncomplete=""
+			render="idGestionRemplacement" status="status" />
+
+		<cr:lien id="idRecharger" bean="#{gestionRemplacement}"
+			style="#{empty contexteUtilisateur.utilisateurDTOOrigine ? '' : 'display: none;'}"
+			cible="recharger" image="reload.png"
+			desc="Annuler toutes les modifications" oncomplete="setModificationFormulaire(false);"
+			render="idGestionRemplacement" status="status" />
+
+		<cr:lien id="idAnnuler" bean="#{gestionRemplacement}"
+			style="#{empty contexteUtilisateur.utilisateurDTOOrigine ? 'display: none;' : ''}"
+			cible="arreterSimulerEnseignant" image="supprimer.png"
+			desc="Mettre fin au remplacement et retourner au mode normal"
+			oncomplete="lancerLienAjax('idNaviguerAccueil');"
+			render="idGestionRemplacement, idSauver" status="status" />
+
+	</cr:menuAction>
+
+	<a4j:commandLink id="idNaviguerAccueil" action="ACCUEIL@menu@arbre"
+		status="status" />
+
+    <cr:liena4j 
+        idliena4j="idRefreshListing" 
+        bean="#{gestionRemplacement}" 
+        cible="refreshListing" 
+        render="idGestionRemplacement" 
+        oncomplete="onresize(); setModificationFormulaire(true);"
+        status="status"  
+     />
+
+	<t:div id="idGestionRemplacement">
+
+		<rich:panel header="Mode remplacement" id="idModeRemplacement"
+			rendered="#{not empty contexteUtilisateur.utilisateurDTOOrigine}">
+			<div
+				style="width: 100%; text-align: center; margin-top: 10px; font-weight: bold;">
+			<center><h:panelGrid columns="1">
+				<h:outputText
+					value="Vous êtes actuellement en cours de remplacement de l'enseignant #{contexteUtilisateur.utilisateurDTO.userDTO.nom} #{contexteUtilisateur.utilisateurDTO.userDTO.prenom} du #{cr:formatDate(contexteUtilisateur.utilisateurDTO.periodeRemplacement.dateDebut, 'dd/MM/yyyy')} au #{cr:formatDate(contexteUtilisateur.utilisateurDTO.periodeRemplacement.dateFin, 'dd/MM/yyyy')}" />
+			</h:panelGrid></center>
+			</div>
+			<cr:spacer height="5" />
+		</rich:panel>
+
+		<rich:panel id="idListeRemplacement" header="Liste des remplacements"
+			rendered="#{empty contexteUtilisateur.utilisateurDTOOrigine}">
+			<t:div
+				style="width: 100%; text-align: center; margin-top: 10px; font-weight: bold;"
+				rendered="#{empty gestionRemplacement.form.listeRemplacement}">
+				<center><h:panelGrid columns="1">
+					<h:outputText value="Aucun remplacement n'est déclaré" />
+				</h:panelGrid></center>
+			</t:div>
+			<t:div style="height:200px; whidth:100%; overflow:auto;"
+				rendered="#{not empty gestionRemplacement.form.listeRemplacement}">
+				<cr:table idTable="idTableListeRemplacement"
+					style="margin: 15px auto auto;"
+					liste="#{gestionRemplacement.form.listeRemplacement}"
+					entete="Liste des remplacements déclarés"
+					avecPagination="false">
+
+					<cr:colonne id="colEnseignant" taille="150"
+						libelleColonne="Enseignant" align="left"
+						rendered="#{contexteUtilisateur.utilisateurDTO.profil eq 'ENSEIGNANT'}">
+						<h:outputText 
+						    value="#{ligne.enseignantAbsent.uid eq contexteUtilisateur.utilisateurDTO.userDTO.uid ? 
+						            ligne.enseignantRemplacant.nomComplet : ligne.enseignantAbsent.nomComplet}"
+							style="#{ligne.estModifiee or ligne.estSupprimee or ligne.estAjoute ? 'font-style: italic; ' : ''} #{ligne.estSupprimee ? 'text-decoration:line-through;' : '' }" />
+                        <cr:liena4j idliena4j="idSelectionnerRemplacant" bean="#{gestionRemplacement}"
+                            cible="selectionnerEnseignantRemplacant" render="" 
+                            rendered="#{ligne.estAjoute and ligne.enseignantAbsent.uid eq contexteUtilisateur.utilisateurDTO.userDTO.uid}" status="status"
+                            oncomplete="#{rich:component('idPopupEnseignantRemplacant')}.show();">
+                            <h:graphicImage library="images/icones"
+                                name="aide-saisie.png"
+                                title="Sélectionner l'enseignant remplaçant" />
+                            <f:setPropertyActionListener value="#{ligne}"
+                                target="#{gestionRemplacement.form.remplacementSelected}" />
+                        </cr:liena4j>
+							
+					</cr:colonne>
+                    <cr:colonne id="colRole" taille="150"
+                        libelleColonne="Mon rôle" align="left"
+                        rendered="#{contexteUtilisateur.utilisateurDTO.profil eq 'ENSEIGNANT'}">
+                        <h:outputText 
+                            value="#{ligne.enseignantAbsent.uid eq contexteUtilisateur.utilisateurDTO.userDTO.uid ?
+                                   'Absence' : 'Remplacement'}"
+                            title="#{ligne.enseignantAbsent.uid eq contexteUtilisateur.utilisateurDTO.userDTO.uid ?
+                                   'Cet enseignant assure mon remplacement' : 'Je prends en charge le remplacement de cet enseignant'}"
+                            style="#{ligne.estModifiee or ligne.estSupprimee or ligne.estAjoute ? 'font-style: italic; ' : ''} #{ligne.estSupprimee ? 'text-decoration:line-through;' : '' }" />
+                    </cr:colonne>
+                    <cr:colonne id="colEnseignantAbsent" taille="150"
+                        libelleColonne="Enseignant absent" align="left"
+                        rendered="#{contexteUtilisateur.utilisateurDTO.profil eq 'DIRECTION_ETABLISSEMENT'}">
+                        <h:outputText 
+                            value="#{ligne.enseignantAbsent.nomComplet}"
+                            style="#{ligne.estModifiee or ligne.estSupprimee or ligne.estAjoute ? 'font-style: italic; ' : ''} #{ligne.estSupprimee ? 'text-decoration:line-through;' : '' }" />
+                        <cr:liena4j idliena4j="idSelectionnerAbsent" bean="#{gestionRemplacement}"
+                            cible="selectionnerEnseignantAbsent" render="" 
+                            rendered="#{ligne.estAjoute}" status="status"
+                            oncomplete="#{rich:component('idPopupEnseignantAbsent')}.show();">
+                            <h:graphicImage library="images/icones"
+                                name="aide-saisie.png"
+                                title="Sélectionner l'enseignant remplaçant" />
+                            <f:setPropertyActionListener value="#{ligne}"
+                                target="#{gestionRemplacement.form.remplacementSelected}" />
+                        </cr:liena4j>
+                    </cr:colonne>
+                    <cr:colonne id="colEnseignantRemplacant" taille="150"
+                        libelleColonne="Enseignant reamplaçant" align="left"
+                        rendered="#{contexteUtilisateur.utilisateurDTO.profil eq 'DIRECTION_ETABLISSEMENT'}">
+                        <h:outputText 
+                            value="#{ligne.enseignantRemplacant.nomComplet}"
+                            style="#{ligne.estModifiee or ligne.estSupprimee or ligne.estAjoute ? 'font-style: italic; ' : ''} #{ligne.estSupprimee ? 'text-decoration:line-through;' : '' }" />
+                        <cr:liena4j idliena4j="idSelectionnerRemplacant2" bean="#{gestionRemplacement}"
+                            cible="selectionnerEnseignantRemplacant" render="" 
+                            rendered="#{ligne.estAjoute}" status="status"
+                            oncomplete="#{rich:component('idPopupEnseignantRemplacant')}.show();">
+                            <h:graphicImage library="images/icones"
+                                name="aide-saisie.png"
+                                title="Sélectionner l'enseignant remplaçant" />
+                            <f:setPropertyActionListener value="#{ligne}"
+                                target="#{gestionRemplacement.form.remplacementSelected}" />
+                        </cr:liena4j>
+                    </cr:colonne>
+					<cr:colonne id="colDateDebut" taille="50"
+						libelleColonne="Début" align="center">
+                        <cr:saisieDate id="colDateDebutEdit" largeur="65" titre="" rendered="#{(contexteUtilisateur.utilisateurDTO.profil eq 'DIRECTION_ETABLISSEMENT') or (ligne.enseignantAbsent.uid eq contexteUtilisateur.utilisateurDTO.userDTO.uid)}"
+                            style="#{ligne.estModifiee or ligne.estAjoute ? 'font-style: italic;' : ''}"
+                            valeur="#{ligne.dateDebut}"
+                            oncomplete="if (#{not ligne.estAjoute}) { refreshDate_#{ligne.id}(); } setModificationFormulaire(true);">
+                        </cr:saisieDate>
+						
+                        <h:outputText 
+                            style="#{ligne.estModifiee or ligne.estAjoute ? 'font-style: italic;' : ''}"
+                            rendered="#{not ((contexteUtilisateur.utilisateurDTO.profil eq 'DIRECTION_ETABLISSEMENT') or (ligne.enseignantAbsent.uid eq contexteUtilisateur.utilisateurDTO.userDTO.uid))}"
+                            value="#{cr:formatDate(ligne.dateDebut, 'dd/MM/yyyy')}" />
+					</cr:colonne>
+                    <cr:colonne id="colDateFin" taille="50"
+                        libelleColonne="Fin" align="center">
+                         <cr:saisieDate id="colDateFinEdit" largeur="65" titre=""
+                             rendered="#{(contexteUtilisateur.utilisateurDTO.profil eq 'DIRECTION_ETABLISSEMENT') or (ligne.enseignantAbsent.uid eq contexteUtilisateur.utilisateurDTO.userDTO.uid)}"
+                             style="#{ligne.estModifiee or ligne.estAjoute ? 'font-style: italic;' : ''}"
+                             valeur="#{ligne.dateFin}"
+                             oncomplete="if (#{not ligne.estAjoute}) { refreshDate_#{ligne.id}(); } setModificationFormulaire(true);">
+                         </cr:saisieDate>
+                         
+                         <a4j:jsFunction action="#{gestionRemplacement.refreshDate}" rendered="#{not empty ligne.id}"
+                            execute="@this" name="refreshDate_#{ligne.id}"
+                            render=""
+                            status="status"
+                            oncomplete="lancerLienAjax('idRefreshListing'); "
+                            >
+                            <f:setPropertyActionListener value="#{ligne}" target="#{gestionRemplacement.form.remplacementSelected}" />
+                         </a4j:jsFunction>
+                         <h:outputText
+                             style="#{ligne.estModifiee or ligne.estAjoute ? 'font-style: italic;' : ''}"
+                             rendered="#{not ((contexteUtilisateur.utilisateurDTO.profil eq 'DIRECTION_ETABLISSEMENT') or (ligne.enseignantAbsent.uid eq contexteUtilisateur.utilisateurDTO.userDTO.uid))}"
+                             value="#{cr:formatDate(ligne.dateFin, 'dd/MM/yyyy')}" />
+                    </cr:colonne>
+
+					<cr:colonne taille="50" libelleColonne="Actions" align="center" id="">
+						<cr:liena4j idliena4j="idSupprimerRemplacement" bean="#{gestionRemplacement}"
+							cible="supprimerRemplacement" render="" 
+							rendered="#{(contexteUtilisateur.utilisateurDTO.profil eq 'DIRECTION_ETABLISSEMENT') or (ligne.enseignantAbsent.uid eq contexteUtilisateur.utilisateurDTO.userDTO.uid)}" status="status"
+							oncomplete="lancerLienAjax('idRefreshListing');  setModificationFormulaire(true);">
+							<h:graphicImage library="images/icones"
+								name="#{ligne.estSupprimee ? 'retour.gif' : 'delete.gif'}"
+								title="#{ligne.estSupprimee ? 'Re-activer ce remplacement' : 'Supprimer ce remplacement'}" />
+							<f:setPropertyActionListener value="#{ligne}"
+								target="#{gestionRemplacement.form.remplacementSelected}" />
+						</cr:liena4j>
+                        <cr:liena4j idliena4j="idSimulerEnseignant" bean="#{gestionRemplacement}"
+                            cible="simulerEnseignant" 
+                            oncomplete="lancerLienAjax('idNaviguerAccueil');"
+                            render="idGestionRemplacement, idSauver" status="status"
+                            rendered="#{(not ligne.estModifiee) and (not ligne.estAjoute) and (not ligne.estSupprimee) and (ligne.enseignantRemplacant.uid eq contexteUtilisateur.utilisateurDTO.userDTO.uid)}" 
+                            >
+                            <h:graphicImage library="images/icones"
+                                name="changeEnseignantMini.png"
+                                title="Assurer le remplacement de cet enseignant" />
+                            <f:setPropertyActionListener value="#{ligne}"
+                                target="#{gestionRemplacement.form.remplacementSelected}" />
+                        </cr:liena4j>
+					</cr:colonne>
+				</cr:table>
+			</t:div>
+	   </rich:panel>
+	</t:div>
+	
+    <cr:popupConfirmSauvegardeModification
+        libelleMessage=" Voulez-vous enregistrer vos modifications avant de quitter cette page ? "
+        bean="#{gestionRemplacement}" 
+        cible="sauver"
+        oncancel=""
+        onErrorSauvegarde=""
+        render="idGestionRemplacement" action="" />
+	
+</cr:page>
+
+<enseignant:enseignantPopup render=":formulaire_principal:idListeRemplacement"
+         enseignant = "#{enseignant}"
+         enseignantForm = "#{enseignant.form}"
+         idPopup = "idPopupEnseignantAbsent"
+         titreClasseGroupe = "false"
+   /> 
+   
+   <enseignant:enseignantPopup render=":formulaire_principal:idListeRemplacement"
+         enseignant = "#{enseignant2}"
+         enseignantForm = "#{enseignant2.form}"
+         idPopup = "idPopupEnseignantRemplacant"
+         titreClasseGroupe = "false"                                 
+   /> 
+   
+
+<cr:popupStatus idStatus="status" />
+
+</html>

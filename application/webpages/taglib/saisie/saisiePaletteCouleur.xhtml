@@ -22,9 +22,12 @@
         - largeur : largeur du champ. par défaut 150 pixels.        
     -->
 	</ui:remove>
+  
+  <c:set var="modifiable" value="${empty modifiable ? true : modifiable}" />
+  <c:set var="onClick" value="${ modifiable ? onClick : '' }" />
 	<rich:dataGrid columnClasses="corpsOuvre" columns="12" elements="12"
 		id="listeCoul" value="#{listeCouleur}" var="coul">
-		<a4j:commandLink onclick="" render="couleurSelection">
+		<a4j:commandLink onclick="" render="couleurSelection" disabled="${!modifiable}">
 			<h:panelGrid columns="1" onclick="#{onClick}"
 				style="cursor:pointer;width:100%;background-color : #{coul.id};"
 				title="">

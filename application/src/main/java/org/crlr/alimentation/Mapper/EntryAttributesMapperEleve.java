@@ -17,9 +17,9 @@ import javax.naming.directory.Attributes;
 
 import org.crlr.alimentation.DTO.EleveDTO;
 import org.crlr.dto.Environnement;
-import org.crlr.log.Log;
-import org.crlr.log.LogFactory;
 import org.crlr.metier.entity.EleveBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ldap.core.AttributesMapper;
 
 /**
@@ -33,7 +33,7 @@ public class EntryAttributesMapperEleve implements AttributesMapper {
     /** Environnement d'exécution. */
     private Environnement environnement ;
     
-    private static final Log log = LogFactory.getLog(EntryAttributesMapperEleve.class);
+    private static final Logger log = LoggerFactory.getLogger(EntryAttributesMapperEleve.class);
     
     /**
      * Contructeur de la classe.
@@ -56,6 +56,8 @@ public class EntryAttributesMapperEleve implements AttributesMapper {
     @SuppressWarnings("unchecked")
     public EleveDTO mapFromAttributes(final Attributes attrs)
                                throws NamingException {
+        
+        
         if (Environnement.CRC.equals(environnement)){
             final Attribute passwordAtt = attrs.get("userPassword");
             final String password = passwordAtt.get(0).toString();
@@ -67,6 +69,8 @@ public class EntryAttributesMapperEleve implements AttributesMapper {
         final Attribute nom = attrs.get("sn");
         final Attribute prenom = attrs.get("givenName");
         final Attribute uid = attrs.get("UID");
+        
+        log.debug("Traitement d'élève uid={} nom={} prénom={}", uid, nom, prenom);
 
         //Attribut pour la jointure avec etablissement
         final Attribute struct = attrs.get("ENTPersonStructRattach");
@@ -94,11 +98,11 @@ public class EntryAttributesMapperEleve implements AttributesMapper {
                     //cn=19300021300010$1S7,ou=classes,ou=groups,dc=example,dc=org$SCONET
                     final int beginIndex = "cn=".length();
                     final int endIndex = classe.indexOf(",");
-                    log.info("begin {0} end {1} classe {2}", beginIndex, endIndex, classe);
+                    log.debug("begin {} end {} classe {}", beginIndex, endIndex, classe);
                     try {
                     classe = classe.substring(beginIndex,endIndex);
                     } catch (StringIndexOutOfBoundsException ex) {
-                        log.error(ex,  "ex");
+                        log.error("ex", ex);
                     }
                 } else {
                     //ENTStructureSIREN=19370001000013,ou=structures,dc=esco-centre,dc=fr$602

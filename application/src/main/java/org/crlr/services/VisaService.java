@@ -27,13 +27,7 @@ import org.crlr.exception.metier.MetierException;
   */
 public interface VisaService {
 
-    /**
-     * Charge pour chaque enseignant la liste des derniers visa .
-     * @param listeEnseignant liste des id des enseignants à charger. 
-     * @return une liste de VisaEnseignantDTO pour chacun des enseignants passes en entree.
-     */
-    public ResultatDTO<List<VisaEnseignantDTO>> findListeVisaEnseignant(final List<EnseignantDTO> listeEnseignant);
-
+   
     /**
      * Charge pour un enseignant la liste des visa / cahiers de texte.
      * @param rechercheVisa enseignant, etablissement et profil. 
@@ -66,15 +60,5 @@ public interface VisaService {
      */
     public ResultatDTO<Boolean> saveListeVisaSeance(final List<ResultatRechercheVisaSeanceDTO> listeVisaSeance) throws MetierException;
 
-    /**
-     * Retourne le texte d'aide pour l'écran visaListe.
-     * @return le texte au format html
-     */
-    public String getAideContextuelleListe();
     
-    /**
-     * Retourne le texte d'aide pour l'écran visaSeance.
-     * @return le texte au format html
-     */
-    public String getAideContextuelleSeance();
 }

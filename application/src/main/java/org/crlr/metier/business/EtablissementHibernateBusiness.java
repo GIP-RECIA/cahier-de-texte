@@ -43,76 +43,76 @@ import org.springframework.stereotype.Repository;
 
 /**
  * EtablissementHibernateBusiness.
- *
+ * 
  * @author vibertd
  * @version $Revision: 1.12 $
  */
 @Repository
-public class EtablissementHibernateBusiness extends AbstractBusiness
-    implements EtablissementHibernateBusinessService {
+public class EtablissementHibernateBusiness extends AbstractBusiness implements EtablissementHibernateBusinessService {
     /** Les jours ouvrés par défaut. */
-    private static final String JOURS_OUVRES_DEFAUT =
-        TypeJour.LUNDI.name() + "|" + TypeJour.MARDI.name() + "|" +
-        TypeJour.MERCREDI.name() + "|" + TypeJour.JEUDI.name() + "|" +
-        TypeJour.VENDREDI.name();
+    private static final String JOURS_OUVRES_DEFAUT   = TypeJour.LUNDI.name() + "|" + TypeJour.MARDI.name() + "|" + TypeJour.MERCREDI.name() + "|"
+                                                              + TypeJour.JEUDI.name() + "|" + TypeJour.VENDREDI.name();
 
     /** Grille horaire par défault. */
-    private static final String GRILLE_HORAIRE_DEFAUT =
-        "08:00#09:00|09:00#10:00|10:00#11:00|11:00#12:00|" +
-        "12:00#13:00|13:00#14:00|14:00#15:00|15:00#16:00|" +
-        "16:00#17:00|17:00#18:00|";
-    
-    public static final int HEURE_DEBUT_DEFAUT = 8;
-    public static final int HEURE_FIN_DEFAUT = 18;
-    
-    public static final int DUREE_COURS_DEFAULT = 60;
+    private static final String GRILLE_HORAIRE_DEFAUT = "08:00#09:00|09:00#10:00|10:00#11:00|11:00#12:00|"
+                                                              + "12:00#13:00|13:00#14:00|14:00#15:00|15:00#16:00|" + "16:00#17:00|17:00#18:00|";
+
+    public static final int     HEURE_DEBUT_DEFAUT    = 8;
+    public static final int     HEURE_FIN_DEFAUT      = 18;
+
+    public static final int     DUREE_COURS_DEFAULT   = 60;
 
     /** code siren de l'établissement personnel non rattaché. */
-    private static final String SIREN_NON_RATTACH = "00000000000000";
+    private static final String SIREN_NON_RATTACH     = "00000000000000";
+
+    public boolean etablissementExist(final String siren) {
+        if ( siren == null || siren.equals( "" ) ) {
+            return false;
+        }
+
+        final String query = "SELECT id FROM " + EtablissementBean.class.getName() + " e WHERE e.code = :siren";
+
+        @SuppressWarnings("unchecked")
+        final List<EtablissementBean> liste = getEntityManager().createQuery( query ).setParameter( "siren", siren ).getResultList();
+
+        return !liste.isEmpty();
+    }
 
     /**
      * {@inheritDoc}
      */
     @SuppressWarnings("unchecked")
-    public GenericDetailDTO<Integer, String, String, Boolean> findIdDescJourOuvreEtablissementParCode(final String siren,
-                                                                                                      final Boolean archive,
-                                                                                                      final String exercice) {
-        Assert.isNotEmpty("siren", siren);
+    public GenericDetailDTO<Integer, String, String, Boolean> findIdDescJourOuvreEtablissementParCode(final String siren, final Boolean archive,
+            final String exercice) {
 
-        final String schemaUtilise =
-            SchemaUtils.getSchemaCourantOuArchive(archive, exercice);
+        Assert.isNotEmpty( "siren", siren );
 
-        final String query =
-            "SELECT e.id, e.designation, e.jours_ouvres, e.ouverture FROM " +
-            SchemaUtils.getTableAvecSchema(schemaUtilise,
-                                           "cahier_etablissement") +
-            " e WHERE e.code = ?";
+        final String schemaUtilise = SchemaUtils.getSchemaCourantOuArchive( archive, exercice );
 
-        final List<Object[]> liste =
-            getEntityManager().createNativeQuery(query).setParameter(1, siren)
-                .getResultList();
+        final String query = "SELECT e.id, e.designation, e.jours_ouvres, e.ouverture FROM "
+                + SchemaUtils.getTableAvecSchema( schemaUtilise, "cahier_etablissement" ) + " e WHERE e.code = ?";
 
-        if (!CollectionUtils.isEmpty(liste) && (liste.size() == 1)) {
-            final Object[] result = liste.get(0);
+        final List<Object[]> liste = getEntityManager().createNativeQuery( query ).setParameter( 1, siren ).getResultList();
+
+        if (!CollectionUtils.isEmpty( liste ) && (liste.size() == 1)) {
+            final Object[] result = liste.get( 0 );
             String joursOuvres = (String) result[2];
 
-            //si les jours ouvrés sont vides on considère que la semaine est de 5 jours. 
-            if (org.apache.commons.lang.StringUtils.isEmpty(joursOuvres)) {
+            // si les jours ouvrés sont vides on considère que la semaine est de
+            // 5 jours.
+            if (org.apache.commons.lang.StringUtils.isEmpty( joursOuvres )) {
                 joursOuvres = JOURS_OUVRES_DEFAUT;
             }
 
-            return new GenericDetailDTO<Integer, String, String, Boolean>((Integer) result[0],
-                                                                          (String) result[1],
-                                                                          joursOuvres,
-                                                                          (Boolean) result[3]);
+            return new GenericDetailDTO<Integer, String, String, Boolean>( (Integer) result[0], (String) result[1], joursOuvres, (Boolean) result[3] );
         } else {
-            // Dans le cadre d'une archive l'etablissement pouvait ne pas existe dans les années 
+            // Dans le cadre d'une archive l'etablissement pouvait ne pas existe
+            // dans les années
             // passées. Cela ne doit pas provoquer d'exception.
             if (archive) {
                 return null;
             } else {
-                throw new MetierRuntimeException(new ConteneurMessage(),
-                                             "L'établissement {0} n'existe pas.", siren);
+                throw new MetierRuntimeException( new ConteneurMessage(), "L'établissement {0} n'existe pas.", siren );
             }
         }
     }
@@ -122,32 +122,27 @@ public class EtablissementHibernateBusiness extends AbstractBusiness
      */
     @SuppressWarnings("unchecked")
     public EtablissementComplementDTO findDonneeComplementaireEtablissement(final Integer id) {
-        Assert.isNotNull("id", id);
+        Assert.isNotNull( "id", id );
 
-        final EtablissementComplementDTO etablissementComplementDTO =
-            new EtablissementComplementDTO();
+        final EtablissementComplementDTO etablissementComplementDTO = new EtablissementComplementDTO();
 
-        final String query =
-            "SELECT e.horaireCours, e.dureeCours, e.heureDebut, e.heureFin, e.minuteDebut, " +
-            "e.fractionnement FROM " + EtablissementBean.class.getName() +
-            " e WHERE e.id = :id";
+        final String query = "SELECT e.horaireCours, e.dureeCours, e.heureDebut, e.heureFin, e.minuteDebut, " + "e.fractionnement FROM "
+                + EtablissementBean.class.getName() + " e WHERE e.id = :id";
 
-        final List<Object[]> liste =
-            getEntityManager().createQuery(query).setParameter("id", id).getResultList();
+        final List<Object[]> liste = getEntityManager().createQuery( query ).setParameter( "id", id ).getResultList();
 
-        if (!CollectionUtils.isEmpty(liste) && (liste.size() == 1)) {
-            final Object[] result = liste.get(0);
-            etablissementComplementDTO.setHoraireCours((String) result[0]);
-            etablissementComplementDTO.setDureeCours((Integer) result[1]);
-            etablissementComplementDTO.setHeureDebutCours((Integer) result[2]);
-            etablissementComplementDTO.setHeureFinCours((Integer) result[3]);
-            etablissementComplementDTO.setMinuteDebutCours((Integer) result[4]);
-            etablissementComplementDTO.setFractionnement((Integer) result[5]);
+        if (!CollectionUtils.isEmpty( liste ) && (liste.size() == 1)) {
+            final Object[] result = liste.get( 0 );
+            etablissementComplementDTO.setHoraireCours( (String) result[0] );
+            etablissementComplementDTO.setDureeCours( (Integer) result[1] );
+            etablissementComplementDTO.setHeureDebutCours( (Integer) result[2] );
+            etablissementComplementDTO.setHeureFinCours( (Integer) result[3] );
+            etablissementComplementDTO.setMinuteDebutCours( (Integer) result[4] );
+            etablissementComplementDTO.setFractionnement( (Integer) result[5] );
 
             return etablissementComplementDTO;
         } else {
-            throw new MetierRuntimeException(new ConteneurMessage(),
-                                             "L'établissement {0} n'existe pas.", id);
+            throw new MetierRuntimeException( new ConteneurMessage(), "L'établissement {0} n'existe pas.", id );
         }
     }
 
@@ -156,59 +151,48 @@ public class EtablissementHibernateBusiness extends AbstractBusiness
      */
     @SuppressWarnings("unchecked")
     public ResultatDTO<String> findHorairesCoursEtablissement(final Integer id) {
-        Assert.isNotNull("id", id);
+        Assert.isNotNull( "id", id );
         final ResultatDTO<String> resultat = new ResultatDTO<String>();
-        final String query =
-            "SELECT horaireCours" + " FROM " + EtablissementBean.class.getName() +
-            " WHERE id = :id";
+        final String query = "SELECT horaireCours" + " FROM " + EtablissementBean.class.getName() + " WHERE id = :id";
 
-        final List<String> liste =
-            getEntityManager().createQuery(query).setParameter("id", id).getResultList();
+        final List<String> liste = getEntityManager().createQuery( query ).setParameter( "id", id ).getResultList();
 
-        if (!CollectionUtils.isEmpty(liste) && (liste.size() == 1)) {
-            final String strHoraire =
-                (!org.apache.commons.lang.StringUtils.isEmpty(liste.get(0))) ? liste.get(0) : GRILLE_HORAIRE_DEFAUT;
-            resultat.setValeurDTO(strHoraire);
+        if (!CollectionUtils.isEmpty( liste ) && (liste.size() == 1)) {
+            final String strHoraire = (!org.apache.commons.lang.StringUtils.isEmpty( liste.get( 0 ) )) ? liste.get( 0 ) : GRILLE_HORAIRE_DEFAUT;
+            resultat.setValeurDTO( strHoraire );
             return resultat;
         } else {
-            throw new MetierRuntimeException(new ConteneurMessage(),
-                                             "L'établissement {0} n'existe pas.", id);
+            throw new MetierRuntimeException( new ConteneurMessage(), "L'établissement {0} n'existe pas.", id );
         }
     }
 
     /**
      * {@inheritDoc}
      */
-    public ResultatDTO<Integer> saveComplementEtablissement(final EtablissementDTO etablissementQO)
-        throws MetierException {
-        Assert.isNotNull("etablissementQO", etablissementQO);
+    public ResultatDTO<Integer> saveComplementEtablissement(final EtablissementDTO etablissementQO) throws MetierException {
+        Assert.isNotNull( "etablissementQO", etablissementQO );
 
         final Integer idEtablissement = etablissementQO.getId();
-        Assert.isNotNull("idEtablissement", idEtablissement);
+        Assert.isNotNull( "idEtablissement", idEtablissement );
 
-        final String queryUpdate =
-            "UPDATE " + EtablissementBean.class.getName() +
-            " e SET e.horaireCours=:horaireCours, e.dureeCours=:dureeCours, e.heureDebut=:heureDebut, " +
-            "e.heureFin=:heureFin, e.minuteDebut=:minuteDebut, e.fractionnement=:fractionnement WHERE e.id = :id";
+        final String queryUpdate = "UPDATE " + EtablissementBean.class.getName()
+                + " e SET e.horaireCours=:horaireCours, e.dureeCours=:dureeCours, e.heureDebut=:heureDebut, "
+                + "e.heureFin=:heureFin, e.minuteDebut=:minuteDebut, e.fractionnement=:fractionnement WHERE e.id = :id";
 
-        getEntityManager().createQuery(queryUpdate).setParameter("id", idEtablissement)
-            .setParameter("horaireCours", etablissementQO.getHoraireCours())
-            .setParameter("dureeCours", etablissementQO.getDureeCours())
-            .setParameter("heureDebut", etablissementQO.getHeureDebut())
-            .setParameter("heureFin", etablissementQO.getHeureFin())
-            .setParameter("minuteDebut", etablissementQO.getMinuteDebut())
-            .setParameter("fractionnement", etablissementQO.getFractionnement())
-            .executeUpdate();
+        getEntityManager().createQuery( queryUpdate ).setParameter( "id", idEtablissement )
+                .setParameter( "horaireCours", etablissementQO.getHoraireCours() ).setParameter( "dureeCours", etablissementQO.getDureeCours() )
+                .setParameter( "heureDebut", etablissementQO.getHeureDebut() ).setParameter( "heureFin", etablissementQO.getHeureFin() )
+                .setParameter( "minuteDebut", etablissementQO.getMinuteDebut() ).setParameter( "fractionnement", etablissementQO.getFractionnement() )
+                .executeUpdate();
 
         getEntityManager().flush();
 
         final ResultatDTO<Integer> resultat = new ResultatDTO<Integer>();
 
         final ConteneurMessage conteneurMessage = new ConteneurMessage();
-        conteneurMessage.add(new Message("traitement.enregistrement.reussi",
-                                         Nature.INFORMATIF));
+        conteneurMessage.add( new Message( "traitement.enregistrement.reussi", Nature.INFORMATIF ) );
 
-        resultat.setConteneurMessage(conteneurMessage);
+        resultat.setConteneurMessage( conteneurMessage );
 
         return resultat;
     }
@@ -218,21 +202,16 @@ public class EtablissementHibernateBusiness extends AbstractBusiness
      */
     @SuppressWarnings("unchecked")
     public Integer findIdEtablissementParCode(final String siren) {
-        Assert.isNotEmpty("siren", siren);
+        Assert.isNotEmpty( "siren", siren );
 
-        final String query =
-            "SELECT e.id FROM " + EtablissementBean.class.getName() +
-            " e WHERE e.code = :siren";
+        final String query = "SELECT e.id FROM " + EtablissementBean.class.getName() + " e WHERE e.code = :siren";
 
-        final List<Integer> liste =
-            getEntityManager().createQuery(query).setParameter("siren", siren)
-                .getResultList();
+        final List<Integer> liste = getEntityManager().createQuery( query ).setParameter( "siren", siren ).getResultList();
 
-        if (!CollectionUtils.isEmpty(liste) && (liste.size() == 1)) {
-            return liste.get(0);
+        if (!CollectionUtils.isEmpty( liste ) && (liste.size() == 1)) {
+            return liste.get( 0 );
         } else {
-            throw new MetierRuntimeException(new ConteneurMessage(),
-                                             "L'établissement {0} n'existe pas.", siren);
+            throw new MetierRuntimeException( new ConteneurMessage(), "L'établissement {0} n'existe pas.", siren );
         }
     }
 
@@ -241,21 +220,16 @@ public class EtablissementHibernateBusiness extends AbstractBusiness
      */
     @SuppressWarnings("unchecked")
     public String findDesignationEtablissementParCode(final String siren) {
-        Assert.isNotEmpty("siren", siren);
+        Assert.isNotEmpty( "siren", siren );
 
-        final String query =
-            "SELECT e.designation FROM " + EtablissementBean.class.getName() +
-            " e WHERE e.code = :siren";
+        final String query = "SELECT e.designation FROM " + EtablissementBean.class.getName() + " e WHERE e.code = :siren";
 
-        final List<String> liste =
-            getEntityManager().createQuery(query).setParameter("siren", siren)
-                .getResultList();
+        final List<String> liste = getEntityManager().createQuery( query ).setParameter( "siren", siren ).getResultList();
 
-        if (!CollectionUtils.isEmpty(liste) && (liste.size() == 1)) {
-            return liste.get(0);
+        if (!CollectionUtils.isEmpty( liste ) && (liste.size() == 1)) {
+            return liste.get( 0 );
         } else {
-            throw new MetierRuntimeException(new ConteneurMessage(),
-                                             "L'établissement {0} n'existe pas.", siren);
+            throw new MetierRuntimeException( new ConteneurMessage(), "L'établissement {0} n'existe pas.", siren );
         }
     }
 
@@ -266,36 +240,31 @@ public class EtablissementHibernateBusiness extends AbstractBusiness
     public Map<String, Object[]> executeQueryListeEtablissement(final String schema) {
         final Map<String, Object[]> mapCodeDesignation = new HashMap<String, Object[]>();
 
-        final boolean vraiOuFauxSchemaCourant = org.apache.commons.lang.StringUtils.isEmpty(schema);
-        final String schemaQuery =
-            (vraiOuFauxSchemaCourant) ? SchemaUtils.getDefaultSchema() : schema;
+        final boolean vraiOuFauxSchemaCourant = org.apache.commons.lang.StringUtils.isEmpty( schema );
+        final String schemaQuery = (vraiOuFauxSchemaCourant) ? SchemaUtils.getDefaultSchema() : schema;
 
-        //on charge les identifiants uniquements pour le schéma courant.
-        final String querySelect =
-            "SELECT e.code, e.designation, e.jours_ouvres, e.ouverture " +
-            ((vraiOuFauxSchemaCourant) ? ", e.id" : "");
-        final String queryEtablissement =
-            querySelect + " FROM " +
-            SchemaUtils.getTableAvecSchema(schemaQuery, "cahier_etablissement") +
-            " e WHERE e.code != :codeNonRattach ";
+        // on charge les identifiants uniquements pour le schéma courant.
+        final String querySelect = "SELECT e.code, e.designation, e.jours_ouvres, e.ouverture " + ((vraiOuFauxSchemaCourant) ? ", e.id" : "");
+        final String queryEtablissement = querySelect + " FROM " + SchemaUtils.getTableAvecSchema( schemaQuery, "cahier_etablissement" )
+                + " e WHERE e.code != :codeNonRattach ";
 
-        final List<Object[]> liste =
-            getEntityManager().createNativeQuery(queryEtablissement)
-                .setParameter("codeNonRattach", SIREN_NON_RATTACH).getResultList();
+        final List<Object[]> liste = getEntityManager().createNativeQuery( queryEtablissement ).setParameter( "codeNonRattach", SIREN_NON_RATTACH )
+                .getResultList();
 
         for (final Object[] result : liste) {
             final Object[] tabObj = new Object[4];
             tabObj[0] = (String) result[1];
             String joursOuvres = (String) result[2];
 
-            //si les jours ouvrés sont vides on considère que la semaine est de 5 jours. 
-            if (org.apache.commons.lang.StringUtils.isEmpty(joursOuvres)) {
+            // si les jours ouvrés sont vides on considère que la semaine est de
+            // 5 jours.
+            if (org.apache.commons.lang.StringUtils.isEmpty( joursOuvres )) {
                 joursOuvres = JOURS_OUVRES_DEFAUT;
             }
             tabObj[1] = joursOuvres;
             tabObj[2] = result[3];
             tabObj[3] = (vraiOuFauxSchemaCourant) ? (Integer) result[4] : null;
-            mapCodeDesignation.put((String) result[0], tabObj);
+            mapCodeDesignation.put( (String) result[0], tabObj );
         }
 
         return mapCodeDesignation;
@@ -306,29 +275,24 @@ public class EtablissementHibernateBusiness extends AbstractBusiness
      */
     @SuppressWarnings("unchecked")
     public List<EtablissementDTO> findListeEtablissementEnseignant(final EtablissementAccessibleQO etablissementAccessibleQO) {
-        Assert.isNotNull("etablissementAccessibleQO", etablissementAccessibleQO);
-        final Set<String> listeSirenSet =
-            new HashSet<String>(etablissementAccessibleQO.getListeSiren());
+        Assert.isNotNull( "etablissementAccessibleQO", etablissementAccessibleQO );
+        final Set<String> listeSirenSet = new HashSet<String>( etablissementAccessibleQO.getListeSiren() );
 
-        //ajout d'un élément par defaut afin d'éviter les listes vides.
-        listeSirenSet.add("DEFAUT");
+        // ajout d'un élément par defaut afin d'éviter les listes vides.
+        listeSirenSet.add( "DEFAUT" );
 
         final Integer idEnseignant = etablissementAccessibleQO.getIdEnseignant();
-        Assert.isNotNull("idEnseignant", idEnseignant);
+        Assert.isNotNull( "idEnseignant", idEnseignant );
 
-        final String querySelect =
-            "SELECT new Map (e.id as id, e.code as code , e.designation as desc, " +
-            "e.joursOuvres as ouvre, e.vraiOuFauxCahierOuvert as ouvert, ee.vraiOuFauxSaisieSimplifiee as simp) FROM " +
-            EtablissementsEnseignantsBean.class.getName() +
-            " ee INNER JOIN ee.etablissement e " +
-            "WHERE ee.pk.idEnseignant = :idEnseignant AND e.code IN (:liste)";
+        final String querySelect = "SELECT new Map (e.id as id, e.code as code , e.designation as desc, "
+                + "e.joursOuvres as ouvre, e.vraiOuFauxCahierOuvert as ouvert, ee.vraiOuFauxSaisieSimplifiee as simp) FROM "
+                + EtablissementsEnseignantsBean.class.getName() + " ee INNER JOIN ee.etablissement e "
+                + "WHERE ee.pk.idEnseignant = :idEnseignant AND e.code IN (:liste)";
 
-        final List<Map<String, ?>> liste =
-            getEntityManager().createQuery(querySelect)
-                .setParameter("idEnseignant", idEnseignant)
-                .setParameter("liste", listeSirenSet).getResultList();
+        final List<Map<String, ?>> liste = getEntityManager().createQuery( querySelect ).setParameter( "idEnseignant", idEnseignant )
+                .setParameter( "liste", listeSirenSet ).getResultList();
 
-        return genereListeEtablissementFromMap(liste);
+        return genereListeEtablissementFromMap( liste );
     }
 
     /**
@@ -336,53 +300,50 @@ public class EtablissementHibernateBusiness extends AbstractBusiness
      */
     @SuppressWarnings("unchecked")
     public List<EtablissementDTO> findListeEtablissementInspecteur(final List<String> listeSiren) {
-        final Set<String> listeSirenSet = new HashSet<String>(listeSiren);
-        
-        //ajout d'un élément par defaut afin d'éviter les listes vides.
-        listeSirenSet.add("DEFAUT");
+        final Set<String> listeSirenSet = new HashSet<String>( listeSiren );
 
-        final String querySelect =
-            "SELECT new Map (e.id as id, e.code as code , e.designation as desc, " +
-            "e.joursOuvres as ouvre, e.vraiOuFauxCahierOuvert as ouvert) FROM " +
-            EtablissementBean.class.getName() +
-            " e WHERE e.code IN (:liste) AND e.code != :codeNonRattach";
+        // ajout d'un élément par defaut afin d'éviter les listes vides.
+        listeSirenSet.add( "DEFAUT" );
 
-        final List<Map<String, ?>> liste =
-            getEntityManager().createQuery(querySelect)
-                .setParameter("liste", listeSirenSet)
-                .setParameter("codeNonRattach", SIREN_NON_RATTACH).getResultList();
+        final String querySelect = "SELECT new Map (e.id as id, e.code as code , e.designation as desc, "
+                + "e.joursOuvres as ouvre, e.vraiOuFauxCahierOuvert as ouvert) FROM " + EtablissementBean.class.getName()
+                + " e WHERE e.code IN (:liste) AND e.code != :codeNonRattach";
 
-        return genereListeEtablissementFromMap(liste);
+        final List<Map<String, ?>> liste = getEntityManager().createQuery( querySelect ).setParameter( "liste", listeSirenSet )
+                .setParameter( "codeNonRattach", SIREN_NON_RATTACH ).getResultList();
+
+        return genereListeEtablissementFromMap( liste );
     }
 
     /**
      * Génére une liste d'établissement en fonction des résultats de la base de
      * données.
-     *
-     * @param liste les résultat de la base.
-     *
+     * 
+     * @param liste
+     *            les résultat de la base.
+     * 
      * @return la liste des établissements.
      */
     private List<EtablissementDTO> genereListeEtablissementFromMap(final List<Map<String, ?>> liste) {
-        final List<EtablissementDTO> listeEtablissement =
-            new ArrayList<EtablissementDTO>();
+        final List<EtablissementDTO> listeEtablissement = new ArrayList<EtablissementDTO>();
 
         for (final Map<String, ?> map : liste) {
             final EtablissementDTO etablissementDTO = new EtablissementDTO();
-            etablissementDTO.setId((Integer) map.get("id"));
-            etablissementDTO.setCode((String) map.get("code"));
-            etablissementDTO.setDesignation((String) map.get("desc"));
-            etablissementDTO.setVraiOuFauxOuvert((Boolean) map.get("ouvert"));
-            etablissementDTO.setVraiOuFauxSaisieSimplifiee((Boolean) map.get("simp"));
-            String joursOuvres = (String) map.get("ouvre");
+            etablissementDTO.setId( (Integer) map.get( "id" ) );
+            etablissementDTO.setCode( (String) map.get( "code" ) );
+            etablissementDTO.setDesignation( (String) map.get( "desc" ) );
+            etablissementDTO.setVraiOuFauxOuvert( (Boolean) map.get( "ouvert" ) );
+            etablissementDTO.setVraiOuFauxSaisieSimplifiee( (Boolean) map.get( "simp" ) );
+            String joursOuvres = (String) map.get( "ouvre" );
 
-            //si les jours ouvrés sont vides on considère que la semaine est de 5 jours. 
-            if (org.apache.commons.lang.StringUtils.isEmpty(joursOuvres)) {
+            // si les jours ouvrés sont vides on considère que la semaine est de
+            // 5 jours.
+            if (org.apache.commons.lang.StringUtils.isEmpty( joursOuvres )) {
                 joursOuvres = JOURS_OUVRES_DEFAUT;
             }
-            etablissementDTO.setJoursOuvres(joursOuvres);
+            etablissementDTO.setJoursOuvres( joursOuvres );
 
-            listeEtablissement.add(etablissementDTO);
+            listeEtablissement.add( etablissementDTO );
         }
 
         return listeEtablissement;
@@ -391,45 +352,39 @@ public class EtablissementHibernateBusiness extends AbstractBusiness
     /**
      * {@inheritDoc}
      */
-    public ResultatDTO<Integer> saveEtablissementJoursOuvres(final EtablissementDTO etablissementQO)
-        throws MetierException {
-        Assert.isNotNull("etablissementQO", etablissementQO);
+    public ResultatDTO<Integer> saveEtablissementJoursOuvres(final EtablissementDTO etablissementQO) throws MetierException {
+        Assert.isNotNull( "etablissementQO", etablissementQO );
 
         final Integer idEtablissement = etablissementQO.getId();
-        Assert.isNotNull("idEtablissement", idEtablissement);
+        Assert.isNotNull( "idEtablissement", idEtablissement );
 
         final String joursOuvres = etablissementQO.getJoursOuvres();
         final ConteneurMessage conteneurMessage = new ConteneurMessage();
 
-        if (org.apache.commons.lang.StringUtils.isEmpty(joursOuvres)) {
-            conteneurMessage.add(new Message(TypeReglesAdmin.ADMIN_20.name()));
-            throw new MetierException(conteneurMessage,
-                                      "Echec de la mise à jour des jours ouvrés");
+        if (org.apache.commons.lang.StringUtils.isEmpty( joursOuvres )) {
+            conteneurMessage.add( new Message( TypeReglesAdmin.ADMIN_20.name() ) );
+            throw new MetierException( conteneurMessage, "Echec de la mise à jour des jours ouvrés" );
         } else {
-            Assert.isTrue("Jours ouvrés valides", 
-                    Pattern.matches("(((LUNDI)|(MARDI)|(MERCREDI)|(JEUDI)|(VENDREDI)|(SAMEDI)|(DIMANCHE))\\|)*", joursOuvres));
+            Assert.isTrue( "Jours ouvrés valides",
+                    Pattern.matches( "(((LUNDI)|(MARDI)|(MERCREDI)|(JEUDI)|(VENDREDI)|(SAMEDI)|(DIMANCHE))\\|)*", joursOuvres ) );
         }
 
-        final String queryUpdate =
-            "UPDATE " + EtablissementBean.class.getName() +
-            " E SET E.joursOuvres=:joursOuvres WHERE E.id = :id";
+        final String queryUpdate = "UPDATE " + EtablissementBean.class.getName() + " E SET E.joursOuvres=:joursOuvres WHERE E.id = :id";
 
-        final int i = getEntityManager().createQuery(queryUpdate).setParameter("id", idEtablissement)
-            .setParameter("joursOuvres", joursOuvres).executeUpdate();
+        final int i = getEntityManager().createQuery( queryUpdate ).setParameter( "id", idEtablissement ).setParameter( "joursOuvres", joursOuvres )
+                .executeUpdate();
 
         getEntityManager().flush();
 
         final ResultatDTO<Integer> resultat = new ResultatDTO<Integer>();
 
-        if (i == 1 ){
-            conteneurMessage.add(new Message("traitement.enregistrement.reussi",
-                                         Nature.INFORMATIF));
+        if (i == 1) {
+            conteneurMessage.add( new Message( "traitement.enregistrement.reussi", Nature.INFORMATIF ) );
         } else {
-            conteneurMessage.add(new Message("traitement enregistrement non effectué",
-                    Nature.BLOQUANT));
-            throw new MetierException("Enregistrement des jours ouvrés non effectué"); 
+            conteneurMessage.add( new Message( "traitement enregistrement non effectué", Nature.BLOQUANT ) );
+            throw new MetierException( "Enregistrement des jours ouvrés non effectué" );
         }
-        resultat.setConteneurMessage(conteneurMessage);
+        resultat.setConteneurMessage( conteneurMessage );
 
         return resultat;
     }
@@ -437,22 +392,19 @@ public class EtablissementHibernateBusiness extends AbstractBusiness
     /**
      * {@inheritDoc}
      */
-    public ResultatDTO<Integer> saveEtablissementOuverture(final OuvertureQO ouvertureQO)
-        throws MetierException {
-        Assert.isNotNull("ouvertureQO", ouvertureQO);
+    public ResultatDTO<Integer> saveEtablissementOuverture(final OuvertureQO ouvertureQO) throws MetierException {
+        Assert.isNotNull( "ouvertureQO", ouvertureQO );
 
         final Integer idEtablissement = ouvertureQO.getId();
-        Assert.isNotNull("idEtablissement", idEtablissement);
+        Assert.isNotNull( "idEtablissement", idEtablissement );
 
-        final Boolean vraiOuFauxEtabOuvert =
-            BooleanUtils.isTrue(ouvertureQO.getVraiOuFauxOuvert());
+        final Boolean vraiOuFauxEtabOuvert = BooleanUtils.isTrue( ouvertureQO.getVraiOuFauxOuvert() );
 
-        final String queryUpdate =
-            "UPDATE " + EtablissementBean.class.getName() +
-            " e SET e.vraiOuFauxCahierOuvert=:vraiOuFauxEtabOuvert WHERE e.id = :id";
+        final String queryUpdate = "UPDATE " + EtablissementBean.class.getName()
+                + " e SET e.vraiOuFauxCahierOuvert=:vraiOuFauxEtabOuvert WHERE e.id = :id";
 
-        final int i = getEntityManager().createQuery(queryUpdate).setParameter("id", idEtablissement)
-            .setParameter("vraiOuFauxEtabOuvert", vraiOuFauxEtabOuvert).executeUpdate();
+        final int i = getEntityManager().createQuery( queryUpdate ).setParameter( "id", idEtablissement )
+                .setParameter( "vraiOuFauxEtabOuvert", vraiOuFauxEtabOuvert ).executeUpdate();
 
         getEntityManager().flush();
 
@@ -461,21 +413,17 @@ public class EtablissementHibernateBusiness extends AbstractBusiness
         final String message = vraiOuFauxEtabOuvert ? "L'ouverture" : "La fermeture";
 
         final ConteneurMessage conteneurMessage = new ConteneurMessage();
-        if (i == 1){
-            conteneurMessage.add(new Message(TypeReglesAcquittement.ACQUITTEMENT_00.name(),
-                    Nature.INFORMATIF,
-                    message + " du cahier de texte",
-                    "prise en compte"));
+        if (i == 1) {
+            conteneurMessage.add( new Message( TypeReglesAcquittement.ACQUITTEMENT_00.name(), Nature.INFORMATIF, message + " du cahier de texte",
+                    "prise en compte" ) );
 
         } else {
-            conteneurMessage.add(new Message(TypeReglesAcquittement.ACQUITTEMENT_02.name(),
-                    Nature.AVERTISSANT,
-                    message + " du cahier de texte",
-                    "prise en compte"));
-            throw new MetierException(message+ " du cahier de texten n'a pas été prise en comptes.");
+            conteneurMessage.add( new Message( TypeReglesAcquittement.ACQUITTEMENT_02.name(), Nature.AVERTISSANT, message + " du cahier de texte",
+                    "prise en compte" ) );
+            throw new MetierException( message + " du cahier de texten n'a pas été prise en comptes." );
         }
 
-        resultat.setConteneurMessage(conteneurMessage);
+        resultat.setConteneurMessage( conteneurMessage );
 
         return resultat;
     }
@@ -485,53 +433,43 @@ public class EtablissementHibernateBusiness extends AbstractBusiness
      */
     @SuppressWarnings("unchecked")
     public String findAlternanceSemaine(final Integer idEtablissement) {
-        Assert.isNotNull("idEtablissement", idEtablissement);
+        Assert.isNotNull( "idEtablissement", idEtablissement );
 
-        final String query =
-            "SELECT e.alternanceSemaine FROM " + EtablissementBean.class.getName() +
-            " e WHERE e.id = :idEtablissement";
+        final String query = "SELECT e.alternanceSemaine FROM " + EtablissementBean.class.getName() + " e WHERE e.id = :idEtablissement";
 
-        final List<String> liste =
-            getEntityManager().createQuery(query)
-                .setParameter("idEtablissement", idEtablissement).getResultList();
+        final List<String> liste = getEntityManager().createQuery( query ).setParameter( "idEtablissement", idEtablissement ).getResultList();
 
-        if (!CollectionUtils.isEmpty(liste) && (liste.size() == 1)) {
-            return liste.get(0);
+        if (!CollectionUtils.isEmpty( liste ) && (liste.size() == 1)) {
+            return liste.get( 0 );
         } else {
-            throw new MetierRuntimeException(new ConteneurMessage(),
-                                             "L'établissement identifié par {0} n'existe pas.",
-                                             idEtablissement);
+            throw new MetierRuntimeException( new ConteneurMessage(), "L'établissement identifié par {0} n'existe pas.", idEtablissement );
         }
     }
 
     /**
      * {@inheritDoc}
      */
-    public ResultatDTO<Integer> saveEtablissementAlternance(final EtablissementDTO etablissementQO)
-        throws MetierException {
-        Assert.isNotNull("etablissementQO", etablissementQO);
+    public ResultatDTO<Integer> saveEtablissementAlternance(final EtablissementDTO etablissementQO) throws MetierException {
+        Assert.isNotNull( "etablissementQO", etablissementQO );
 
         final Integer idEtablissement = etablissementQO.getId();
-        Assert.isNotNull("idEtablissement", idEtablissement);
+        Assert.isNotNull( "idEtablissement", idEtablissement );
 
         final String alternanceSemaine = etablissementQO.getAlternanceSemaine();
 
-        final String queryUpdate =
-            "UPDATE " + EtablissementBean.class.getName() +
-            " E SET E.alternanceSemaine=:alternanceSemaine WHERE E.id = :id";
+        final String queryUpdate = "UPDATE " + EtablissementBean.class.getName() + " E SET E.alternanceSemaine=:alternanceSemaine WHERE E.id = :id";
 
-        getEntityManager().createQuery(queryUpdate).setParameter("id", idEtablissement)
-            .setParameter("alternanceSemaine", alternanceSemaine).executeUpdate();
+        getEntityManager().createQuery( queryUpdate ).setParameter( "id", idEtablissement ).setParameter( "alternanceSemaine", alternanceSemaine )
+                .executeUpdate();
 
         getEntityManager().flush();
 
         final ResultatDTO<Integer> resultat = new ResultatDTO<Integer>();
 
         final ConteneurMessage conteneurMessage = new ConteneurMessage();
-        conteneurMessage.add(new Message("traitement.enregistrement.reussi",
-                                         Nature.INFORMATIF));
+        conteneurMessage.add( new Message( "traitement.enregistrement.reussi", Nature.INFORMATIF ) );
 
-        resultat.setConteneurMessage(conteneurMessage);
+        resultat.setConteneurMessage( conteneurMessage );
 
         return resultat;
     }
@@ -540,115 +478,103 @@ public class EtablissementHibernateBusiness extends AbstractBusiness
      * {@inheritDoc}
      */
     public void saveEtablissementSaisieSimplifiee(SaisieSimplifieeQO saisieSimplifieeQO) {
-        Assert.isNotNull("saisieSimplifieeQO", saisieSimplifieeQO);
+        Assert.isNotNull( "saisieSimplifieeQO", saisieSimplifieeQO );
         final Integer idEtablissement = saisieSimplifieeQO.getIdEtablissement();
         final Integer idEnseignant = saisieSimplifieeQO.getIdEnseignant();
         final Boolean vraiOuFauxSaisieSimplifiee = saisieSimplifieeQO.getVraiOuFauxSaisieSimplifiee();
         final Boolean vraiOuFauxExiste = saisieSimplifieeQO.getVraiOuFauxExiste();
 
-        Assert.isNotNull("idEtablissement", idEtablissement);
-        Assert.isNotNull("idEnseignant", idEnseignant);
-        Assert.isNotNull("vraiOuFauxSaisieSimplifiee", vraiOuFauxSaisieSimplifiee);
-        Assert.isNotNull("vraiOuFauxExiste", vraiOuFauxExiste);
+        Assert.isNotNull( "idEtablissement", idEtablissement );
+        Assert.isNotNull( "idEnseignant", idEnseignant );
+        Assert.isNotNull( "vraiOuFauxSaisieSimplifiee", vraiOuFauxSaisieSimplifiee );
+        Assert.isNotNull( "vraiOuFauxExiste", vraiOuFauxExiste );
 
         if (vraiOuFauxExiste) {
-            final String queryUpdate =
-                "UPDATE " + EtablissementsEnseignantsBean.class.getName() +
-                " E SET E.vraiOuFauxSaisieSimplifiee=:vraiOuFauxSaisieSimplifiee " +
-                " WHERE E.pk.idEtablissement=:idEtablissement AND E.pk.idEnseignant=:idEnseignant";
-    
-            getEntityManager().createQuery(queryUpdate)
-                .setParameter("idEtablissement", idEtablissement)
-                .setParameter("idEnseignant", idEnseignant)
-                .setParameter("vraiOuFauxSaisieSimplifiee", vraiOuFauxSaisieSimplifiee)
-                .executeUpdate();
+            final String queryUpdate = "UPDATE " + EtablissementsEnseignantsBean.class.getName()
+                    + " E SET E.vraiOuFauxSaisieSimplifiee=:vraiOuFauxSaisieSimplifiee "
+                    + " WHERE E.pk.idEtablissement=:idEtablissement AND E.pk.idEnseignant=:idEnseignant";
+
+            getEntityManager().createQuery( queryUpdate ).setParameter( "idEtablissement", idEtablissement )
+                    .setParameter( "idEnseignant", idEnseignant ).setParameter( "vraiOuFauxSaisieSimplifiee", vraiOuFauxSaisieSimplifiee )
+                    .executeUpdate();
         } else {
             final EtablissementsEnseignantsBean etablissementEnseignant = new EtablissementsEnseignantsBean();
-            etablissementEnseignant.setIdEnseignant(idEnseignant);
-            etablissementEnseignant.setIdEtablissement(idEtablissement);
-            etablissementEnseignant.setVraiOuFauxSaisieSimplifiee(vraiOuFauxSaisieSimplifiee);
-            getEntityManager().persist(etablissementEnseignant);
+            etablissementEnseignant.setIdEnseignant( idEnseignant );
+            etablissementEnseignant.setIdEtablissement( idEtablissement );
+            etablissementEnseignant.setVraiOuFauxSaisieSimplifiee( vraiOuFauxSaisieSimplifiee );
+            getEntityManager().persist( etablissementEnseignant );
         }
 
         getEntityManager().flush();
     }
-    
+
     /**
-     * {@inheritDoc}   
+     * {@inheritDoc}
      */
     public EtablissementDTO findEtablissement(final Integer idEtablissement) {
-        Assert.isNotNull("idEtablissement", idEtablissement);
+        Assert.isNotNull( "idEtablissement", idEtablissement );
 
-        final String query =
-            "SELECT e FROM " + EtablissementBean.class.getName() +
-            " e WHERE e.id = :idEtablissement";
+        final String query = "SELECT e FROM " + EtablissementBean.class.getName() + " e WHERE e.id = :idEtablissement";
 
         @SuppressWarnings("unchecked")
-        final List<EtablissementBean> liste =
-            getEntityManager().createQuery(query)
-                .setParameter("idEtablissement", idEtablissement).getResultList();
+        final List<EtablissementBean> liste = getEntityManager().createQuery( query ).setParameter( "idEtablissement", idEtablissement )
+                .getResultList();
 
-        if (!CollectionUtils.isEmpty(liste) && (liste.size() == 1)) {
+        if (!CollectionUtils.isEmpty( liste ) && (liste.size() == 1)) {
             EtablissementDTO retour = new EtablissementDTO();
-            ObjectUtils.copyProperties(retour, liste.get(0));
-            
-            //Mettre defauts horaires 
-            if (org.apache.commons.lang.StringUtils.trimToNull(retour.getHoraireCours()) == null) {
-                log.info("Mettre defaut grille et les defauts heuere debut / fin");
-                retour.setHoraireCours(GRILLE_HORAIRE_DEFAUT);
-                retour.setHeureDebut(HEURE_DEBUT_DEFAUT);
-                retour.setMinuteDebut(0);
-                retour.setHeureFin(HEURE_FIN_DEFAUT);
+            ObjectUtils.copyProperties( retour, liste.get( 0 ) );
+
+            // Mettre defauts horaires
+            if (org.apache.commons.lang.StringUtils.trimToNull( retour.getHoraireCours() ) == null) {
+                log.info( "Mettre defaut grille et les defauts heuere debut / fin" );
+                retour.setHoraireCours( GRILLE_HORAIRE_DEFAUT );
+                retour.setHeureDebut( HEURE_DEBUT_DEFAUT );
+                retour.setMinuteDebut( 0 );
+                retour.setHeureFin( HEURE_FIN_DEFAUT );
             }
-            
-            if (org.apache.commons.lang.StringUtils.trimToNull(retour.getJoursOuvres()) == null) {
-                retour.setJoursOuvres(JOURS_OUVRES_DEFAUT);
+
+            if (org.apache.commons.lang.StringUtils.trimToNull( retour.getJoursOuvres() ) == null) {
+                retour.setJoursOuvres( JOURS_OUVRES_DEFAUT );
             }
-            
+
             if (retour.getDureeCours() == null || retour.getDureeCours() <= 0) {
-                retour.setDureeCours(DUREE_COURS_DEFAULT);
+                retour.setDureeCours( DUREE_COURS_DEFAULT );
             }
-            
+
             return retour;
         } else {
-            throw new MetierRuntimeException(new ConteneurMessage(),
-                                             "L'établissement identifié par {0} n'existe pas.",
-                                             idEtablissement);
+            throw new MetierRuntimeException( new ConteneurMessage(), "L'établissement identifié par {0} n'existe pas.", idEtablissement );
         }
     }
 
     /**
      * {@inheritDoc}
      */
-    public SaisieSimplifieeDTO findSaisieSimplifieeEtablissement(final Integer idEtablissement,
-                                                     final Integer idEnseignant) {
-        final List<Boolean> liste =
-            querySaisieSimplifieeEtablissement(idEtablissement, idEnseignant);
-        
+    public SaisieSimplifieeDTO findSaisieSimplifieeEtablissement(final Integer idEtablissement, final Integer idEnseignant) {
+        final List<Boolean> liste = querySaisieSimplifieeEtablissement( idEtablissement, idEnseignant );
+
         final SaisieSimplifieeDTO result = new SaisieSimplifieeDTO();
-        
-        if (CollectionUtils.isEmpty(liste)) {
-            result.setVraiOuFauxExiste(false);
+
+        if (CollectionUtils.isEmpty( liste )) {
+            result.setVraiOuFauxExiste( false );
         } else {
-            result.setVraiOuFauxExiste(true);
-            result.setVraiOuFauxsaisieSimpliee(liste.get(0));
+            result.setVraiOuFauxExiste( true );
+            result.setVraiOuFauxsaisieSimpliee( liste.get( 0 ) );
         }
-        
+
         return result;
     }
 
     /**
      * {@inheritDoc}
      */
-    public Boolean checkSaisieSimplifieeEtablissement(final Integer idEtablissement,
-                                                      final Integer idEnseignant) {
-        final List<Boolean> liste =
-            querySaisieSimplifieeEtablissement(idEtablissement, idEnseignant);
+    public Boolean checkSaisieSimplifieeEtablissement(final Integer idEtablissement, final Integer idEnseignant) {
+        final List<Boolean> liste = querySaisieSimplifieeEtablissement( idEtablissement, idEnseignant );
 
         Boolean saisieSimplifiee = null;
 
-        if (!CollectionUtils.isEmpty(liste)) {
-            saisieSimplifiee = liste.get(0);
+        if (!CollectionUtils.isEmpty( liste )) {
+            saisieSimplifiee = liste.get( 0 );
         }
         return saisieSimplifiee;
     }
@@ -656,87 +582,82 @@ public class EtablissementHibernateBusiness extends AbstractBusiness
     /**
      * Recherche de la valeur de la saisie simplifiée d'un enseignant sur un
      * établissement.
-     *
-     * @param idEtablissement id de l'établissement.
-     * @param idEnseignant id de l'enseignant.
-     *
+     * 
+     * @param idEtablissement
+     *            id de l'établissement.
+     * @param idEnseignant
+     *            id de l'enseignant.
+     * 
      * @return la liste.
      */
     @SuppressWarnings("unchecked")
-    private List<Boolean> querySaisieSimplifieeEtablissement(final Integer idEtablissement,
-                                                             final Integer idEnseignant) {
-        Assert.isNotNull("idEtablissement", idEtablissement);
-        Assert.isNotNull("idEnseignant", idEnseignant);
+    private List<Boolean> querySaisieSimplifieeEtablissement(final Integer idEtablissement, final Integer idEnseignant) {
+        Assert.isNotNull( "idEtablissement", idEtablissement );
+        Assert.isNotNull( "idEnseignant", idEnseignant );
 
-        final String querySelect =
-            "SELECT ee.vraiOuFauxSaisieSimplifiee FROM " +
-            EtablissementsEnseignantsBean.class.getName() + " ee " +
-            "WHERE ee.pk.idEnseignant = :idEnseignant AND ee.pk.idEtablissement = :idEtablissement";
+        final String querySelect = "SELECT ee.vraiOuFauxSaisieSimplifiee FROM " + EtablissementsEnseignantsBean.class.getName() + " ee "
+                + "WHERE ee.pk.idEnseignant = :idEnseignant AND ee.pk.idEtablissement = :idEtablissement";
 
-        return getEntityManager().createQuery(querySelect)
-                   .setParameter("idEnseignant", idEnseignant)
-                   .setParameter("idEtablissement", idEtablissement).getResultList();
+        return getEntityManager().createQuery( querySelect ).setParameter( "idEnseignant", idEnseignant )
+                .setParameter( "idEtablissement", idEtablissement ).getResultList();
     }
-    
+
     /**
      * {@inheritDoc}
      */
     @SuppressWarnings("unchecked")
-    public Integer findFractionnementEtablissement(final Integer idEtablissement){
-        Assert.isNotNull("idEtablissement", idEtablissement);
-        final String querySelect = "SELECT e.fractionnement FROM " + EtablissementBean.class.getName() + 
-        " e WHERE e.id = :idEtablissement";
-        final List<Integer> results = getEntityManager().createQuery(querySelect)
-            .setParameter("idEtablissement", idEtablissement).getResultList();
-        if(! CollectionUtils.isEmpty(results)){
-            if(results.get(0) == null){
+    public Integer findFractionnementEtablissement(final Integer idEtablissement) {
+        Assert.isNotNull( "idEtablissement", idEtablissement );
+        final String querySelect = "SELECT e.fractionnement FROM " + EtablissementBean.class.getName() + " e WHERE e.id = :idEtablissement";
+        final List<Integer> results = getEntityManager().createQuery( querySelect ).setParameter( "idEtablissement", idEtablissement )
+                .getResultList();
+        if (!CollectionUtils.isEmpty( results )) {
+            if (results.get( 0 ) == null) {
                 return 1;
-            }else{
-                return results.get(0);
+            } else {
+                return results.get( 0 );
             }
-        }else{
+        } else {
             return 1;
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
     @SuppressWarnings("unchecked")
-    public Integer findDureeCoursEtablissement(final Integer idEtablissement){
-        Assert.isNotNull("idEtablissement", idEtablissement);
-        final String querySelect = "SELECT e.dureeCours FROM " + EtablissementBean.class.getName() + 
-        " e WHERE e.id = :idEtablissement";
-        final List<Integer> results = getEntityManager().createQuery(querySelect)
-            .setParameter("idEtablissement", idEtablissement).getResultList();
-        if(! CollectionUtils.isEmpty(results)){
-            if(results.get(0) == null){
+    public Integer findDureeCoursEtablissement(final Integer idEtablissement) {
+        Assert.isNotNull( "idEtablissement", idEtablissement );
+        final String querySelect = "SELECT e.dureeCours FROM " + EtablissementBean.class.getName() + " e WHERE e.id = :idEtablissement";
+        final List<Integer> results = getEntityManager().createQuery( querySelect ).setParameter( "idEtablissement", idEtablissement )
+                .getResultList();
+        if (!CollectionUtils.isEmpty( results )) {
+            if (results.get( 0 ) == null) {
                 return 60;
-            }else{
-                return results.get(0);
+            } else {
+                return results.get( 0 );
             }
-        }else{
+        } else {
             return 60;
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
     @SuppressWarnings("unchecked")
-    public Boolean findEtatImportEtablissement(final Integer idEtablissement){
-        Assert.isNotNull("idEtablissement", idEtablissement);
-        final String querySelect = "SELECT e.vraiOuFauxImportEnCours FROM " + EtablissementBean.class.getName() + 
-        " e WHERE e.id = :idEtablissement";
-        final List<Boolean> results = getEntityManager().createQuery(querySelect)
-            .setParameter("idEtablissement", idEtablissement).getResultList();
-        if(! CollectionUtils.isEmpty(results)){
-            if(results.get(0) == null){
+    public Boolean findEtatImportEtablissement(final Integer idEtablissement) {
+        Assert.isNotNull( "idEtablissement", idEtablissement );
+        final String querySelect = "SELECT e.vraiOuFauxImportEnCours FROM " + EtablissementBean.class.getName() + " e WHERE e.id = :idEtablissement";
+        final List<Boolean> results = getEntityManager().createQuery( querySelect ).setParameter( "idEtablissement", idEtablissement )
+                .getResultList();
+        if (!CollectionUtils.isEmpty( results )) {
+            if (results.get( 0 ) == null) {
                 return false;
-            }else{
-                return results.get(0);
+            } else {
+                return results.get( 0 );
             }
-        }else{
+        } else {
             return false;
         }
     }
@@ -744,38 +665,33 @@ public class EtablissementHibernateBusiness extends AbstractBusiness
     /**
      * {@inheritDoc}
      */
-    public void modifieStatutImportEtablissement(Integer idEtablissement,
-            Boolean statut) {
-        if(statut){
-            final String dateImport = String.valueOf((new Date().getTime()));
-            final String queryUpdate =
-                "UPDATE " + EtablissementBean.class.getName() +
-                " E SET E.vraiOuFauxImportEnCours = :statut , E.dateImport = :dateImport WHERE E.id = :idEtablissement";
-            getEntityManager().createQuery(queryUpdate).setParameter("idEtablissement", idEtablissement)
-            .setParameter("statut", statut).setParameter("dateImport", dateImport).executeUpdate();
-        }else{
-            final String queryUpdate =
-                "UPDATE " + EtablissementBean.class.getName() +
-                " E SET E.vraiOuFauxImportEnCours = :statut WHERE E.id = :idEtablissement";
-            getEntityManager().createQuery(queryUpdate).setParameter("idEtablissement", idEtablissement)
-            .setParameter("statut", statut).executeUpdate();
+    public void modifieStatutImportEtablissement(Integer idEtablissement, Boolean statut) {
+        if (statut) {
+            final String dateImport = String.valueOf( (new Date().getTime()) );
+            final String queryUpdate = "UPDATE " + EtablissementBean.class.getName()
+                    + " E SET E.vraiOuFauxImportEnCours = :statut , E.dateImport = :dateImport WHERE E.id = :idEtablissement";
+            getEntityManager().createQuery( queryUpdate ).setParameter( "idEtablissement", idEtablissement ).setParameter( "statut", statut )
+                    .setParameter( "dateImport", dateImport ).executeUpdate();
+        } else {
+            final String queryUpdate = "UPDATE " + EtablissementBean.class.getName()
+                    + " E SET E.vraiOuFauxImportEnCours = :statut WHERE E.id = :idEtablissement";
+            getEntityManager().createQuery( queryUpdate ).setParameter( "idEtablissement", idEtablissement ).setParameter( "statut", statut )
+                    .executeUpdate();
         }
         getEntityManager().flush();
     }
-    
+
     /**
      * {@inheritDoc}
      */
     @SuppressWarnings("unchecked")
-    public String checkDateImportEtablissement(final Integer idEtablissement){
-        Assert.isNotNull("idEtablissement", idEtablissement);
-        final String querySelect = "SELECT e.dateImport FROM " + EtablissementBean.class.getName() + 
-        " e WHERE e.id = :idEtablissement";
-        final List<String> results = getEntityManager().createQuery(querySelect)
-        .setParameter("idEtablissement", idEtablissement).getResultList();
-        if(! CollectionUtils.isEmpty(results)){
-            return results.get(0);
-        }else{
+    public String checkDateImportEtablissement(final Integer idEtablissement) {
+        Assert.isNotNull( "idEtablissement", idEtablissement );
+        final String querySelect = "SELECT e.dateImport FROM " + EtablissementBean.class.getName() + " e WHERE e.id = :idEtablissement";
+        final List<String> results = getEntityManager().createQuery( querySelect ).setParameter( "idEtablissement", idEtablissement ).getResultList();
+        if (!CollectionUtils.isEmpty( results )) {
+            return results.get( 0 );
+        } else {
             return "";
         }
     }

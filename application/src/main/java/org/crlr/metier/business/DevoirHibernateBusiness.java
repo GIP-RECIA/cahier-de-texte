@@ -8,6 +8,8 @@
 package org.crlr.metier.business;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,6 +22,7 @@ import javax.persistence.Query;
 import org.crlr.alimentation.Archive;
 import org.crlr.dto.ResultatDTO;
 import org.crlr.dto.application.base.GroupeDTO;
+import org.crlr.dto.application.base.GroupesClassesDTO;
 import org.crlr.dto.application.base.SeanceDTO;
 import org.crlr.dto.application.base.TypeCategorieTypeDevoir;
 import org.crlr.dto.application.base.TypeGroupe;
@@ -43,6 +46,7 @@ import org.crlr.metier.entity.ClasseBean;
 import org.crlr.metier.entity.DevoirBean;
 import org.crlr.metier.entity.ElevesClassesBean;
 import org.crlr.metier.entity.ElevesGroupesBean;
+import org.crlr.metier.entity.EnseignantBean;
 import org.crlr.metier.entity.EnseignantsClassesBean;
 import org.crlr.metier.entity.EnseignantsGroupesBean;
 import org.crlr.metier.entity.EnseignementLibelleBean;
@@ -64,6 +68,8 @@ import org.crlr.web.dto.FileUploadDTO;
 import org.crlr.web.utils.FacesUtils;
 import org.crlr.web.utils.FileUploadUtils;
 import org.springframework.stereotype.Repository;
+
+import com.google.common.collect.ComparisonChain;
 
 /**
  * DevoirHibernateBusiness.
@@ -498,9 +504,11 @@ public class DevoirHibernateBusiness extends AbstractBusiness
                        " LEFT JOIN D.typeDevoir TD, " + 
                        OuvertureInspecteurBean.class.getName() +" OUV " +
                        " WHERE " +            
-                           " OUV.inspecteur.id = :idInspecteur AND OUV.etablissement.id = :idEtablissement AND " +
-                           " GRP.id = SEQ.idGroupe AND " + " GRP.id IN " + listeGroupe +
-                           " AND " + " ENSEI.id = SEQ.idEnseignant AND " +
+                           " OUV.inspecteur.id = :idInspecteur AND " +
+                           " OUV.etablissement.id = :idEtablissement AND " +
+                           " GRP.id = SEQ.idGroupe AND " + 
+                           " GRP.id IN " + listeGroupe + " AND " + 
+                           " ENSEI.id = SEQ.idEnseignant AND " +
                            " SEQ.id = SEA.idSequence AND " +
                            " D.dateRemise >= :premierJourSemaine AND " +
                            " D.dateRemise <= :dernierJourSemaine AND " +
@@ -590,27 +598,42 @@ public class DevoirHibernateBusiness extends AbstractBusiness
         final ResultatRechercheDevoirDTO resultatRechercheDevoirDTO =
             new ResultatRechercheDevoirDTO();
         final Integer idDevoir = (Integer) result.get("idDevoir");
-        resultatRechercheDevoirDTO.setIdDevoir(idDevoir);
-        resultatRechercheDevoirDTO.setIdSequence((Integer) result.get("idSequence"));
-        resultatRechercheDevoirDTO.setIdSeance((Integer) result.get("idSeance"));
-        resultatRechercheDevoirDTO.setIdClasseGroupe((Integer) result.get("idClasse"));
-        resultatRechercheDevoirDTO.setCodeClasse((String) result.get("codeClasse"));
-        resultatRechercheDevoirDTO.setIdGroupe((Integer) result.get("idGroupe"));
-        resultatRechercheDevoirDTO.setCodeGroupe((String) result.get("codeGroupe"));
+        resultatRechercheDevoirDTO.setId(idDevoir);
+        resultatRechercheDevoirDTO.getSeance().getSequenceDTO().setId((Integer) result.get("idSequence"));
+        resultatRechercheDevoirDTO.getSeance().getSequenceDTO().setIdEnseignant((Integer) result.get("idEnseignantSeq"));
+        resultatRechercheDevoirDTO.getSeance().getSequenceDTO().setIdEtablissement((Integer) result.get("idEtablissement"));
+        resultatRechercheDevoirDTO.getSeance().setId((Integer) result.get("idSeance"));
+        resultatRechercheDevoirDTO.getSeance().setCode((String) result.get("codeSeance"));
+        resultatRechercheDevoirDTO.getSeance().setIdEnseignant((Integer) result.get("idEnseignantSeance"));
+        resultatRechercheDevoirDTO.getSeance().setDate((Date) result.get("dateSeance"));
+        
+        GroupesClassesDTO groupesClassesDTO =
+                resultatRechercheDevoirDTO.getSeance().getSequence().getGroupesClassesDTO();
+        
+        if (result.get("idClasse") != null) {
+            groupesClassesDTO.setId((Integer) result.get("idClasse"));
+            groupesClassesDTO.setTypeGroupe(TypeGroupe.CLASSE);
+            groupesClassesDTO.setCode((String) result.get("codeClasse"));
+        } else {
+            groupesClassesDTO.setId((Integer) result.get("idGroupe"));
+            groupesClassesDTO.setTypeGroupe(TypeGroupe.GROUPE);
+            groupesClassesDTO.setCode((String) result.get("codeGroupe"));        
+        }
         resultatRechercheDevoirDTO.setDesignationGroupe((String) result.get("designationGroupe"));
         resultatRechercheDevoirDTO.setDesignationClasse((String) result.get("designationClasse"));
-        resultatRechercheDevoirDTO.setCodeSeance((String) result.get("codeSeance"));
-        resultatRechercheDevoirDTO.setIdEnseignement((Integer) result.get("idEnseignement"));
-        resultatRechercheDevoirDTO.setDesignationEnseignement((String) result.get("designationEnseignement"));
+        
+        resultatRechercheDevoirDTO.getSeance().getSequenceDTO().setIdEnseignement((Integer) result.get("idEnseignement"));
+        resultatRechercheDevoirDTO.getSeance().getSequenceDTO().setDesignationEnseignement((String) result.get("designationEnseignement"));
         resultatRechercheDevoirDTO.setNomEnseignant((String) result.get("nomEnseignant"));
-        resultatRechercheDevoirDTO.setPrenomEnseignant((String) result.get("prenomEnseignant"));
+        resultatRechercheDevoirDTO.getSeance().getEnseignantDTO().setPrenom((String) result.get("prenomEnseignant"));
         resultatRechercheDevoirDTO.setCiviliteEnseignant((String) result.get("civiliteEnseignant"));
-        resultatRechercheDevoirDTO.setIdEnseignant((Integer) result.get("idEnseignant"));
-        resultatRechercheDevoirDTO.setIdTypeDevoir((Integer) result.get("idTypeDevoir"));
-        resultatRechercheDevoirDTO.setLibelleTypeDevoir((String) result.get("libelleTypeDevoir"));
-        resultatRechercheDevoirDTO.setDateRemiseDevoir((Date) result.get("dateRemise"));
-        resultatRechercheDevoirDTO.setIntituleDevoir((String) result.get("intituleDevoir"));
-        resultatRechercheDevoirDTO.setDescriptionDevoir((String) result.get("descriptionDevoir"));
+        
+        resultatRechercheDevoirDTO.getTypeDevoirDTO().setId((Integer) result.get("idTypeDevoir"));
+        resultatRechercheDevoirDTO.getTypeDevoirDTO().setLibelle((String) result.get("libelleTypeDevoir"));
+        resultatRechercheDevoirDTO.setDateRemise((Date) result.get("dateRemise"));
+        resultatRechercheDevoirDTO.setIntitule((String) result.get("intituleDevoir"));
+        resultatRechercheDevoirDTO.setDescription((String) result.get("descriptionDevoir"));
+        
         return resultatRechercheDevoirDTO;
     }
 
@@ -641,15 +664,19 @@ public class DevoirHibernateBusiness extends AbstractBusiness
         String requete1 = "";
         String requete2 = "";
 
+        //Common de tous les requêtes
         final String listeSelect =" SEA.id as idSeance, " + " SEA.code as codeSeance, " +
         " SEA.date as dateSeance, " +
         " SEA.heureDebut as heureDebutSeance, " +
         " SEA.intitule as intituleSeance, " +
         " SEA.heureDebut as heureDebutSeance, " +
+        " SEA.idEnseignant as idEnseignantSeance, " +
         " SEQ.id as idSequence, " + 
         " SEQ.intitule as intituleSequence, " +
         " SEQ.code as codeSequence, " +
         " SEQ.idEnseignement as idEnseignement," +
+        " SEQ.idEnseignant as idEnseignantSeq, " +
+        " SEQ.idEtablissement as idEtablissement, " +
         " ENS.designation as designationEnseignement," +
         " ENSEI.nom as nomEnseignant ," +
         " ENSEI.prenom as prenomEnseignant ," +
@@ -696,21 +723,22 @@ public class DevoirHibernateBusiness extends AbstractBusiness
                        " CLA.designation as designationClasse, " +
                        listeSelect + " ) " + " FROM " +
                        EnseignantsClassesBean.class.getName() + " EC " +
-                       " INNER JOIN EC.classe CLA " +
-                       " INNER JOIN EC.enseignant ENSEI, " +
+                       " INNER JOIN EC.classe CLA, " +
+                       EnseignantBean.class.getName() + " ENSEI, " +
                        SequenceBean.class.getName() + " SEQ " +
                        " INNER JOIN SEQ.enseignement ENS, " + DevoirBean.class.getName() +
                        " D " + " INNER JOIN D.seance SEA " +
-                       " LEFT JOIN D.typeDevoir TD " + " WHERE " + clauseCategorie + clauseEnseignement + " (( " +
-                       " CLA.id = SEQ.idClasse AND " + " CLA.id = :idClasse AND " +
-                       " ENSEI.id = SEQ.idEnseignant AND " +
+                       " LEFT JOIN D.typeDevoir TD " + " WHERE " +
+                       clauseCategorie + clauseEnseignement +
+                       " ENSEI.id = SEA.idEnseignant AND " +
+                       " CLA.id = SEQ.idClasse AND " +
+                       " CLA.id = :idClasse AND " +                       
                        " SEQ.id = SEA.idSequence AND " +
+                       " (( " +                       
                        " SEQ.idEnseignant = :idEnseignant AND " +
                        " D.dateRemise >= :premierJourSemaine AND " +
-                       " D.dateRemise <= :dernierJourSemaine " + " ) " + " OR " + " ( " +
-                       " CLA.id = SEQ.idClasse AND " + " CLA.id = :idClasse AND " +
-                       " ENSEI.id = SEQ.idEnseignant AND " +
-                       " SEQ.id = SEA.idSequence AND " +
+                       " D.dateRemise <= :dernierJourSemaine " + " ) " + " OR " +
+                       " ( " +                      
                        " SEQ.idEnseignant != :idEnseignant AND " +
                        " SEA.date <= :jourCourant AND " +
                        " D.dateRemise >= :premierJourSemaine AND " +
@@ -722,21 +750,22 @@ public class DevoirHibernateBusiness extends AbstractBusiness
                        " GRP.designation as designationGroupe, " +
                        listeSelect + " ) " + " FROM " +
                        EnseignantsGroupesBean.class.getName() + " EG " +
-                       " INNER JOIN EG.groupe GRP " +
-                       " INNER JOIN EG.enseignant ENSEI, " +
+                       " INNER JOIN EG.groupe GRP, " +
+                       EnseignantBean.class.getName() + " ENSEI, " +
                        SequenceBean.class.getName() + " SEQ " +
                        " INNER JOIN SEQ.enseignement ENS, " + DevoirBean.class.getName() +
                        " D " + " INNER JOIN D.seance SEA " +
-                       " LEFT JOIN D.typeDevoir TD " + " WHERE " +  clauseCategorie + clauseEnseignement + " (( " +
-                       " GRP.id = SEQ.idGroupe AND " + " GRP.id IN " + listeGroupe +
-                       " AND " + " ENSEI.id = SEQ.idEnseignant AND " +
-                       " SEQ.id = SEA.idSequence AND " +
-                       " SEQ.idEnseignant = :idEnseignant AND " +
+                       " LEFT JOIN D.typeDevoir TD " + " WHERE " +  
+                           clauseCategorie + clauseEnseignement +
+                           " SEQ.id = SEA.idSequence AND " +
+                           " ENSEI.id = SEA.idEnseignant AND " +
+                           " GRP.id = SEQ.idGroupe AND " +
+                           " GRP.id IN " + listeGroupe + " AND " +                           
+                           " (( " +
+                      " SEQ.idEnseignant = :idEnseignant AND " +
                        " D.dateRemise >= :premierJourSemaine AND " +
-                       " D.dateRemise <= :dernierJourSemaine " + " ) " + " OR " + " ( " +
-                       " GRP.id = SEQ.idGroupe AND " + " GRP.id IN " + listeGroupe +
-                       " AND " + " ENSEI.id = SEQ.idEnseignant AND " +
-                       " SEQ.id = SEA.idSequence AND " +
+                       " D.dateRemise <= :dernierJourSemaine " + " ) " +
+                       " OR " + " ( " +
                        " SEQ.idEnseignant != :idEnseignant AND " +
                        " SEA.date <= :jourCourant AND " +
                        " D.dateRemise >= :premierJourSemaine AND " +
@@ -772,21 +801,20 @@ public class DevoirHibernateBusiness extends AbstractBusiness
                        " GRP.designation as designationGroupe, " +
                        listeSelect + " ) " + " FROM " +
                        EnseignantsGroupesBean.class.getName() + " EG " +
-                       " INNER JOIN EG.groupe GRP " +
-                       " INNER JOIN EG.enseignant ENSEI, " +
+                       " INNER JOIN EG.groupe GRP, " +
+                       EnseignantBean.class.getName() + " ENSEI, " +
                        SequenceBean.class.getName() + " SEQ " +
                        " INNER JOIN SEQ.enseignement ENS, " + DevoirBean.class.getName() +
                        " D " + " INNER JOIN D.seance SEA " +
-                       " LEFT JOIN D.typeDevoir TD " + " WHERE " + clauseCategorie + clauseEnseignement + " (( " +
+                       " LEFT JOIN D.typeDevoir TD " + " WHERE " + clauseCategorie + clauseEnseignement +
                        " GRP.id = SEQ.idGroupe AND " + " GRP.id = :idGroupe AND " +
-                       " ENSEI.id = SEQ.idEnseignant AND " +
+                       " ENSEI.id = SEA.idEnseignant AND " +
                        " SEQ.id = SEA.idSequence AND " +
+                       " (( " +
                        " SEQ.idEnseignant = :idEnseignant AND " +
                        " D.dateRemise >= :premierJourSemaine AND " +
-                       " D.dateRemise <= :dernierJourSemaine " + " ) " + " OR " + " ( " +
-                       " GRP.id = SEQ.idGroupe AND " + " GRP.id = :idGroupe AND " +
-                       " ENSEI.id = SEQ.idEnseignant AND " +
-                       " SEQ.id = SEA.idSequence AND " +
+                       " D.dateRemise <= :dernierJourSemaine " + " ) " + " OR " +
+                       " ( " +                                           
                        " SEQ.idEnseignant != :idEnseignant AND " +
                        " SEA.date <= :jourCourant AND " +
                        " D.dateRemise <= :dernierJourSemaine AND " +
@@ -809,9 +837,14 @@ public class DevoirHibernateBusiness extends AbstractBusiness
             
             final ResultatRechercheDevoirDTO resultatRechercheDevoirDTO =
                 extractInfoRechercheEnseignant(result);
+            
             listeResultatRechercheDevoirDTO.add(resultatRechercheDevoirDTO);
         }
-        resultat.setValeurDTO(ComparateurUtils.sort(listeResultatRechercheDevoirDTO, "dateRemiseDevoir"));
+        
+        Collections.sort(listeResultatRechercheDevoirDTO);
+        
+        //Classe contient une comparsion en utilsant "dateRemiseDevoir"
+        resultat.setValeurDTO(listeResultatRechercheDevoirDTO);
         return resultat;
     }
 
@@ -859,7 +892,7 @@ public class DevoirHibernateBusiness extends AbstractBusiness
         }
         listeClasse += ")";
 
-        final String requete1 =
+        final String requeteDevoirClasse =
             "SELECT " + " distinct new map( " + " D.id as idDevoir, " +
             " CLA.code as codeClasse, " + " CLA.designation as designationClasse, " +
             " SEA.code as codeSeance, " + " SEA.id as idSeance, " +
@@ -867,6 +900,7 @@ public class DevoirHibernateBusiness extends AbstractBusiness
             " SEA.heureDebut as heureDebutSeance, " + " E.nom as nomEnseignant ," +
             " E.prenom as prenomEnseignant ," + " E.civilite as civiliteEnseignant ," +
             " SEQ.id as idSequence, " + " SEQ.intitule as intituleSequence, " +
+            " SEQ.idEnseignant as idEnseignantSequence, SEQ.idEtablissement as idEtablissement," +
             " ENS.designation as designationEnseignement, " +
             " ENS.id as idEnseignement, " + " SEQ.idEnseignement as idEnseignement," +
             " SEA.idEnseignant as idEnseignant, " + " D.idTypeDevoir as idTypeDevoir, " +
@@ -885,7 +919,7 @@ public class DevoirHibernateBusiness extends AbstractBusiness
             " D.dateRemise >= :premierJourSemaine AND " +
             " D.dateRemise <= :dernierJourSemaine ";
 
-        final String requete2 =
+        final String requeteDevoirGroup =
             "SELECT " + " distinct new map( " + " D.id as idDevoir, " +
             " GRP.code as codeGroupe, " + " GRP.designation as designationGroupe, " +
             " SEA.code as codeSeance, " + " SEA.id as idSeance, " +
@@ -893,6 +927,7 @@ public class DevoirHibernateBusiness extends AbstractBusiness
             " SEA.heureDebut as heureDebutSeance, " + " E.nom as nomEnseignant ," +
             " E.prenom as prenomEnseignant ," + " E.civilite as civiliteEnseignant ," +
             " SEQ.id as idSequence, " + " SEQ.intitule as intituleSequence, " +
+            " SEQ.idEnseignant as idEnseignantSequence, SEQ.idEtablissement as idEtablissement," + 
             " ENS.designation as designationEnseignement, " +
             " ENS.id as idEnseignement, " + " SEQ.idEnseignement as idEnseignement," +
             " SEA.idEnseignant as idEnseignant, " + " D.idTypeDevoir as idTypeDevoir, " +
@@ -911,8 +946,8 @@ public class DevoirHibernateBusiness extends AbstractBusiness
             " D.dateRemise >= :premierJourSemaine AND " +
             " D.dateRemise <= :dernierJourSemaine ";
 
-        final Query query1 = getEntityManager().createQuery(requete1);
-        final Query query2 = getEntityManager().createQuery(requete2);
+        final Query query1 = getEntityManager().createQuery(requeteDevoirClasse);
+        final Query query2 = getEntityManager().createQuery(requeteDevoirGroup);
 
         query1.setParameter("idEleve", idEleve);
         query1.setParameter("jourCourant", rechercheDevoirQO.getJourCourant());
@@ -961,28 +996,45 @@ public class DevoirHibernateBusiness extends AbstractBusiness
             final ResultatRechercheDevoirDTO resultatRechercheDevoirDTO =
                 new ResultatRechercheDevoirDTO();
             final Integer idDevoir = (Integer) result.get("idDevoir");
-            resultatRechercheDevoirDTO.setIdDevoir(idDevoir);
-            resultatRechercheDevoirDTO.setIdSequence((Integer) result.get("idSequence"));
-            resultatRechercheDevoirDTO.setIdSeance((Integer) result.get("idSeance"));
-            resultatRechercheDevoirDTO.setCodeClasse((String) result.get("codeClasse"));
-            resultatRechercheDevoirDTO.setCodeGroupe((String) result.get("codeGroupe"));
-            resultatRechercheDevoirDTO.setDesignationGroupe((String) result.get("designationGroupe"));
-            resultatRechercheDevoirDTO.setDesignationClasse((String) result.get("designationClasse"));
-            resultatRechercheDevoirDTO.setCodeSeance((String) result.get("codeSeance"));
-            resultatRechercheDevoirDTO.setIdTypeDevoir((Integer) result.get("idTypeDevoir"));
+            resultatRechercheDevoirDTO.setId(idDevoir);
+            resultatRechercheDevoirDTO.getSeance().getSequence().setId((Integer) result.get("idSequence"));
+            resultatRechercheDevoirDTO.getSeance().getSequence().setIdEnseignant((Integer) result.get("idEnseignantSequence"));
+            resultatRechercheDevoirDTO.getSeance().getSequence().setIdEtablissement((Integer) result.get("idEtablissement"));
+            resultatRechercheDevoirDTO.getSeance().setId((Integer) result.get("idSeance"));
+            resultatRechercheDevoirDTO.getSeance().setCode((String) result.get("codeSeance"));
+            
+            GroupesClassesDTO groupesClassesDTO =
+                    resultatRechercheDevoirDTO.getSeance().getSequence().getGroupesClassesDTO();
+            
+            if (result.get("codeClasse") != null) {
+                groupesClassesDTO.setTypeGroupe(TypeGroupe.CLASSE);
+                groupesClassesDTO.setCode((String) result.get("codeClasse"));
+                groupesClassesDTO.setDesignation((String) result.get("designationClasse"));
+            } else {
+                groupesClassesDTO.setTypeGroupe(TypeGroupe.GROUPE);
+                groupesClassesDTO.setCode((String) result.get("codeGroupe"));
+                groupesClassesDTO.setDesignation((String) result.get("designationGroupe"));
+            }
+            
+            
+            
+            
+            resultatRechercheDevoirDTO.getTypeDevoirDTO().setId((Integer) result.get("idTypeDevoir"));
             final Integer idEnseignement = (Integer) result.get("idEnseignement");
             if (mapLibellePersoEnseignement.containsKey(idEnseignement)) {
-                resultatRechercheDevoirDTO.setDesignationEnseignement((String) mapLibellePersoEnseignement.get(idEnseignement));
+                resultatRechercheDevoirDTO.getSeance().getSequence()
+                .setDesignationEnseignement((String) mapLibellePersoEnseignement.get(idEnseignement));
             } else {
-                resultatRechercheDevoirDTO.setDesignationEnseignement((String) result.get("designationEnseignement"));
+                resultatRechercheDevoirDTO.getSeance().getSequence().setDesignationEnseignement((String) result.get("designationEnseignement"));
             }
             resultatRechercheDevoirDTO.setNomEnseignant((String) result.get("nomEnseignant"));
-            resultatRechercheDevoirDTO.setPrenomEnseignant((String) result.get("prenomEnseignant"));
+            resultatRechercheDevoirDTO.getSeance().getEnseignantDTO().setPrenom((String) result.get("prenomEnseignant"));
+            resultatRechercheDevoirDTO.getSeance().getEnseignantDTO().setId((Integer) result.get("idEnseignant"));
             resultatRechercheDevoirDTO.setCiviliteEnseignant((String) result.get("civiliteEnseignant"));
-            resultatRechercheDevoirDTO.setLibelleTypeDevoir((String) result.get("libelleTypeDevoir"));
-            resultatRechercheDevoirDTO.setDateRemiseDevoir((Date) result.get("dateRemise"));
-            resultatRechercheDevoirDTO.setIntituleDevoir((String) result.get("intituleDevoir"));
-            resultatRechercheDevoirDTO.setDescriptionDevoir((String) result.get("descriptionDevoir"));
+            resultatRechercheDevoirDTO.getTypeDevoirDTO().setLibelle((String) result.get("libelleTypeDevoir"));
+            resultatRechercheDevoirDTO.setDateRemise((Date) result.get("dateRemise"));
+            resultatRechercheDevoirDTO.setIntitule((String) result.get("intituleDevoir"));
+            resultatRechercheDevoirDTO.setDescription((String) result.get("descriptionDevoir"));
             listeResultatRechercheDevoirDTO.add(resultatRechercheDevoirDTO);
         }
 
@@ -993,7 +1045,19 @@ public class DevoirHibernateBusiness extends AbstractBusiness
                                                               .name(), Nature.INFORMATIF));
             resultat.setConteneurMessage(conteneurMessage);
         }
-        resultat.setValeurDTO(ComparateurUtils.sort(listeResultatRechercheDevoirDTO, "dateRemiseDevoir"));
+        
+        
+        Collections.sort(listeResultatRechercheDevoirDTO, new Comparator<ResultatRechercheDevoirDTO>(){
+
+            @Override
+            public int compare(ResultatRechercheDevoirDTO o1, ResultatRechercheDevoirDTO o2) {
+                return ComparisonChain.start().compare(o1.getDateRemise(), o2.getDateRemise()).result();
+            }
+            
+        });
+        
+        resultat.setValeurDTO(listeResultatRechercheDevoirDTO);
+        
         return resultat;
     }
 
@@ -1382,7 +1446,9 @@ public class DevoirHibernateBusiness extends AbstractBusiness
             final Integer idDevoir = (Integer) result.get("idDevoir");
             devoirDTO.setId(idDevoir);
             devoirDTO.setIdSeance((Integer) result.get("idSeance"));
-            devoirDTO.getSeance().setIdEnseignant((Integer) result.get("idEnseignant"));
+            devoirDTO.getSeance().setIdEnseignant((Integer) result.get("idEnseignantSea"));
+            devoirDTO.getSeance().getSequenceDTO().setIdEnseignant((Integer) result.get("idEnseignantSeq"));
+            devoirDTO.getSeance().getSequenceDTO().setIdEtablissement((Integer) result.get("idEtablissement"));
             devoirDTO.setDateSeance((Date) result.get("dateSeance"));
             devoirDTO.setIdClasse((Integer) result.get("idClasse"));
             devoirDTO.setIdGroupe((Integer) result.get("idGroupe"));
@@ -1425,15 +1491,22 @@ public class DevoirHibernateBusiness extends AbstractBusiness
     final static String DEVOIR_PLANNING_REQUETE_SELECT_CHAMPS =
             "DEV.id as idDevoir, " +
                     "DEV.code as codeDevoir, DEV.intitule as intituleDevoir, " +
-                    "DEV.dateRemise as dateRemise, " + "DEV.description as descriptionDevoir, " +
+                    "DEV.dateRemise as dateRemise, " + 
+                    "DEV.description as descriptionDevoir, " +
                     "DEV.idTypeDevoir as idTypeDevoir, "+
                     "TD.libelle as libelleTypeDevoir, " +
                     "TD.categorie as categorieTypeDevoir, " +
                     "GRP.code as codeGroupe, " + "GRP.id as idGroupe, " +
-                    "GRP.designation as designationGroupe, " + "CLA.code as codeClasse, " + "CLA.id as idClasse, " +
-                    "CLA.designation as designationClasse, " + "ENS.id as idEnseignement, " +
-                    "ENS.designation as designationEnseignement" +
-                    ", SEA.date as dateSeance, SEA.id as idSeance, SEA.idEnseignant as idEnseignant, SEA.idSequence as idSequence" 
+                    "GRP.designation as designationGroupe, " + "CLA.code as codeClasse, " +
+                    "CLA.id as idClasse, " +
+                    "CLA.designation as designationClasse, " +
+                    "ENS.id as idEnseignement, " +
+                    "ENS.designation as designationEnseignement, " +
+                    "SEA.date as dateSeance, SEA.id as idSeance, " +
+                    "SEA.idEnseignant as idEnseignantSea, " +
+                    "SEQ.idEnseignant as idEnseignantSeq, " +
+                    "SEQ.idEtablissement as idEtablissement, " +
+                    "SEA.idSequence as idSequence" 
                     ;
             
     /**

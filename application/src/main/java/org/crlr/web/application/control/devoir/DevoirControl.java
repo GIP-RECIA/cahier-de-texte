@@ -26,6 +26,7 @@ import org.crlr.dto.application.admin.GenerateurDTO;
 import org.crlr.dto.application.base.AnneeScolaireDTO;
 import org.crlr.dto.application.base.GroupeDTO;
 import org.crlr.dto.application.base.Profil;
+import org.crlr.dto.application.base.SeanceDTO;
 import org.crlr.dto.application.base.TypeCategorieTypeDevoir;
 import org.crlr.dto.application.base.TypeJour;
 import org.crlr.dto.application.base.UtilisateurDTO;
@@ -37,6 +38,7 @@ import org.crlr.dto.application.devoir.RechercheDevoirQO;
 import org.crlr.dto.application.devoir.ResultatRechercheDevoirDTO;
 import org.crlr.dto.application.devoir.SaveDevoirQO;
 import org.crlr.dto.application.devoir.TypeDevoirDTO;
+import org.crlr.dto.application.seance.ConsulterSeanceQO;
 import org.crlr.exception.metier.MetierException;
 import org.crlr.services.DevoirService;
 import org.crlr.services.EtablissementService;
@@ -45,11 +47,11 @@ import org.crlr.utils.DateUtils;
 import org.crlr.utils.ObjectUtils;
 import org.crlr.web.application.control.AbstractPopupControl;
 import org.crlr.web.application.control.ClasseGroupeControl;
-import org.crlr.web.application.control.EnseignementControl;
-import org.crlr.web.application.control.PopupPiecesJointesControl;
 import org.crlr.web.application.control.ClasseGroupeControl.ClasseGroupeListener;
+import org.crlr.web.application.control.EnseignementControl;
 import org.crlr.web.application.control.EnseignementControl.EnseignementListener;
-import org.crlr.web.application.form.AbstractForm;
+import org.crlr.web.application.control.PopupPiecesJointesControl;
+import org.crlr.web.application.control.remplacement.GestionRemplacementControl;
 import org.crlr.web.application.form.devoir.DevoirForm;
 import org.crlr.web.contexte.utils.ContexteUtils;
 import org.crlr.web.dto.BarreSemaineDTO;
@@ -57,6 +59,8 @@ import org.crlr.web.dto.FileUploadDTO;
 import org.crlr.web.dto.JoursDTO;
 import org.crlr.web.dto.MoisDTO;
 import org.crlr.web.utils.ConverteurDTOUtils;
+
+import com.google.common.collect.Lists;
 
 /**
  * Controleur de l'ecran de visualisation des devoirs. 
@@ -88,6 +92,8 @@ EnseignementListener {
     @ManagedProperty(value = "#{enseignement}")
     protected transient EnseignementControl enseignementControl;
     
+    @ManagedProperty(value = "#{gestionRemplacement}")
+    private transient GestionRemplacementControl gestionRemplacementControl;
     
     /**
      * Mutateur de devoirService {@link #devoirService}.
@@ -170,26 +176,29 @@ EnseignementListener {
             }
 
         } catch (Exception e) {
-            log.error(e, "Exception");
+            log.error( "Exception", e);
         }
            
         
         /*
+         * 
          * Bouchon pour presélectionner la formulaire 
+         */
+        /*
         for (GroupesClassesDTO gc : classeGroupeControl.getForm().getListeGroupeClasse()) {
-            if (!gc.getDesignation().equals("1S1")) {
+            if (!gc.getDesignation().equals("17")) {
                 continue;
             }
             classeGroupeControl.getForm().setGroupeClasseSelectionne(gc);
             classeGroupeControl.classeGroupeSelectionnee();
             
             form.setTypeAffichage("LISTE");
-            form.setDateDebut(DateUtils.creer(2012, 4, 1));
-            form.setDateFin(DateUtils.creer(2012, 5, 7));
+            form.setDateDebut(DateUtils.creer(2012, 11, 1));
+            form.setDateFin(DateUtils.creer(2013, 2, 7));
             rechercher();
             break;
-        }*/
-           
+        }
+           */
     }
     
     /**
@@ -199,6 +208,16 @@ EnseignementListener {
         final UtilisateurDTO utilisateurDTO = ContexteUtils.getContexteUtilisateur().getUtilisateurDTO();
         final Map<TypeJour,Boolean> jourOuvreAccessible = GenerateurDTO.generateMapJourOuvreFromDb(utilisateurDTO.getJoursOuvresEtablissement());
         form.setJourOuvreAccessible(jourOuvreAccessible);
+        
+        List<TypeJour> typeJoursListe = Lists.newArrayList();
+        
+        for (final TypeJour jour : TypeJour.values()) {
+            if (jourOuvreAccessible.get(jour)) {
+                typeJoursListe.add(jour);
+            }
+        }
+        
+        form.setListeJoursOuvre(typeJoursListe);
     }
     
 
@@ -287,28 +306,13 @@ EnseignementListener {
             if(resultat != null) {
                 for (final ResultatRechercheDevoirDTO resultatRechercheDevoirDTO : resultat.getValeurDTO()) {
                     final DetailJourDTO dev = new DetailJourDTO();
-                    dev.setIdDevoir(resultatRechercheDevoirDTO.getIdDevoir());
-                    dev.setIdSequence(resultatRechercheDevoirDTO.getIdSequence());
-                    dev.setIdSeance(resultatRechercheDevoirDTO.getIdSeance());
-                    dev.setCodeSeance(resultatRechercheDevoirDTO.getCodeSeance());
-                    dev.setClasse(resultatRechercheDevoirDTO.getDesignationClasse());
-                    if (AbstractForm.ZERO.equals(resultatRechercheDevoirDTO.getIdGroupe())) {
-                        dev.setGroupe("");
-                    } else {
-                        dev.setGroupe(resultatRechercheDevoirDTO.getDesignationGroupe());
-                    }
-                    dev.setMatiere(resultatRechercheDevoirDTO.getDesignationEnseignement());
-                    dev.setDenomination(resultatRechercheDevoirDTO.getCiviliteEnseignant());
-                    dev.setNom(resultatRechercheDevoirDTO.getNomEnseignant());
-                    dev.setTypeDevoir(resultatRechercheDevoirDTO.getLibelleTypeDevoir());
-                    dev.setIntituleDevoir(resultatRechercheDevoirDTO.getIntituleDevoir());
-                    dev.setDate(resultatRechercheDevoirDTO.getDateRemiseDevoir());
-                    dev.setDescriptionDevoir(resultatRechercheDevoirDTO.getDescriptionDevoir());
+                    ObjectUtils.copyProperties(dev, resultatRechercheDevoirDTO);
+                    dev.setMatiere(resultatRechercheDevoirDTO.getSeance().getSequence().getDesignationEnseignement());
                     generateDescriptionAbrege(dev);
                     liste.add(dev);
                 }
             }
-            form.setListe(ConverteurDTOUtils.convertWeekCalendar(liste));
+            form.setListe(ConverteurDTOUtils.convertWeekCalendar(liste, false));
             form.setListeDevoir(liste);
         } catch (final MetierException e) {
             log.debug("{0}", e.getMessage());
@@ -329,6 +333,11 @@ EnseignementListener {
         
         final Boolean vraiOuFauxEnseignant = Profil.ENSEIGNANT.equals(ContexteUtils.getContexteUtilisateur()
         .getUtilisateurDTO().getProfil());
+        
+        if (vraiOuFauxEnseignant) {
+            rechercheDevoirQO.setIdEnseignantConnecte(
+                    ContexteUtils.getContexteUtilisateur().getUtilisateurDTOConnecte().getUserDTO().getIdentifiant());
+        }
         
         if (utilisateurDTO.getProfil().equals(Profil.INSPECTION_ACADEMIQUE)){
             rechercheDevoirQO.setIdInspecteur(idUtilisateur);
@@ -375,36 +384,19 @@ EnseignementListener {
             if(resultat != null) {
                 for (final ResultatRechercheDevoirDTO resultatRechercheDevoirDTO : resultat.getValeurDTO()) {
                     final DetailJourDTO dev = new DetailJourDTO();
-                    dev.setIdDevoir(resultatRechercheDevoirDTO.getIdDevoir());
-                    dev.setIdSeance(resultatRechercheDevoirDTO.getIdSeance());
-                    dev.setCodeSeance(resultatRechercheDevoirDTO.getCodeSeance());
-                    dev.setIdSequence(resultatRechercheDevoirDTO.getIdSequence());
-                    dev.setClasse(resultatRechercheDevoirDTO.getDesignationClasse());
-                    dev.setIdClasse(resultatRechercheDevoirDTO.getIdClasseGroupe());
-                    dev.setIdGroupe(resultatRechercheDevoirDTO.getIdGroupe());
-                    if (AbstractForm.ZERO.equals(resultatRechercheDevoirDTO.getIdGroupe())) {
-                        dev.setGroupe("");
-                    } else {
-                        dev.setGroupe(resultatRechercheDevoirDTO.getDesignationGroupe());
-                    }
-                    dev.setMatiere(resultatRechercheDevoirDTO.getDesignationEnseignement());
+                    ObjectUtils.copyProperties(dev, resultatRechercheDevoirDTO);
+                    
+                    dev.setMatiere(resultatRechercheDevoirDTO.getSeance().getSequence().getDesignationEnseignement());
                     dev.setDenomination(resultatRechercheDevoirDTO.getCiviliteEnseignant());
                     dev.setNom(resultatRechercheDevoirDTO.getNomEnseignant());
-                    dev.setTypeDevoir(resultatRechercheDevoirDTO.getLibelleTypeDevoir());
-                    dev.setIntituleDevoir(resultatRechercheDevoirDTO.getIntituleDevoir());
-                    dev.setDate(resultatRechercheDevoirDTO.getDateRemiseDevoir());
-                    dev.setDescriptionDevoir(resultatRechercheDevoirDTO.getDescriptionDevoir());                    
                     generateDescriptionAbrege(dev);                    
                     
-                    if (vraiOuFauxEnseignant) {
-                        //si on est enseignant et qu'on est l'enseignant qui a crÃ©e le devoir alors on peut le modifier
-                        dev.setVraiOuFauxModifiable(idUtilisateur.equals(resultatRechercheDevoirDTO.getIdEnseignant()));
-                    }
+                    
                     liste.add(dev);
                 }
             }
             form.setListeDevoir(liste);
-            form.setListe(ConverteurDTOUtils.convertWeekCalendar(liste));
+            form.setListe(ConverteurDTOUtils.convertWeekCalendar(liste, false));
         } catch (final MetierException e) {
             log.debug("{0}", e.getMessage());
             form.setVraiOuFauxRechercheActive(false);
@@ -416,10 +408,10 @@ EnseignementListener {
      * @param devoirDTO le devoir courant.
      */
     private void generateDescriptionAbrege(final DetailJourDTO devoirDTO) {
-        if (devoirDTO.getDescriptionDevoir()==null) {
+        if (devoirDTO.getDescription()==null) {
             return;
         }
-        final String descriptionSansBalise = org.crlr.utils.StringUtils.removeBalise(devoirDTO.getDescriptionDevoir()).trim();
+        final String descriptionSansBalise = org.crlr.utils.StringUtils.removeBalise(devoirDTO.getDescription()).trim();
         String s = org.crlr.utils.StringUtils.truncate(descriptionSansBalise,70);
         if (descriptionSansBalise != null && descriptionSansBalise.length()>70) {
             s += "...";
@@ -465,9 +457,12 @@ EnseignementListener {
      * Charge le devoir grace a son id.
      */
     public void naviguerDetailDevoir() {
-        final Integer idDevoir = form.getSelectDevoir().getIdDevoir();
+        final Integer idDevoir = form.getSelectDevoir().getId();
         
         final DevoirDTO devoir = devoirService.findDetailDevoir(idDevoir);
+        
+        //Remettre si nous avions accès dans le nouveau devoirDTO
+        devoir.getSeance().setAccesEcriture(form.getSelectDevoir().getSeance().getAccesEcriture());
         
         devoir.setDescriptionHTML(ImagesServlet.genererLatexImage(devoir.getDescription()));
         chercherChargeTravailGenerique(devoir);
@@ -490,7 +485,7 @@ EnseignementListener {
     
     public void resetListeDevoir() {
         form.setListeDevoir(new ArrayList<DetailJourDTO>());
-        form.setListe(ConverteurDTOUtils.convertWeekCalendar(form.getListeDevoir()));
+        form.setListe(ConverteurDTOUtils.convertWeekCalendar(form.getListeDevoir(), false));
     }
     
     /**
@@ -555,6 +550,34 @@ EnseignementListener {
            saveDevoirQO.setDevoirDTO(devoir);
            saveDevoirQO.setDateSeance(devoir.getSeance().getDate());
            saveDevoirQO.setDateFinAnneeScolaire(form.getFinAnneeScolaire());
+           
+           final UtilisateurDTO utilisateurDTO = ContexteUtils
+                   .getContexteUtilisateur().getUtilisateurDTOConnecte();
+           final Profil profilUser = utilisateurDTO.getProfil();
+
+           //Dans le cas d'un remplaçement, mettre l'id d'enseignant pour eventuellement changer
+           //l'id de séance saisie par anticipation
+           if (profilUser == Profil.ENSEIGNANT && ContexteUtils.getContexteUtilisateur().getUtilisateurDTOOrigine() != null) {
+               
+               ConsulterSeanceQO cSeance = new ConsulterSeanceQO();
+               cSeance.setId(devoir.getSeance().getId());
+               
+               try {
+                   SeanceDTO seance = seanceService.rechercherSeance(cSeance);
+                   Integer idEnseignantConnecte = utilisateurDTO.getUserDTO().getIdentifiant();
+                   if (
+                           !seance.getIdEnseignant().equals(idEnseignantConnecte)
+                           ) {
+                       
+                       seance.setIdEnseignant(idEnseignantConnecte);
+                       seanceService.modifieSeance(seance);
+                   }
+               } catch (MetierException ex) {
+                   log.error("ex",ex);
+               }
+               
+           }
+           
            try {
             devoirService.saveDevoir(saveDevoirQO);
            } catch (MetierException e) {
@@ -720,5 +743,13 @@ EnseignementListener {
     public void filtreParTypeDevoir() {
         resetListeDevoir();
         form.setVraiOuFauxRechercheActive(false);
+    }
+
+    /**
+     * @param gestionRemplacementControl the gestionRemplacementControl to set
+     */
+    public void setGestionRemplacementControl(
+            GestionRemplacementControl gestionRemplacementControl) {
+        this.gestionRemplacementControl = gestionRemplacementControl;
     }
 }

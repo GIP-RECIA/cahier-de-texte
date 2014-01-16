@@ -27,6 +27,42 @@
         <managed-bean-scope>application</managed-bean-scope>
     </managed-bean>
     
+     <managed-bean>
+        <managed-bean-name>enseignant</managed-bean-name>
+        <managed-bean-class>
+            org.crlr.web.application.control.EnseignantControl
+        </managed-bean-class>
+        <managed-bean-scope>view</managed-bean-scope>
+        <managed-property>
+            <property-name>sequenceService</property-name>
+            <property-class>org.crlr.services.SequenceService</property-class>
+            <value>#{sequenceService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>groupeClasseService</property-name>
+            <property-class>org.crlr.services.GroupeClasseService</property-class>
+            <value>#{groupeClasseService}</value>
+        </managed-property>
+    </managed-bean>
+    
+     <managed-bean>
+        <managed-bean-name>enseignant2</managed-bean-name>
+        <managed-bean-class>
+            org.crlr.web.application.control.EnseignantControl
+        </managed-bean-class>
+        <managed-bean-scope>view</managed-bean-scope>
+        <managed-property>
+            <property-name>sequenceService</property-name>
+            <property-class>org.crlr.services.SequenceService</property-class>
+            <value>#{sequenceService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>groupeClasseService</property-name>
+            <property-class>org.crlr.services.GroupeClasseService</property-class>
+            <value>#{groupeClasseService}</value>
+        </managed-property>
+  
+    </managed-bean>
      
     <managed-bean>
         <managed-bean-name>contexteUtilisateur</managed-bean-name>

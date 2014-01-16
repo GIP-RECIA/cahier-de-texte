@@ -105,8 +105,8 @@
             <cr:lien bean="#{rechSeance}"
                      id="selectionner"
                      cible="selectionner"
-                     image="edit.gif"
-                     desc="Modifier"
+                     image="#{ligne.accesEcriture ? 'edit.gif' : 'loupe-icone.png' }"
+                     desc="#{ligne.accesEcriture ? 'Modifier' : 'Consulter'}"
                      render="listingSeance">
               <f:setPropertyActionListener value="#{ligne}"
                                            target="#{rechSeance.form.resultatSelectionne}" />

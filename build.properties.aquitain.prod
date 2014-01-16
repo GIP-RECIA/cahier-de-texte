@@ -1,0 +1,35 @@
+#################
+# Configuration #
+#################
+
+# Répertoire d'installation de Tomcat
+tomcat.home=/opt/tomcat-ent
+
+# Répertoire de déploiement (webapps)
+deploy.home=/opt/tomcat-ent/webapps
+
+###############
+# Développeur #
+###############
+
+# Nom de l'application
+application.name=cahier-texte
+
+#Durée de la session en milliseconde (minute*60*1000) : 10 min = 600000
+application.session=1800000
+
+#Permissions dans l'application déployée
+owner=tomcat
+group=tomcat
+
+#########
+#  CAS  #
+#########
+cas.auth=true
+cas.finalURL=https://FRMP0162.frml.bull.fr:443/cas
+cas.uri.login=/login
+cas.uri.validate=/serviceValidate
+cas.uri.client=FRMP0162.frml.bull.fr
+cas.uri.client.proxy=FRMP0162.frml.bull.fr
+cas.filter.pattern=/ecrans/*
+

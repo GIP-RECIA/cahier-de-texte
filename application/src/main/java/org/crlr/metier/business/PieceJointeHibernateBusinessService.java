@@ -72,7 +72,25 @@ public interface PieceJointeHibernateBusinessService {
     public Integer savePieceJointeSeance(FileUploadDTO fileUploadDTO)
                                   throws MetierException;
 
-   
+    
+    /**
+     * Permet de sauvegarder une pièce jointe pour une séance de sequence pedagogique.
+     * @param fileUploadDTO La pièce jointe
+     * @return l'id de la piece jointe créée
+     * @throws MetierException Exception
+     */
+    public Integer savePieceJointeCycleSeance(FileUploadDTO fileUploadDTO)
+                                  throws MetierException;
+
+    /**
+     * Permet de sauvegarder une pièce jointe pour un devoir de sequence pedagogique.
+     * @param fileUploadDTO La pièce jointe
+     * @return l'id de la piece jointe créée
+     * @throws MetierException Exception
+     */
+    public Integer savePieceJointeCycleDevoir(FileUploadDTO fileUploadDTO)
+                                  throws MetierException;
+    
     /**
      * Permet de sauvegarder une pièce jointe pour un devoir.
      *

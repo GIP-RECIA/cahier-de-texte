@@ -18,13 +18,13 @@ public class PrefCahierTexteForm extends AbstractForm {
 
     /** liste des enfants d'un parent, pour un profil Parent. */
     private List<EnfantDTO> listeEnfant;
-    
+
     /** liste des établissements disponible. */
     private List<EtablissementDTO> listeEtablissement;
 
     /** le code de l'etablissement selectionne. */
     private EtablissementDTO etablissementSelectionne;
-    
+
     /** Flitre pour la popup d'établissement. */
     private String filtreEtablissement;
     
@@ -139,5 +139,5 @@ public class PrefCahierTexteForm extends AbstractForm {
     public void setEnfantSelectionne(EnfantDTO enfantSelectionne) {
         this.enfantSelectionne = enfantSelectionne;
     }
-	
+
 }

@@ -152,4 +152,11 @@ public interface EmploiHibernateBusinessService {
      */
     public List<DateDTO> findProchaineDate(RechercheEmploiQO rechercheEmploi);
     
+    /**
+     * Recupere l'aleternance de semaine pour l'etablissement.
+     * @param idEtablissement etablissement
+     * @return une chaine.
+     */
+    public String findAlternanceSemaine(final Integer idEtablissement);
+    
 }

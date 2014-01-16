@@ -34,6 +34,7 @@ import org.crlr.utils.DateUtils;
 import org.crlr.web.dto.TypeSemaine;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import static org.junit.Assert.*;
 /**
  * Classe de test temporaire.
  * 

@@ -160,195 +160,12 @@
                             value="#{devoir.form.titreNavigateurSemaine}" />
             </h:panelGrid>
           </f:facet>
-          <rich:column rendered="#{devoir.form.lundiVisible}"
-                       width="14%">
-            <f:facet name="header">
-              <h:outputText value="Lundi" />
-            </f:facet>
-            <h:panelGrid columns="1"
-                         styleClass="corpsCalTable#{!category.map['LUNDI'].actif ? 'Inactif' : ''}">
-
-              <h:outputText rendered="#{not empty category.map['LUNDI'].classe}"
-                            value="#{category.map['LUNDI'].classe}" />
-              <h:outputText rendered="#{not empty category.map['LUNDI'].groupe}"
-                            value="#{category.map['LUNDI'].groupe}" />
-              <h:outputText value="#{category.map['LUNDI'].matiere}" />
-              <h:outputText value="#{category.map['LUNDI'].denomination} #{category.map['LUNDI'].nom}" />
-              <h:outputText value="#{category.map['LUNDI'].typeDevoir}" />
-              <cr:lien bean="#{devoir}"
-                       cible="naviguerDetailDevoir"
-                       desc="#{category.map['LUNDI'].vraiOuFauxModifiable ? 'Modifier le travail à faire' : 'Consulter le travail à faire'}"
-                       id="testrrr0"
-                       oncomplete="#{rich:component('idPopupConsulterDevoir')}.show();"
-                       render=":idPopupConsulterDevoir_form:idPopupConsulterDevoir_panel"
-                       titre="">
-              <f:setPropertyActionListener target="#{devoir.form.selectDevoir}"
-                                           value="#{category.map['LUNDI']}" />#{cr:truncate(category.map['LUNDI'].intituleDevoir,
-                                           30, '..')}</cr:lien>
-            </h:panelGrid>
-          </rich:column>
-          <rich:column rendered="#{devoir.form.mardiVisible}"
-                       width="14%">
-            <f:facet name="header">
-              <h:outputText value="Mardi" />
-            </f:facet>
-            <h:panelGrid columns="1"
-                         styleClass="corpsCalTable#{!category.map['MARDI'].actif ? 'Inactif' : ''}">
-
-              <h:outputText rendered="#{not empty category.map['MARDI'].classe}"
-                            value="#{category.map['MARDI'].classe}" />
-              <h:outputText rendered="#{not empty category.map['MARDI'].groupe}"
-                            value="#{category.map['MARDI'].groupe}" />
-              <h:outputText value="#{category.map['MARDI'].matiere}" />
-              <h:outputText value="#{category.map['MARDI'].denomination} #{category.map['MARDI'].nom}" />
-              <h:outputText value="#{category.map['MARDI'].typeDevoir}" />
-              <cr:lien bean="#{devoir}"
-                       cible="naviguerDetailDevoir"
-                       desc="#{category.map['MARDI'].vraiOuFauxModifiable ? 'Modifier le travail à faire' : 'Consulter le travail à faire'}"
-                       id="testrrr1"
-                       oncomplete="#{rich:component('idPopupConsulterDevoir')}.show();"
-                       render="idPopupConsulterDevoir_form:idPopupConsulterDevoir_panel"
-                       titre="">
-              <f:setPropertyActionListener target="#{devoir.form.selectDevoir}"
-                                           value="#{category.map['MARDI']}" />#{cr:truncate(category.map['MARDI'].intituleDevoir,
-                                           30, '..')}</cr:lien>
-            </h:panelGrid>
-          </rich:column>
-          <rich:column rendered="#{devoir.form.mercrediVisible}"
-                       width="14%">
-            <f:facet name="header">
-              <h:outputText value="Mercredi" />
-            </f:facet>
-            <h:panelGrid columns="1"
-                         styleClass="corpsCalTable#{!category.map['MERCREDI'].actif ? 'Inactif' : ''}">
-
-              <h:outputText rendered="#{not empty category.map['MERCREDI'].classe}"
-                            value="#{category.map['MERCREDI'].classe}" />
-              <h:outputText rendered="#{not empty category.map['MERCREDI'].groupe}"
-                            value="#{category.map['MERCREDI'].groupe}" />
-              <h:outputText value="#{category.map['MERCREDI'].matiere}" />
-              <h:outputText value="#{category.map['MERCREDI'].denomination} #{category.map['MERCREDI'].nom}" />
-              <h:outputText value="#{category.map['MERCREDI'].typeDevoir}" />
-              <cr:lien bean="#{devoir}"
-                       cible="naviguerDetailDevoir"
-                       desc="#{category.map['MERCREDI'].vraiOuFauxModifiable ? 'Modifier le travail à faire' : 'Consulter le travail à faire'}"
-                       id="testrrr2"
-                       oncomplete="#{rich:component('idPopupConsulterDevoir')}.show();"
-                       render="idPopupConsulterDevoir_form:idPopupConsulterDevoir_panel"
-                       titre="">
-              <f:setPropertyActionListener target="#{devoir.form.selectDevoir}"
-                                           value="#{category.map['MERCREDI']}" />#{cr:truncate(category.map['MERCREDI'].intituleDevoir,
-                                           30, '..')}</cr:lien>
-            </h:panelGrid>
-          </rich:column>
-          <rich:column rendered="#{devoir.form.jeudiVisible}"
-                       width="14%">
-            <f:facet name="header">
-              <h:outputText value="Jeudi" />
-            </f:facet>
-            <h:panelGrid columns="1"
-                         styleClass="corpsCalTable#{!category.map['JEUDI'].actif ? 'Inactif' : ''}">
-
-              <h:outputText rendered="#{not empty category.map['JEUDI'].classe}"
-                            value="#{category.map['JEUDI'].classe}" />
-              <h:outputText rendered="#{not empty category.map['JEUDI'].groupe}"
-                            value="#{category.map['JEUDI'].groupe}" />
-              <h:outputText value="#{category.map['JEUDI'].matiere}" />
-              <h:outputText value="#{category.map['JEUDI'].denomination} #{category.map['JEUDI'].nom}" />
-              <h:outputText value="#{category.map['JEUDI'].typeDevoir}" />
-              <cr:lien bean="#{devoir}"
-                       cible="naviguerDetailDevoir"
-                       desc="#{category.map['JEUDI'].vraiOuFauxModifiable ? 'Modifier le travail à faire' : 'Consulter le travail à faire'}"
-                       id="testrrr3"
-                       oncomplete="#{rich:component('idPopupConsulterDevoir')}.show();"
-                       render="idPopupConsulterDevoir_form:idPopupConsulterDevoir_panel"
-                       titre="">
-              <f:setPropertyActionListener target="#{devoir.form.selectDevoir}"
-                                           value="#{category.map['JEUDI']}" />#{cr:truncate(category.map['JEUDI'].intituleDevoir,
-                                           30, '..')}</cr:lien>
-            </h:panelGrid>
-          </rich:column>
-          <rich:column rendered="#{devoir.form.vendrediVisible}"
-                       width="14%">
-            <f:facet name="header">
-              <h:outputText value="Vendredi" />
-            </f:facet>
-            <h:panelGrid columns="1"
-                         styleClass="corpsCalTable#{!category.map['VENDREDI'].actif ? 'Inactif' : ''}">
-
-              <h:outputText rendered="#{not empty category.map['VENDREDI'].classe}"
-                            value="#{category.map['VENDREDI'].classe}" />
-              <h:outputText rendered="#{not empty category.map['VENDREDI'].groupe}"
-                            value="#{category.map['VENDREDI'].groupe}" />
-              <h:outputText value="#{category.map['VENDREDI'].matiere}" />
-              <h:outputText value="#{category.map['VENDREDI'].denomination} #{category.map['VENDREDI'].nom}" />
-              <h:outputText value="#{category.map['VENDREDI'].typeDevoir}" />
-              <cr:lien bean="#{devoir}"
-                       cible="naviguerDetailDevoir"
-                       desc="#{category.map['VENDREDI'].vraiOuFauxModifiable ? 'Modifier le travail à faire' : 'Consulter le travail à faire'}"
-                       id="testrrr4"
-                       oncomplete="#{rich:component('idPopupConsulterDevoir')}.show();"
-                       render="idPopupConsulterDevoir_form:idPopupConsulterDevoir_panel"
-                       titre="">
-              <f:setPropertyActionListener target="#{devoir.form.selectDevoir}"
-                                           value="#{category.map['VENDREDI']}" />#{cr:truncate(category.map['VENDREDI'].intituleDevoir,
-                                           30, '..')}</cr:lien>
-            </h:panelGrid>
-          </rich:column>
-          <rich:column rendered="#{devoir.form.samediVisible}"
-                       width="14%">
-            <f:facet name="header">
-              <h:outputText value="Samedi" />
-            </f:facet>
-            <h:panelGrid columns="1"
-                         styleClass="corpsCalTable#{!category.map['SAMEDI'].actif ? 'Inactif' : ''}">
-
-              <h:outputText rendered="#{not empty category.map['SAMEDI'].classe}"
-                            value="#{category.map['SAMEDI'].classe}" />
-              <h:outputText rendered="#{not empty category.map['SAMEDI'].groupe}"
-                            value="#{category.map['SAMEDI'].groupe}" />
-              <h:outputText value="#{category.map['SAMEDI'].matiere}" />
-              <h:outputText value="#{category.map['SAMEDI'].denomination} #{category.map['SAMEDI'].nom}" />
-              <h:outputText value="#{category.map['SAMEDI'].typeDevoir}" />
-              <cr:lien bean="#{devoir}"
-                       cible="naviguerDetailDevoir"
-                       desc="#{category.map['SAMEDI'].vraiOuFauxModifiable ? 'Modifier le travail à faire' : 'Consulter le travail à faire'}"
-                       id="testrrr5"
-                       oncomplete="#{rich:component('idPopupConsulterDevoir')}.show();"
-                       render="idPopupConsulterDevoir_form:idPopupConsulterDevoir_panel"
-                       titre="">
-              <f:setPropertyActionListener target="#{devoir.form.selectDevoir}"
-                                           value="#{category.map['SAMEDI']}" />#{cr:truncate(category.map['SAMEDI'].intituleDevoir,
-                                           30, '..')}</cr:lien>
-            </h:panelGrid>
-          </rich:column>
-          <rich:column rendered="#{devoir.form.dimancheVisible}"
-                       width="14%">
-            <f:facet name="header">
-              <h:outputText value="Dimanche" />
-            </f:facet>
-            <h:panelGrid columns="1"
-                         styleClass="corpsCalTable#{!category.map['DIMANCHE'].actif ? 'Inactif' : ''}">
-
-              <h:outputText rendered="#{not empty category.map['DIMANCHE'].classe}"
-                            value="#{category.map['DIMANCHE'].classe}" />
-              <h:outputText rendered="#{not empty category.map['DIMANCHE'].groupe}"
-                            value="#{category.map['DIMANCHE'].groupe}" />
-              <h:outputText value="#{category.map['DIMANCHE'].matiere}" />
-              <h:outputText value="#{category.map['DIMANCHE'].denomination} #{category.map['DIMANCHE'].nom}" />
-              <h:outputText value="#{category.map['DIMANCHE'].typeDevoir}" />
-              <cr:lien bean="#{devoir}"
-                       cible="naviguerDetailDevoir"
-                       desc="#{category.map['DIMANCHE'].vraiOuFauxModifiable ? 'Modifier le travail à faire' : 'Consulter le travail à faire'}"
-                       id="testrrr6"
-                       oncomplete="#{rich:component('idPopupConsulterDevoir')}.show();"
-                       render="idPopupConsulterDevoir_form:idPopupConsulterDevoir_panel"
-                       titre="">
-              <f:setPropertyActionListener target="#{devoir.form.selectDevoir}"
-                                           value="#{category.map['DIMANCHE']}" />#{cr:truncate(category.map['DIMANCHE'].intituleDevoir,
-                                           30, '..')}</cr:lien>
-            </h:panelGrid>
-          </rich:column>
+          
+          <c:forEach items="#{devoir.form.listeJoursOuvre}" var="jourOuvre">
+            <cr:devoirColonne jourColonne="#{jourOuvre.jourName}" jourHeaderFooter="#{jourOuvre.displayName}" />
+          </c:forEach>
+          
+         
         </rich:dataTable>
       </t:div>
     </t:div>
@@ -375,12 +192,12 @@
           <cr:colonne id=""
                       libelleColonne="Intitulé"
                       taille="150">
-            <h:outputText value="#{ligne.intituleDevoir}" />
+            <h:outputText value="#{ligne.intitule}" />
           </cr:colonne>
           <cr:colonne id=""
                       libelleColonne="Type"
                       taille="60">
-            <h:outputText value="#{ligne.typeDevoir}" />
+            <h:outputText value="#{ligne.typeDevoirDTO.libelle}" />
           </cr:colonne>
           <cr:colonne id=""
                       libelleColonne="Description"
@@ -394,7 +211,7 @@
           <cr:colonne id=""
                       libelleColonne="Pour le"
                       taille="50">
-            <h:outputText value="#{cr:formatDate(ligne.date, 'dd/MM/yyyy')}" />
+            <h:outputText value="#{cr:formatDate(ligne.dateRemise, 'dd/MM/yyyy')}" />
           </cr:colonne>
           <cr:colonne align="center"
                       id=""
@@ -402,9 +219,9 @@
                       taille="20">
             <cr:lien bean="#{devoir}"
                      cible="naviguerDetailDevoir"
-                     desc="#{ligne.vraiOuFauxModifiable ? 'Modifier le travail à faire' : 'Consulter le travail à faire'}"
+                     desc="#{ligne.seance.accesEcriture ? 'Modifier le travail à faire' : 'Consulter le travail à faire'}"
                      id="iddlSeaFichier"
-                     image="#{ligne.vraiOuFauxModifiable ? 'edit.gif' : 'loupe-icone.png'}"
+                     image="#{ligne.seance.accesEcriture ? 'edit.gif' : 'loupe-icone.png'}"
                      oncomplete="#{rich:component('idPopupConsulterDevoir')}.show();"
                      render="idPopupConsulterDevoir_form:idPopupConsulterDevoir_panel"
                      rendered="true">
@@ -437,7 +254,7 @@
                       titrePopup="Détail du travail à faire">
     <a4j:outputPanel id="idPopupConsulterDevoirRegion">
       <cr:menuAction id="idMenuActionPopupDevoir"
-                     rendered="#{devoir.form.selectDevoir.vraiOuFauxModifiable}"
+                     rendered="#{devoir.form.devoirSelected.seance.accesEcriture}"
                      surcharge="false">
         <cr:elemMenuAction bean="#{devoir}"
                            cible="sauverDevoir"
@@ -479,7 +296,7 @@
                          id_devoirConteneur="idPopupConsulterDevoirRegion"
                          id_saisieDevoir="idDetailDevoir"
                          listeTypeDevoir="#{devoir.form.listeTypeDevoir}"
-                         readOnly="#{not devoir.form.selectDevoir.vraiOuFauxModifiable}" />
+                         readOnly="#{not devoir.form.devoirSelected.seance.accesEcriture}" />
       </t:div>
     </a4j:outputPanel>
   </cr:popupModifiable>

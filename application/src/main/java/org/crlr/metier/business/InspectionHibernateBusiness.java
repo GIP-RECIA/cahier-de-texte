@@ -221,7 +221,7 @@ public class InspectionHibernateBusiness extends AbstractBusiness
                         try {
                         getEntityManager().persist(ouvertureInspecteurBean);
                         } catch (Exception ex) {
-                            log.error(ex, "ex");
+                            log.error( "Exception", ex);
                         }
                     }
                 }   
@@ -322,7 +322,7 @@ public class InspectionHibernateBusiness extends AbstractBusiness
                 getEntityManager().persist(ouvertureInspecteurBean);
                 getEntityManager().flush();
             } catch (Exception ex) {
-                log.error(ex, "ex");
+                log.error( "Exception", ex);
             }            
         }
     }

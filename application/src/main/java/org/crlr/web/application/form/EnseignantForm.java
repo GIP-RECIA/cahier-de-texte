@@ -13,6 +13,8 @@ import java.util.List;
 import org.apache.commons.lang.BooleanUtils;
 import org.crlr.alimentation.DTO.EnseignantDTO;
 import org.crlr.dto.application.base.Profil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * .
@@ -20,6 +22,9 @@ import org.crlr.dto.application.base.Profil;
  * @author $author$
  */
 public class EnseignantForm extends AbstractForm {
+    
+    protected final Logger log = LoggerFactory.getLogger(getClass());
+
     /**
      * 
      */
@@ -131,6 +136,12 @@ public class EnseignantForm extends AbstractForm {
      */
     public void setEnseignantSelectionne(EnseignantDTO enseignantSelectionne) {
         this.enseignantSelectionne = enseignantSelectionne;
+        
+        if (enseignantSelectionne == null) {
+            
+        } else {
+            log.debug("ENS ENS {}", enseignantSelectionne);
+        }
     }
 
 

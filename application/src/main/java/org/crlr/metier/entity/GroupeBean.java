@@ -43,6 +43,11 @@ public class GroupeBean {
     @Column(name = "id_annee_scolaire", nullable = false)
     private Integer idAnneeScolaire;
 
+    /** Indique s'il s'agit d'un groupe collaboratif ou scolaire. */
+    @Column(name = "groupe_collaboratif", nullable = true)
+    private Boolean groupeCollaboratif;
+    
+    
     /** DOCUMENTATION INCOMPLETE! */
     @ManyToOne(cascade =  {
     }
@@ -202,4 +207,21 @@ public class GroupeBean {
     public void setEtablissement(EtablissementBean etablissement) {
         this.etablissement = etablissement;
     }
+
+    /**
+     * Accesseur de groupeCollaboratif {@link #groupeCollaboratif}.
+     * @return retourne groupeCollaboratif
+     */
+    public Boolean getGroupeCollaboratif() {
+        return groupeCollaboratif;
+    }
+
+    /**
+     * Mutateur de groupeCollaboratif {@link #groupeCollaboratif}.
+     * @param groupeCollaboratif le groupeCollaboratif to set
+     */
+    public void setGroupeCollaboratif(Boolean groupeCollaboratif) {
+        this.groupeCollaboratif = groupeCollaboratif;
+    }
+    
 }

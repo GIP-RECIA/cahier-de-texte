@@ -11,8 +11,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.faces.bean.RequestScoped;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.crlr.dto.application.base.DateDTO;
 import org.crlr.dto.application.base.SeanceDTO;

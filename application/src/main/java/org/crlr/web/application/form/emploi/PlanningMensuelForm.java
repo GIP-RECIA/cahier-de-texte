@@ -54,8 +54,7 @@ public class PlanningMensuelForm extends AbstractPopupForm {
     //Profile d'utilisateur connécté
     private Profil profile;
     
-    /** Specifie le mode d'affichage de la popup d'edition (devoir ou seance).*/
-    private Boolean affichageReadOnly;
+   
     
     //Type devoir / devoir / tous / séance radio 
     private String choixCategorie;
@@ -157,14 +156,7 @@ public class PlanningMensuelForm extends AbstractPopupForm {
      */
     public void setDevoirSelected(DevoirDTO devoirSelected) {
         this.devoirSelected = devoirSelected;
-        affichageReadOnly = true;
-        if (Profil.ENSEIGNANT.equals(profile)) {
-            final UtilisateurDTO utilisateurDTO = ContexteUtils.getContexteUtilisateur().getUtilisateurDTO();
-            if (devoirSelected!=null && devoirSelected.getSeance()!=null && devoirSelected.getSeance().getIdEnseignant()!=null && 
-                devoirSelected.getSeance().getIdEnseignant().equals(utilisateurDTO.getUserDTO().getIdentifiant())) {
-                affichageReadOnly = false;
-            }
-        }
+        
     }
 
     /**
@@ -267,14 +259,7 @@ public class PlanningMensuelForm extends AbstractPopupForm {
      */
     public void setSeanceSelectionne(SeanceDTO seanceSelectionne) {
         this.seanceSelectionne = seanceSelectionne;
-        affichageReadOnly = true;
-        if (Profil.ENSEIGNANT.equals(profile)) {
-            final UtilisateurDTO utilisateurDTO = ContexteUtils.getContexteUtilisateur().getUtilisateurDTO();
-            if (seanceSelectionne!=null && seanceSelectionne.getIdEnseignant()!=null && 
-                seanceSelectionne.getIdEnseignant().equals(utilisateurDTO.getUserDTO().getIdentifiant())) {
-                affichageReadOnly = false;
-            }
-        }
+        
     }
 
     /**
@@ -295,21 +280,6 @@ public class PlanningMensuelForm extends AbstractPopupForm {
 
    
 
-    /**
-     * Accesseur de affichageReadOnly {@link #affichageReadOnly}.
-     * @return retourne affichageReadOnly
-     */
-    public Boolean getAffichageReadOnly() {
-        return affichageReadOnly;
-    }
-
-    /**
-     * Mutateur de affichageReadOnly {@link #affichageReadOnly}.
-     * @param affichageReadOnly le affichageReadOnly to set
-     */
-    public void setAffichageReadOnly(Boolean affichageReadOnly) {
-        this.affichageReadOnly = affichageReadOnly;
-    }
     
     
 }

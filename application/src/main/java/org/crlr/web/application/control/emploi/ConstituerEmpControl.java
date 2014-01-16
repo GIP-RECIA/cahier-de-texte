@@ -581,7 +581,7 @@ public class ConstituerEmpControl extends AbstractControl<ConstituerEmpForm> {
 
             ReportUtils.stream(emploiService.printEmploiDuTemps(printEmploiQO));
         } catch (Exception e) {
-            log.debug(e, "Erreur lors de l'édition des comptes");
+            log.debug("Erreur lors de l'édition des comptes", e);
         }
     }
 
@@ -736,7 +736,7 @@ public class ConstituerEmpControl extends AbstractControl<ConstituerEmpForm> {
             
             obtenirEmploiDuTemps();
         } catch (MetierException ex) {
-            log.debug(ex, "ex");
+            log.debug( "ex", ex);
         }
 
         return null;

@@ -147,6 +147,14 @@ public class ImagesServlet extends HttpServlet {
         
         for(PrintSeanceDTO seance : printSequenceDTO.getListeSeances()) {
             processPrintSeanceDTO(seance);
+            
+            //Supprimer les balises de font name car cela peut poser un problème si
+            //la police n'est pas presente dans le serveur.
+            seance.setDescriptionPDF(org.crlr.utils.StringUtils.stripFontStyles(seance.getDescriptionPDF()));
+            
+            for(DevoirDTO devoir : seance.getDevoirs()) {
+                devoir.setDescription(org.crlr.utils.StringUtils.stripFontStyles(devoir.getDescription()));
+            }
         }
                 
     }

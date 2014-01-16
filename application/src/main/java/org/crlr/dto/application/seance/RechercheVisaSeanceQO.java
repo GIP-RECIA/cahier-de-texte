@@ -10,6 +10,7 @@ package org.crlr.dto.application.seance;
 import java.io.Serializable;
 
 import org.crlr.dto.application.base.Profil;
+import org.crlr.dto.application.base.UtilisateurDTO;
 
 /**
  * DOCUMENTATION INCOMPLETE!
@@ -30,9 +31,10 @@ public class RechercheVisaSeanceQO extends RechercheSeanceQO implements Serializ
     
     /** Affichage des perimees. */
     private Boolean affichePerimees;
-
-    /** Profil de l'utilisateur connecte. */
-    private Profil profil;
+        
+    UtilisateurDTO utilisateurConnecte;
+    
+    private Integer idEnseignantRemplacant;
     
     /**
      * Constructeur par defaut.
@@ -91,23 +93,45 @@ public class RechercheVisaSeanceQO extends RechercheSeanceQO implements Serializ
     public void setAffichePerimees(Boolean affichePerimees) {
         this.affichePerimees = affichePerimees;
     }
-
+    
     /**
-     * Accesseur de profil {@link #profil}.
-     * @return retourne profil
+     * @return the utilisateurConnecte
      */
-    public Profil getProfil() {
-        return profil;
+    public UtilisateurDTO getUtilisateurConnecte() {
+        return utilisateurConnecte;
     }
 
     /**
-     * Mutateur de profil {@link #profil}.
-     * @param profil le profil to set
+     * @param utilisateurConnecte the utilisateurConnecte to set
+     */
+    public void setUtilisateurConnecte(UtilisateurDTO utilisateurConnecte) {
+        this.utilisateurConnecte = utilisateurConnecte;
+    }
+
+    /**
+     * @return the idEnseignantRemplacant
+     */
+    public Integer getIdEnseignantRemplacant() {
+        return idEnseignantRemplacant;
+    }
+
+    /**
+     * @param idEnseignantRemplacant the idEnseignantRemplacant to set
+     */
+    public void setIdEnseignantRemplacant(Integer idEnseignantRemplacant) {
+        this.idEnseignantRemplacant = idEnseignantRemplacant;
+    }
+    
+    /**
+     * @deprecated
+     * @param profil
      */
     public void setProfil(Profil profil) {
-        this.profil = profil;
+        if (utilisateurConnecte == null) {
+            utilisateurConnecte = new UtilisateurDTO();
+        }
+        
+        utilisateurConnecte.setProfil(profil);
     }
-    
-    
     
 }

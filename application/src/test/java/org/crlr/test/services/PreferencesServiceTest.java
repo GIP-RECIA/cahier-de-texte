@@ -16,6 +16,7 @@ import org.apache.commons.lang.StringUtils;
 
 import org.crlr.message.Message;
 
+import static org.junit.Assert.*;
 /**
  * @author root
  *

@@ -18,6 +18,7 @@ import org.crlr.dto.application.seance.ConsulterSeanceQO;
 import org.crlr.dto.application.seance.PrintSeanceDTO;
 import org.crlr.dto.application.seance.RechercheSeanceQO;
 import org.crlr.dto.application.seance.ResultatRechercheSeanceDTO;
+import org.crlr.dto.application.seance.SaveSeanceQO;
 import org.crlr.dto.application.sequence.PrintSeanceOuSequenceQO;
 import org.crlr.dto.application.sequence.PrintSequenceDTO;
 import org.crlr.exception.metier.MetierException;
@@ -64,6 +65,18 @@ public interface SeanceFacadeService {
     public ResultatDTO<Integer> saveSeance(SeanceDTO saveSeanceQO, String mode)
                        throws MetierException;
 
+    /**
+     * Sauvegarder (ajout) d'une liste de séances.
+     *
+     * @param listeSeanceQO La liste des séances
+     *
+     * @return le nombre de seance ajoutée ou modifiée
+     *
+     * @throws MetierException Exception
+     */
+    public ResultatDTO<Integer> saveListeSeance(List<SaveSeanceQO> listeSeanceQO)
+                       throws MetierException;
+    
     /**
      * Méthode de suppression d'une séance.
      *
@@ -238,4 +251,10 @@ public interface SeanceFacadeService {
     public void completerInfoSeance(final SeanceDTO seanceDTO, boolean isVisaArchive) throws MetierException;
 
 
+    /**
+     * Renseigne le champ accesEcriture dans seanceDTO.
+     * @param idEnseignantConnecte i
+     * @param seance s
+     */
+    public void mettreDroitsAccess(Integer idEnseignantConnecte, SeanceDTO seance);
 }

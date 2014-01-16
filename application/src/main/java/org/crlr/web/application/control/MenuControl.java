@@ -66,6 +66,143 @@ public class MenuControl extends AbstractControl<AbstractForm> {
     }
 
     /**
+     * Charger la menu item .
+     * @param utilisateurDTO u
+     */
+    private void chargerAccueil(UtilisateurDTO utilisateurDTO) {
+        
+        if (!BooleanUtils.isTrue(utilisateurDTO.getVraiOuFauxAdmCentral())) {
+            this.listeAction.add(new MenuAction("accueil.png", Outil.ACCUEIL.name(), "Accueil", null));
+        }
+    }
+    
+    /**
+     * Charger la menu.
+     * @param utilisateurDTO u
+     */
+    private void chargerMenu(UtilisateurDTO utilisateurDTO) {
+        
+        switch (ContexteUtils.getContexteApplication().getEnvironnement()) {
+        case CRLR:
+        case Aquitaine:
+        case CRC:
+            chargerMenuCRC(utilisateurDTO);
+            break;
+        default:
+            new CrlrRuntimeException(
+                    "Cet environnement d'exécution '{0}' est inconnu");
+        }
+    }
+    
+    /**
+     * Charger la menu item .
+     * @param utilisateurDTO u
+     */
+    private void chargerPref(UtilisateurDTO utilisateurDTO) {
+        final ContexteUtilisateur contexteUtilisateur = ContexteUtils.getContexteUtilisateur();
+        final UtilisateurDTO utilisateurDTOOrigine = contexteUtilisateur.getUtilisateurDTOOrigine();
+        
+        //En mode remplaçant ou simulation éleve, nous pouvons pas modifier les préfèrences
+        if (utilisateurDTOOrigine != null) {
+            return;
+        }
+        
+        if (Profil.ENSEIGNANT.equals(utilisateurDTO.getProfil())
+                || Profil.PARENT.equals(utilisateurDTO.getProfil())
+                || Profil.ELEVE.equals(utilisateurDTO.getProfil())) {
+            this.listeAction.add(new MenuAction("preferences.png",
+                    Outil.PREFERENCE.name(), "Mes préférences", null));
+        }
+    }
+    
+    /**
+     * Charger la menu item .
+     * @param utilisateurDTO u
+     */
+    private void chargerChangeEleve(UtilisateurDTO utilisateurDTO) {
+        if(Profil.PARENT != utilisateurDTO.getProfil()) {
+            return;
+        }
+            
+        final ResultatDTO<ElevesParentDTO> resultatDTO =
+                confidentialiteService.findEleveDuParent(utilisateurDTO.getListeUidEnfant());
+
+        final Set<UserDTO> listeEnfant =
+                resultatDTO.getValeurDTO().getListeEnfant();
+        
+        if (!CollectionUtils.isEmpty(listeEnfant)) {
+            if (listeEnfant.size() > 1) {
+                this.listeAction.add(new MenuAction("changeEleve.png", 
+                        Outil.PREFERENCE_CAHIER.name(), "Changer l'enfant courant", null));
+            }
+        }
+    
+    }
+    
+    /**
+     * Charger la menu item Change établissement.
+     * @param utilisateurDTO u
+     */
+    private void chargerChangerEtablissement(UtilisateurDTO utilisateurDTO) {
+        if(Profil.PARENT == utilisateurDTO.getProfil()){
+            return;
+        }
+            
+        // Verifie si l'utilisateur est attache a plusieurs etablissements
+        final UserDTO userDTO = utilisateurDTO.getUserDTO(); 
+        ResultatDTO<List<EtablissementDTO>> resultatEtablissement = new ResultatDTO<List<EtablissementDTO>>();
+        try {
+            if (BooleanUtils.isTrue(utilisateurDTO.getVraiOuFauxAdmRessourceENT())) {
+                if (Profil.ENSEIGNANT.equals(utilisateurDTO.getProfil())) {
+                    final EtablissementAccessibleQO etablissementAccessibleQO =
+                            new EtablissementAccessibleQO();
+                    etablissementAccessibleQO.setListeSiren(
+                            new ArrayList<String>(utilisateurDTO.getSirensEtablissement()));
+                    etablissementAccessibleQO.setIdEnseignant(userDTO.getIdentifiant());
+                    resultatEtablissement = confidentialiteService.
+                            findListeEtablissementEnseignantAdmRessources(etablissementAccessibleQO);
+                }else {
+                    resultatEtablissement = confidentialiteService.findListeEtablissement();
+                }
+            }else {
+                final EtablissementAccessibleQO etablissementAccessibleQO = new EtablissementAccessibleQO();
+                etablissementAccessibleQO.setListeSiren( new ArrayList<String>(utilisateurDTO.getSirensEtablissement()));
+                
+                // Ajoute les siren pour lesquels l'user est admin local
+                for (final Iterator<String> i = utilisateurDTO.getAdminLocalSiren().iterator(); i.hasNext(); ) {
+                    final String siren = i.next(); 
+                    if (!etablissementAccessibleQO.getListeSiren().contains(siren)) {
+                        etablissementAccessibleQO.getListeSiren().add(siren);
+                    }
+                }
+                // Ajoute les siren pour lesquels l'user est admin de ressource cahier de texte
+                for (final Iterator<String> i = utilisateurDTO.getAdminRessourceSiren().iterator(); i.hasNext(); ) {
+                    final String siren = i.next(); 
+                    if (!etablissementAccessibleQO.getListeSiren().contains(siren)) {
+                        etablissementAccessibleQO.getListeSiren().add(siren);
+                    }
+                }
+                etablissementAccessibleQO.setIdEnseignant(
+                        Profil.ENSEIGNANT.equals(utilisateurDTO.getProfil()) ? userDTO.getIdentifiant() : null);
+
+                resultatEtablissement = confidentialiteService.findListeEtablissementEnseignant(
+                        etablissementAccessibleQO);
+            }
+        } catch (MetierException e) {
+            log.debug("Erreur du changement de la liste des établissement du profil Inspecteur académique");
+        }
+        // Si l'utilisateur est associe a plusieurs etablissement, on ajoute l'entree pour changer d'etablissement
+        if(resultatEtablissement.getValeurDTO().size()>1 || 
+           BooleanUtils.isTrue(utilisateurDTO.getVraiOuFauxAdmCentral()) || 
+           Profil.INSPECTION_ACADEMIQUE.equals(utilisateurDTO.getProfil())   
+        ){
+            this.listeAction.add(new MenuAction("changeEtablissement.png", 
+                    Outil.PREFERENCE_CAHIER.name(), "Changer l'établissement courant", null));
+        }
+    
+    }
+
+    /**
      * Initialisation du menu après authentification en fonction des droits de
      * l'utilisateur.
      */
@@ -75,95 +212,16 @@ public class MenuControl extends AbstractControl<AbstractForm> {
         
         // Initialise la liste des actions
         this.listeAction = new ArrayList<MenuAction>();
-        if (!BooleanUtils.isTrue(utilisateurDTO.getVraiOuFauxAdmCentral())) {
-            this.listeAction.add(new MenuAction("accueil.png", Outil.ACCUEIL.name(), "Accueil", null));
-        }
         
-        switch (ContexteUtils.getContexteApplication().getEnvironnement()) {
-            case CRLR:
-                //TODO
-            case Aquitaine:
-            
-                chargerMenuCRC(utilisateurDTO);
-                break;
-            case CRC:
-                chargerMenuCRC(utilisateurDTO);
-                break;
-            default:
-                new CrlrRuntimeException("Cet environnement d'exécution '{0}' est inconnu");
-        }
-        if (Profil.ENSEIGNANT.equals(utilisateurDTO.getProfil()) || 
-            Profil.PARENT.equals(utilisateurDTO.getProfil()) ||
-            Profil.ELEVE.equals(utilisateurDTO.getProfil())) {
-            this.listeAction.add(new MenuAction("preferences.png", Outil.PREFERENCE.name(), "Mes préférences", null));
-        }
+        chargerAccueil(utilisateurDTO);
         
-        final UtilisateurDTO ctxUtilisateur = ContexteUtils.getContexteUtilisateur().getUtilisateurDTO();
-        if(Profil.PARENT.equals(utilisateurDTO.getProfil())){
-            
-            final ResultatDTO<ElevesParentDTO> resultatDTO =
-                    confidentialiteService.findEleveDuParent(ctxUtilisateur.getListeUidEnfant());
-
-            final Set<UserDTO> listeEnfant =
-                    resultatDTO.getValeurDTO().getListeEnfant();
-            
-            if (!CollectionUtils.isEmpty(listeEnfant)) {
-                if (listeEnfant.size() > 1) {
-                    this.listeAction.add(new MenuAction("changeEleve.png", 
-                            Outil.PREFERENCE_CAHIER.name(), "Changer l'enfant courant", null));
-                }
-            }
-        } else {
-            final UserDTO userDTO = ctxUtilisateur.getUserDTO(); 
-            ResultatDTO<List<EtablissementDTO>> resultatEtablissement = new ResultatDTO<List<EtablissementDTO>>();
-            try {
-                if (BooleanUtils.isTrue(ctxUtilisateur.getVraiOuFauxAdmRessourceENT())) {
-                    if (Profil.ENSEIGNANT.equals(utilisateurDTO.getProfil())) {
-                        final EtablissementAccessibleQO etablissementAccessibleQO =
-                                new EtablissementAccessibleQO();
-                        etablissementAccessibleQO.setListeSiren(
-                                new ArrayList<String>(ctxUtilisateur.getSirensEtablissement()));
-                        etablissementAccessibleQO.setIdEnseignant(userDTO.getIdentifiant());
-                        resultatEtablissement = confidentialiteService.
-                                findListeEtablissementEnseignantAdmRessources(etablissementAccessibleQO);
-                    }else {
-                        resultatEtablissement = confidentialiteService.findListeEtablissement();
-                    }
-                }else {
-                    final EtablissementAccessibleQO etablissementAccessibleQO = new EtablissementAccessibleQO();
-                    etablissementAccessibleQO.setListeSiren( new ArrayList<String>(ctxUtilisateur.getSirensEtablissement()));
-                    
-                    // Ajoute les siren pour lesquels l'user est admin local
-                    for (final Iterator<String> i = ctxUtilisateur.getAdminLocalSiren().iterator(); i.hasNext(); ) {
-                        final String siren = i.next(); 
-                        if (!etablissementAccessibleQO.getListeSiren().contains(siren)) {
-                            etablissementAccessibleQO.getListeSiren().add(siren);
-                        }
-                    }
-                    // Ajoute les siren pour lesquels l'user est admin de ressource cahier de texte
-                    for (final Iterator<String> i = ctxUtilisateur.getAdminRessourceSiren().iterator(); i.hasNext(); ) {
-                        final String siren = i.next(); 
-                        if (!etablissementAccessibleQO.getListeSiren().contains(siren)) {
-                            etablissementAccessibleQO.getListeSiren().add(siren);
-                        }
-                    }
-                    etablissementAccessibleQO.setIdEnseignant(
-                            Profil.ENSEIGNANT.equals(utilisateurDTO.getProfil()) ? userDTO.getIdentifiant() : null);
-    
-                    resultatEtablissement = confidentialiteService.findListeEtablissementEnseignant(
-                            etablissementAccessibleQO);
-                }
-            } catch (MetierException e) {
-                log.debug("Erreur du changement de la liste des établissement du profil Inspecteur académique");
-            }    
-            if(resultatEtablissement.getValeurDTO().size()>1 || 
-               BooleanUtils.isTrue(utilisateurDTO.getVraiOuFauxAdmCentral()) || 
-               Profil.INSPECTION_ACADEMIQUE.equals(utilisateurDTO.getProfil())   
-            ){
-                this.listeAction.add(new MenuAction("changeEtablissement.png", 
-                        Outil.PREFERENCE_CAHIER.name(), "Changer l'établissement courant", null));
-            }
-        }
+        chargerMenu(utilisateurDTO);
+        
+        chargerPref(utilisateurDTO);
+        
+        chargerChangeEleve(utilisateurDTO);
+        
+        chargerChangerEtablissement(utilisateurDTO);
     }
     
     /**
@@ -276,13 +334,19 @@ public class MenuControl extends AbstractControl<AbstractForm> {
             this.listeAction.add(new MenuAction("cahierTexteMensuel.png", Outil.CAHIER_MENSUEL.name(), "Cahier de texte mensuel", null));
             
             // Consultation Impression
-            final List<MenuAction> listeSousMenu = new ArrayList<MenuAction>();
+            List<MenuAction> listeSousMenu = new ArrayList<MenuAction>();
             this.listeAction.add(new MenuAction("rechercheEdition.png", "", "Consultation-Impression par classe/groupe", listeSousMenu));
             listeSousMenu.add(new MenuAction("cahierTexteConsultation.png", Outil.SEANCE_SEMAINE.name(), "Séances par classe", null));
             listeSousMenu.add(new MenuAction("cahierTexteEditionSeance.png", Outil.PRINT_SEANCE.name(), "Détail/PDF des séances par classe", null));
             listeSousMenu.add(new MenuAction("cahierTexteEditionSequence.png", Outil.PRINT_SEQUENCE.name(), 
                     "Détail/PDF des séquences par classe",null));
-                
+            
+            // Notes et absences
+            /*listeSousMenu = new ArrayList<MenuAction>();
+            this.listeAction.add(new MenuAction("noteAbsence.png", "", "Notes et absences", listeSousMenu));
+            listeSousMenu.add(new MenuAction("note.png", Outil.CONSULTER_NOTE.name(), "Carnet de notes", null));
+            listeSousMenu.add(new MenuAction("absence.png", Outil.CONSULTER_ABSENCE.name(), "Carnet des absences", null));*/
+            
             // Mode simulation
             final ContexteUtilisateur contextUtilisateur = ContexteUtils.getContexteUtilisateur();
             if (contextUtilisateur.getUtilisateurDTOOrigine() != null) {
@@ -316,6 +380,12 @@ public class MenuControl extends AbstractControl<AbstractForm> {
             // 4. Travail a faire / Devoirs
             this.listeAction.add(new MenuAction("devoir.png", Outil.DEVOIRS.name(), "Travail à faire / Devoirs", null));
             
+            // Notes et absences
+            /*listeSousMenu = new ArrayList<MenuAction>();
+            this.listeAction.add(new MenuAction("noteAbsence.png", "", "Notes et absences", listeSousMenu));
+            listeSousMenu.add(new MenuAction("note.png", Outil.AJOUTER_NOTE.name(), "Carnet de notes", null));
+            listeSousMenu.add(new MenuAction("absence.png", Outil.AJOUTER_ABSENCE.name(), "Carnet des absences", null));*/
+
             
             // Emploi du temps
             listeSousMenu = new ArrayList<MenuAction>();
@@ -331,28 +401,34 @@ public class MenuControl extends AbstractControl<AbstractForm> {
                 listeSousMenu.add(new MenuAction("importEDT.png", Outil.IMPORTEDT.name(), "Importer", null));
                 
             }
-                
 
             // 5. Séquence
-               if (org.apache.commons.lang.BooleanUtils.isFalse(utilisateurDTO.getVraiOuFauxEtabSaisieSimplifiee())) {
-                   listeSousMenu = new ArrayList<MenuAction>();
-                   this.listeAction.add(new MenuAction("sequence.png", "", "Séquence", listeSousMenu));
-                       listeSousMenu.add(new MenuAction("sequenceAjout.png", Outil.AJOUT_SEQUENCE.name(), "Ajout de séquence", null));
-                       listeSousMenu.add(new MenuAction("sequenceRecherche.png", Outil.RECH_SEQUENCE.name(), "Recherche", null));
-               } else {
-                   this.listeAction.add(new MenuAction("sequenceRecherche.png",Outil.RECH_SEQUENCE.name() , "Recherche de séquences", null));
-               }
-               
-            // 6. Seance
+            if (org.apache.commons.lang.BooleanUtils.isFalse(utilisateurDTO.getVraiOuFauxEtabSaisieSimplifiee())) {
                listeSousMenu = new ArrayList<MenuAction>();
-               this.listeAction.add(new MenuAction("seance.png", "", "Séance", listeSousMenu));
-                   listeSousMenu.add(new MenuAction("seanceAjout.png", Outil.AJOUT_SEANCE.name(), "Ajout de séance", null));
-                   listeSousMenu.add(new MenuAction("seanceRecherche.png", Outil.RECH_SEANCE.name(), "Recherche/Modification", null));
+               this.listeAction.add(new MenuAction("sequence.png", "", "Séquence", listeSousMenu));
+               listeSousMenu.add(new MenuAction("sequenceAjout.png", Outil.AJOUT_SEQUENCE.name(), "Ajout de séquence", null));
+               listeSousMenu.add(new MenuAction("sequenceRecherche.png", Outil.RECH_SEQUENCE.name(), "Recherche", null));
+            } else {
+               this.listeAction.add(new MenuAction("sequenceRecherche.png",Outil.RECH_SEQUENCE.name() , "Recherche de séquences", null));
+            }
+           
+            // 6. Seance
+            listeSousMenu = new ArrayList<MenuAction>();
+            this.listeAction.add(new MenuAction("seance.png", "", "Séance", listeSousMenu));
+            listeSousMenu.add(new MenuAction("seanceAjout.png", Outil.AJOUT_SEANCE.name(), "Ajout de séance", null));
+            listeSousMenu.add(new MenuAction("seanceRecherche.png", Outil.RECH_SEANCE.name(), "Recherche/Modification", null));
+
+            // 7. Carnet de bord
+            listeSousMenu = new ArrayList<MenuAction>();
+            this.listeAction.add(new MenuAction("carnet.png", "", "Carnet de bord", listeSousMenu));
+            listeSousMenu.add(new MenuAction("carnetAdd.png", Outil.AJOUT_CYCLE.name(), "Ajout d'une séquence pédagogique", null));
+            listeSousMenu.add(new MenuAction("carnetFind.png", Outil.RECH_CYCLE.name(), "Recherche/Modification", null));
                
-                   // 7. Mes pièces jointes
-                   this.listeAction.add(new MenuAction("monDepot.png", Outil.DEPOT.name(), "Mes pièces jointes", null));
-
-
+            // 8. Mes pièces jointes
+            this.listeAction.add(new MenuAction("monDepot.png", Outil.DEPOT.name(), "Mes pièces jointes", null));
+            
+            // 9. Gestion des remplacements
+            this.listeAction.add(new MenuAction("changeEnseignant.png", Outil.REMPLACEMENT_ENSEIGNANT.name(), "Gestion des remplacements", null));
         }
     }
 
@@ -385,9 +461,12 @@ public class MenuControl extends AbstractControl<AbstractForm> {
                 
             // Se mettre comme un eleve
             this.listeAction.add(new MenuAction("changeEleve.png", Outil.SIMULATION_ELEVE.name(), "Mode simulation élève", null));
-                
+            
             // Droit d'inspection
             this.listeAction.add(new MenuAction("inspection.png", Outil.INSPECTION.name(), "Droits d'inspection", null));
+            
+            // Gestion des remplacements
+            this.listeAction.add(new MenuAction("changeEnseignant.png", Outil.REMPLACEMENT_ENSEIGNANT.name(), "Gestion des remplacements", null));
             
             // Archives
             this.listeAction.add(new MenuAction("archive.png", Outil.CAHIER_ARCHIVE.name(), "Archives", null));

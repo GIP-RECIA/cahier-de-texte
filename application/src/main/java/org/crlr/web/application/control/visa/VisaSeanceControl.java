@@ -10,6 +10,7 @@ package org.crlr.web.application.control.visa;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
@@ -25,31 +26,30 @@ import org.crlr.dto.application.base.GroupesClassesDTO;
 import org.crlr.dto.application.base.Profil;
 import org.crlr.dto.application.base.SeanceDTO;
 import org.crlr.dto.application.base.UtilisateurDTO;
-import org.crlr.dto.application.inspection.DroitInspecteurDTO;
-import org.crlr.dto.application.inspection.RechercheDroitInspecteurQO;
+import org.crlr.dto.application.remplacement.RechercheRemplacementQO;
+import org.crlr.dto.application.remplacement.RemplacementDTO;
 import org.crlr.dto.application.seance.RechercheVisaSeanceQO;
 import org.crlr.dto.application.visa.DateListeVisaSeanceDTO;
 import org.crlr.dto.application.visa.ResultatRechercheVisaSeanceDTO;
 import org.crlr.dto.application.visa.TypeVisa;
 import org.crlr.dto.application.visa.VisaDTO;
-import org.crlr.dto.application.visa.VisaEnseignantDTO;
 import org.crlr.dto.application.visa.VisaDTO.VisaProfil;
+import org.crlr.dto.application.visa.VisaEnseignantDTO;
 import org.crlr.exception.metier.MetierException;
 import org.crlr.metier.facade.VisaFacadeService;
 import org.crlr.services.EtablissementService;
-import org.crlr.services.InspectionService;
+import org.crlr.services.RemplacementService;
 import org.crlr.services.SequenceService;
-import org.crlr.services.VisaService;
 import org.crlr.utils.DateUtils;
 import org.crlr.utils.ObjectUtils;
 import org.crlr.web.application.control.AbstractControl;
 import org.crlr.web.application.control.ClasseGroupeControl;
-import org.crlr.web.application.control.EnseignantControl;
-import org.crlr.web.application.control.EnseignementControl;
-import org.crlr.web.application.control.SequenceControl;
 import org.crlr.web.application.control.ClasseGroupeControl.ClasseGroupeListener;
+import org.crlr.web.application.control.EnseignantControl;
 import org.crlr.web.application.control.EnseignantControl.EnseignantListener;
+import org.crlr.web.application.control.EnseignementControl;
 import org.crlr.web.application.control.EnseignementControl.EnseignementListener;
+import org.crlr.web.application.control.SequenceControl;
 import org.crlr.web.application.control.SequenceControl.SequenceListener;
 import org.crlr.web.application.control.seance.AjoutSeanceControl;
 import org.crlr.web.application.control.seance.SaisirSeanceControl;
@@ -59,6 +59,9 @@ import org.crlr.web.application.form.visa.VisaSeanceForm.Affichage;
 import org.crlr.web.contexte.utils.ContexteUtils;
 import org.crlr.web.dto.BarreSemaineDTO;
 import org.crlr.web.utils.NavigationUtils;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * DOCUMENTATION INCOMPLETE!
@@ -83,6 +86,9 @@ implements ClasseGroupeListener, EnseignantListener, EnseignementListener, Seque
     @ManagedProperty(value = "#{enseignant}")
     protected transient EnseignantControl enseignantControl;
     
+    @ManagedProperty(value = "#{enseignant2}")
+    protected transient EnseignantControl enseignantRemplaceControl;
+    
     @ManagedProperty(value = "#{sequenceControl}")
     protected transient SequenceControl sequenceControl;
     
@@ -95,6 +101,10 @@ implements ClasseGroupeListener, EnseignantListener, EnseignementListener, Seque
     @ManagedProperty(value="#{ajoutSeance}")
     private transient AjoutSeanceControl ajoutSeance;
     
+    @ManagedProperty(value = "#{remplacementService}")
+    private transient RemplacementService remplacementService;
+
+    
     /**
      * @param classeGroupeControl the classeGroupeControl to set
      */
@@ -102,13 +112,8 @@ implements ClasseGroupeListener, EnseignantListener, EnseignementListener, Seque
         this.classeGroupeControl = classeGroupeControl;
     }
     
-    /** Controleur de inspectionService. */
-    @ManagedProperty(value = "#{inspectionService}")
-    private transient InspectionService inspectionService;
 
-    /** Service de visaService. */
-    @ManagedProperty(value = "#{visaService}")
-    private transient VisaService visaService;
+   
     
     @ManagedProperty(value = "#{visaFacade}")
     private transient VisaFacadeService visaFacade;
@@ -118,26 +123,13 @@ implements ClasseGroupeListener, EnseignantListener, EnseignementListener, Seque
     
     
     
-    
-    /**
-     * Mutateur de visaService {@link #visaService}.
-     * @param visaService le visaService to set
-     */
-    public void setVisaService(VisaService visaService) {
-        this.visaService = visaService;
-    }
-
-    /**
-     * Mutateur de inspectionService {@link #inspectionService}.
-     * @param inspectionService le inspectionService to set
-     */
-    public void setInspectionService(InspectionService inspectionService) {
-        this.inspectionService = inspectionService;
-    }
 
     /** Controleur de la saisie par semaine pour acceder aux fonctionnalités agenda d'un enseignant. */ 
     @ManagedProperty(value = "#{saisirSeance}")
     private transient SaisirSeanceControl saisirSeanceControl;
+    
+    private EnseignantRemplacementListener enseignantRemplacementListener;
+    
 
     /**
      * Mutateur de saisirSeanceControl {@link #saisirSeanceControl}.
@@ -160,7 +152,7 @@ implements ClasseGroupeListener, EnseignantListener, EnseignementListener, Seque
     @PostConstruct
     public void onLoad() {
         
-        form.setTexteAide(visaService.getAideContextuelleSeance());
+        form.setTexteAide(visaFacade.getAideContextuelleSeance());
         
         VisaDTO visa = (VisaDTO) ContexteUtils.getContexteOutilControl()
             .recupererEtSupprimerObjet(VisaDTO.class.getName());
@@ -182,6 +174,11 @@ implements ClasseGroupeListener, EnseignantListener, EnseignementListener, Seque
         enseignantControl.setListener(this);
         sequenceControl.setListener(this);
         
+        enseignantRemplacementListener = new EnseignantRemplacementListener();
+        enseignantRemplaceControl.setListener(enseignantRemplacementListener);
+        
+        
+        
         final UtilisateurDTO utilisateurDTO = ContexteUtils.getContexteUtilisateur().getUtilisateurDTO();
         final Profil profilUser = utilisateurDTO.getProfil();
 
@@ -193,6 +190,9 @@ implements ClasseGroupeListener, EnseignantListener, EnseignementListener, Seque
             form.setModeAffichage(Affichage.DETAIL);
         }
         enseignantControl.getForm().setFiltreParEnseignant(true);
+        enseignantRemplaceControl.getForm().setFiltreParEnseignant(true);
+        
+        getForm().setModeRemplacant(false);
         
         // On declenche la recherche auto si on vient de visaListe avec un cahierVisa selectionne
         if (visa != null) {
@@ -211,26 +211,55 @@ implements ClasseGroupeListener, EnseignantListener, EnseignementListener, Seque
         
         rechercherEnseignant();
         
-        rechercherEnseignement();
+        //Initialisation basé sur l'enseignant sélectionné (premier dans la liste)
+        enseignantSelectionnee();
+        
+        
         if (form.getVisaOrigine() != null) {
             enseignementControl.getForm().setTous(false);
             enseignementControl.getForm().setEnseignementSelectionne(form.getVisaOrigine().getEnseignementDTO());
         }
         
-        rechercherListeClasseGroupe();
-
         if (groupesClassesDTO != null) {
             classeGroupeControl.getForm().setTous(false);
             classeGroupeControl.getForm().setTypeGroupeSelectionne(groupesClassesDTO.getTypeGroupe());
             classeGroupeControl.classeGroupeTypeSelectionne(null);
             classeGroupeControl.getForm().setGroupeClasseSelectionne(groupesClassesDTO);
-        } else {
-            classeGroupeControl.getForm().setTous(true);
-            classeGroupeControl.getForm().setGroupeClasseSelectionne(null);
-            classeGroupeControl.getForm().setTypeGroupeSelectionne(null);
-            classeGroupeControl.classeGroupeTypeSelectionne(null);
+        } 
+        
+        //Puisque les critères de enseignement ou classe groupe ont changé par rapport au défauts établis dans 
+        //enseignantSelectionné, il faut rechercher les séquences
+        if (form.getVisaOrigine() != null || groupesClassesDTO != null) {
+            rechercherListeSequenceSelectionnee();
         }
-        rechercherListeSequenceSelectionnee();
+        
+    }
+    
+    /**
+     * 
+     * Les listeners pour la sélection du remplaçement.
+     *
+     */
+    class EnseignantRemplacementListener implements EnseignantListener {
+
+        /* (non-Javadoc)
+         * @see org.crlr.web.application.control.EnseignantControl.EnseignantListener#enseignantTousOuUnSelectionne(boolean)
+         */
+        @Override
+        public void enseignantTousOuUnSelectionne(boolean tous) {
+            
+            
+        }
+
+        /* (non-Javadoc)
+         * @see org.crlr.web.application.control.EnseignantControl.EnseignantListener#enseignantSelectionnee()
+         */
+        @Override
+        public void enseignantSelectionnee() {
+            form.setListeSeance(new ArrayList<DateListeVisaSeanceDTO>());
+
+            form.setVraiOuFauxRechercheActive(false);
+        }
         
     }
     
@@ -240,34 +269,14 @@ implements ClasseGroupeListener, EnseignantListener, EnseignementListener, Seque
     private void rechercherEnseignant() {
         
         
-        List<EnseignantDTO> listeEnseignant = enseignantControl.getForm().getListeEnseignant();
-        
      // Charge la liste des enseignants de l'utilisateur connecte
         final UtilisateurDTO utilisateurDTO = ContexteUtils.getContexteUtilisateur().getUtilisateurDTO();
-        final Profil profilUser = utilisateurDTO.getProfil();
-
-        final Integer idEtablissement = utilisateurDTO.getIdEtablissement();
-       
+        
         // Le directeur voit touts les enseignants de son etablissement 
-        if (Profil.DIRECTION_ETABLISSEMENT.equals(profilUser)) {
-            listeEnseignant = inspectionService.findListeEnseignants(idEtablissement);
-            
-        } else if (Profil.INSPECTION_ACADEMIQUE.equals(profilUser)) {
-            
-            listeEnseignant = new ArrayList<EnseignantDTO>();    
-            final RechercheDroitInspecteurQO rechercheDroitInspecteurQO = new RechercheDroitInspecteurQO();
-            rechercheDroitInspecteurQO.setIdEtablissement(idEtablissement);
-            rechercheDroitInspecteurQO.setIdInspecteur(utilisateurDTO.getUserDTO().getIdentifiant());
-            rechercheDroitInspecteurQO.setVraiOuFauxRechercheFromDirecteur(false);
-            
-            final ResultatDTO<List<DroitInspecteurDTO>> droitsInspecteurs = inspectionService.findDroitsInspection(rechercheDroitInspecteurQO);
-            final List<DroitInspecteurDTO> listeDroit = droitsInspecteurs.getValeurDTO();
-            for (final DroitInspecteurDTO droit : listeDroit) {
-                listeEnseignant.add(droit.getEnseignant());
-            }
-        } else {
-            listeEnseignant = new ArrayList<EnseignantDTO>(); 
-        }
+        final List<EnseignantDTO> listeEnseignant =
+                visaFacade.findListeEnseignant(utilisateurDTO).getValeurDTO();
+
+        enseignantControl.getForm().setListeEnseignant(listeEnseignant);
         
      // selectionne l'enseignant par defaut
         
@@ -297,6 +306,7 @@ implements ClasseGroupeListener, EnseignantListener, EnseignementListener, Seque
         
         // Charge pour chaque enseignant la liste des visa / cahiers de texte
         enseignantControl.getForm().setListeEnseignant(listeEnseignant);
+        
         
     }
     
@@ -337,7 +347,7 @@ implements ClasseGroupeListener, EnseignantListener, EnseignementListener, Seque
                 ajoutSeance.getForm().setSeance(new SeanceDTO());
             }
         } catch (MetierException ex) {
-            log.debug(ex, "ex");
+            log.debug( "ex", ex);
         }
     }
     
@@ -459,24 +469,50 @@ implements ClasseGroupeListener, EnseignantListener, EnseignementListener, Seque
         /** les critères de recherche. */
         final RechercheVisaSeanceQO rechercheQO = new RechercheVisaSeanceQO();
         
-        if (enseignementControl.getForm().getEnseignementSelectionne() != null) {
-            rechercheQO.setCodeEnseignement(enseignementControl.getForm().getEnseignementSelectionne().getCode());
-        }
-        if (sequenceControl.getForm().getSequenceSelectionnee() != null) {
-            rechercheQO.setIdSequence(sequenceControl.getForm().getSequenceSelectionnee().getId());
-        }
-        if (enseignementControl.getForm().getEnseignementSelectionne() != null) {
-            rechercheQO.setIdEnseignement(enseignementControl.getForm().getEnseignementSelectionne().getId());
-        }
+        Integer idEnseignant = null;
         
-        EnseignantDTO enseignant = enseignantControl.getForm().getEnseignantSelectionne();
-        final Integer idEnseignant = enseignant == null ? null : enseignant.getId();
-        rechercheQO.setIdEnseignant(idEnseignant);
+        if (BooleanUtils.isNotTrue(getForm().getModeRemplacant())) {
+            
+            //En mode normale, on met l'enseignement et la séquence
+            if (enseignementControl.getForm().getEnseignementSelectionne() != null) {
+                rechercheQO.setCodeEnseignement(enseignementControl.getForm().getEnseignementSelectionne().getCode());
+            }
+            if (sequenceControl.getForm().getSequenceSelectionnee() != null) {
+                rechercheQO.setIdSequence(sequenceControl.getForm().getSequenceSelectionnee().getId());
+            }
+            if (enseignementControl.getForm().getEnseignementSelectionne() != null) {
+                rechercheQO.setIdEnseignement(enseignementControl.getForm().getEnseignementSelectionne().getId());
+            }
+            
+            EnseignantDTO enseignant = enseignantControl.getForm().getEnseignantSelectionne();
+            log.debug("Recherche visa pour un enseignant {}", enseignant);
+            idEnseignant = enseignant == null ? null : enseignant.getId();
+            rechercheQO.setIdEnseignant(idEnseignant);
+            rechercheQO.setIdEnseignantRemplacant(null);
+            
+        } else {
+            EnseignantDTO enseignantRemplacant = enseignantControl.getForm().getEnseignantSelectionne();
+            log.debug("Recherche visa pour un enseignant {}", enseignantRemplacant);
+            idEnseignant = enseignantRemplacant == null ? null : enseignantRemplacant.getId();
+            rechercheQO.setIdEnseignantRemplacant(idEnseignant);
+            
+            //Utilise le remplaçement choisi
+            EnseignantDTO enseignantRemplace = enseignantRemplaceControl.getForm().getEnseignantSelectionne();
+          
+            log.debug("Recherche visa pour un enseignant remplaçé {}", enseignantRemplace);
+            rechercheQO.setIdEnseignant(enseignantRemplace.getId());
+        }
         
         
         final Integer idEtablissement =
             ContexteUtils.getContexteUtilisateur().getUtilisateurDTO().getIdEtablissement();
         
+        
+        if (idEnseignant == null) {
+            log.warn("Id enseignant null, l'établissement n'a pas d'enseignants");
+            return;
+        }
+            
 
         Boolean seancesAutomatique = etablissementService.checkSaisieSimplifieeEtablissement(idEtablissement, idEnseignant).getValeurDTO();
         
@@ -487,11 +523,12 @@ implements ClasseGroupeListener, EnseignantListener, EnseignementListener, Seque
         rechercheQO.setAfficheNonVisees(form.getVraiOuFauxNonVisee());
         rechercheQO.setAfficheVisees(form.getVraiOuFauxVisee());
         rechercheQO.setAffichePerimees(form.getVraiOuFauxPerimee());
-        rechercheQO.setProfil(ContexteUtils.getContexteUtilisateur().getUtilisateurDTO().getProfil());
         
+        rechercheQO.setUtilisateurConnecte(ContexteUtils.getContexteUtilisateur().getUtilisateurDTOConnecte());
         
         try {
-            final ResultatDTO<List<DateListeVisaSeanceDTO>> listeSeanceDTO = visaService.findVisaSeance(rechercheQO);
+            final ResultatDTO<List<DateListeVisaSeanceDTO>> listeSeanceDTO = 
+                    visaFacade.findVisaSeance(rechercheQO);
             form.setListeSeance(ObjectUtils.clone(listeSeanceDTO.getValeurDTO()));
             form.setVraiOuFauxRechercheActive(true);
         } catch (MetierException e) {
@@ -631,32 +668,25 @@ implements ClasseGroupeListener, EnseignantListener, EnseignementListener, Seque
     public void sauver() {
         
         final List<ResultatRechercheVisaSeanceDTO> listeVisaSeance = new ArrayList<ResultatRechercheVisaSeanceDTO>();
-        
+
         for (final DateListeVisaSeanceDTO dateListe : form.getListeSeance()) {
-            for (final ResultatRechercheVisaSeanceDTO visaSeance : dateListe.getListeVisaSeance()) {
+            for (final ResultatRechercheVisaSeanceDTO visaSeance : dateListe
+                    .getListeVisaSeance()) {
                 if (visaSeance.getVraiOuFauxModifiee()) {
-                    listeVisaSeance.add(visaSeance);                    
+                    listeVisaSeance.add(visaSeance);
                 }
             }
         }
-        
+
         try {
-           
-          visaService.saveListeVisaSeance(listeVisaSeance);
-          form.setAfficheSauvegarde(false);
-            
-          
-          
+
+            visaFacade.saveListeVisaSeance(listeVisaSeance);
+            form.setAfficheSauvegarde(false);
+
             rechercher();
         } catch (MetierException ex) {
-            log.debug(ex, "ex");
-        }
-        
-        //ConteneurMessage conteneurMessage = new ConteneurMessage();
-            //conteneurMessage.add();
-        //MessageUtils.addMessage(new Message(TypeReglesAcquittement.ACQUITTEMENT_01.name(),
-              //  Nature.INFORMATIF, "Tous les modifications effectuées sur les visas", "enregistrées"), getClass());
-        
+            log.debug("ex", ex);
+        }        
     }
     
     /**
@@ -812,6 +842,17 @@ implements ClasseGroupeListener, EnseignantListener, EnseignementListener, Seque
         this.enseignantControl = enseignantControl;
     }
 
+    /**
+     * .
+     */
+    public void modeRemplacantChange() {
+        log.debug("Mode remplaçement {}", form.getModeRemplacant());
+        
+        form.setListeSeance(new ArrayList<DateListeVisaSeanceDTO>());
+        
+        form.setVraiOuFauxRechercheActive(false);
+    }
+    
     /* (non-Javadoc)
      * @see org.crlr.web.application.control.EnseignementControl.EnseignementListener#enseignementTousOuUnSelectionne(boolean)
      */
@@ -825,6 +866,8 @@ implements ClasseGroupeListener, EnseignantListener, EnseignementListener, Seque
         
         
     }
+    
+    
 
     /* (non-Javadoc)
      * @see org.crlr.web.application.control.EnseignementControl.EnseignementListener#enseignementSelectionnee()
@@ -882,6 +925,41 @@ implements ClasseGroupeListener, EnseignantListener, EnseignementListener, Seque
         
         form.setListeSeance(new ArrayList<DateListeVisaSeanceDTO>());
         form.setVraiOuFauxRechercheActive(false);
+        
+
+        getForm().setModeRemplacant(false);
+        
+        if (null == enseignantControl.getForm().getEnseignantSelectionne()) {
+            log.warn("Pas d'enseignant dans l'établissement");
+            return;
+        }            
+        
+        //Trouver si l'enseignant sélectionné était un remplaçant
+        RechercheRemplacementQO rechercheRemplacementQO = new RechercheRemplacementQO();
+        rechercheRemplacementQO.setIdEnseignantRemplacant(enseignantControl.getForm().getEnseignantSelectionne().getId());
+        rechercheRemplacementQO.setIdEtablissement(ContexteUtils.getContexteUtilisateur().getUtilisateurDTO().getIdEtablissement());
+        
+        List<RemplacementDTO> liste =
+                remplacementService.findListeRemplacement(rechercheRemplacementQO).getValeurDTO();
+        
+        List<EnseignantDTO> listeRemplace = Lists.newArrayList();
+        Set<Integer> ensIds = Sets.newHashSet();
+        
+        log.debug("Liste remplacement taille {}", liste.size());
+        
+        for(RemplacementDTO rem : liste) {
+            log.debug("Ens absent {}", rem.getEnseignantAbsent());
+            if (!ensIds.contains(rem.getEnseignantAbsent().getId())) {
+                ensIds.add(rem.getEnseignantAbsent().getId());
+                listeRemplace.add(rem.getEnseignantAbsent());
+            }
+        }
+        
+        enseignantRemplaceControl.getForm().setListeEnseignant(listeRemplace);
+        if (listeRemplace.size() > 0) {
+            enseignantRemplaceControl.getForm().setEnseignantSelectionne(listeRemplace.get(0));
+        }
+        
     }
 
     /**
@@ -924,6 +1002,35 @@ implements ClasseGroupeListener, EnseignantListener, EnseignementListener, Seque
 
     public void modificationFiltre() {
         
+    }
+
+    /**
+     * @return the enseignantRemplaceControl
+     */
+    public EnseignantControl getEnseignantRemplaceControl() {
+        return enseignantRemplaceControl;
+    }
+
+    /**
+     * @param enseignantRemplaceControl the enseignantRemplaceControl to set
+     */
+    public void setEnseignantRemplaceControl(
+            EnseignantControl enseignantRemplaceControl) {
+        this.enseignantRemplaceControl = enseignantRemplaceControl;
+    }
+
+    /**
+     * @return the remplacementService
+     */
+    public RemplacementService getRemplacementService() {
+        return remplacementService;
+    }
+
+    /**
+     * @param remplacementService the remplacementService to set
+     */
+    public void setRemplacementService(RemplacementService remplacementService) {
+        this.remplacementService = remplacementService;
     }
 
 }

@@ -52,6 +52,7 @@ xsi:schemaLocation="
                 check*,
                 consulterSeance,
                 initialisationAuthentification,
+                findListeEmploiDTO,
                 deconnecterUtilisateur,
                 supprimer*,
                 ajouter*,

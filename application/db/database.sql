@@ -39,6 +39,17 @@ DROP TABLE IF EXISTS cahier_courant.cahier_archive_devoir  CASCADE;
 DROP TABLE IF EXISTS cahier_courant.cahier_archive_seance  CASCADE;
 DROP TABLE IF EXISTS cahier_courant.cahier_visa  CASCADE;
 
+DROP SEQUENCE IF EXISTS cahier_cyle cascade;
+DROP SEQUENCE IF EXISTS cahier_cycle_seance cascade;
+DROP SEQUENCE IF EXISTS cahier_cycle_devoir cascade;
+
+drop table if exists cahier_courant.cahier_piece_jointe_cycle_seance;
+drop table if exists cahier_courant.cahier_piece_jointe_cycle_devoir;
+drop table if exists cahier_courant.cahier_cycle_groupe;
+drop table if exists cahier_courant.cahier_cycle_devoir;
+drop table if exists cahier_courant.cahier_cycle_seance;
+drop table if exists cahier_courant.cahier_cycle;
+
 
 -- TABLES ----------------------------------------------------------------------
 
@@ -177,15 +188,15 @@ CREATE TABLE cahier_courant.cahier_eleve
 
 
 -- Table: cahier_groupe
-
-
 CREATE TABLE cahier_courant.cahier_groupe
 (
   id Integer NOT NULL,
   code character varying(20) NOT NULL,
-  designation character varying(50) NOT NULL,
+  designation character varying(255) NOT NULL,
   id_etablissement Integer NOT NULL,
   id_annee_scolaire integer NOT NULL,
+  groupe_collaboratif boolean DEFAULT false,
+  nom_long varchar(255) DEFAULT null,
   CONSTRAINT cahier_groupe_id PRIMARY KEY (id),
   CONSTRAINT id_etablissement_groupes FOREIGN KEY (id_etablissement)
       REFERENCES cahier_courant.cahier_etablissement (id) MATCH SIMPLE
@@ -1127,4 +1138,103 @@ CREATE RULE reporte_insert_sequence_visa2 AS ON INSERT TO cahier_courant.cahier_
     );
             
     
+create table cahier_courant.cahier_cycle (
+  id integer NOT NULL, 
+  id_enseignant integer not null,
+  uid_enseignant character varying(8) NOT NULL,
+  titre varchar(100) not null,
+  objectif text,
+  prerequis text, 
+  description text,
+  CONSTRAINT id_cahier_cycle PRIMARY KEY (id ),
+  CONSTRAINT cahier_cycle_enseignant_id FOREIGN KEY (id_enseignant)
+      REFERENCES cahier_courant.cahier_enseignant (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+create table cahier_courant.cahier_cycle_seance (
+  id integer NOT NULL, 
+  id_cycle integer not null,
+  id_enseignant integer not null,
+  uid_enseignant character varying(8) NOT NULL,
+  enseignement varchar(100),
+  objectif text,
+  intitule varchar(50) not null,
+  description text,
+  annotations text,
+  annotations_visible boolean,
+  indice integer not null,
+  CONSTRAINT id_cahier_cycle_seance PRIMARY KEY (id ),
+  CONSTRAINT cahier_cycle_seance_enseignant_id FOREIGN KEY (id_enseignant)
+      REFERENCES cahier_courant.cahier_enseignant (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT cahier_cycle_seance_cycle_id FOREIGN KEY (id_cycle)
+      REFERENCES cahier_courant.cahier_cycle (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+create table cahier_courant.cahier_cycle_devoir (
+  id integer NOT NULL, 
+  id_cycle_seance integer not null,
+  intitule varchar(50) not null,
+  description text,
+  id_type_devoir integer,
+  date_remise integer not null,
+  CONSTRAINT id_cahier_cycle_devoir PRIMARY KEY (id ),
+  CONSTRAINT cahier_cycle_devoir_seance_id FOREIGN KEY (id_cycle_seance)
+      REFERENCES cahier_courant.cahier_cycle_seance (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT id_type_devoir_cahier_cycle_devoir FOREIGN KEY (id_type_devoir)
+      REFERENCES cahier_courant.cahier_type_devoir (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+create table cahier_courant.cahier_cycle_groupe (
+  id_cycle integer NOT NULL, 
+  id_groupe integer not null,
+  CONSTRAINT id_cahier_cycle_groupe PRIMARY KEY (id_cycle, id_groupe),
+  CONSTRAINT cahier_cycle_groupe_cycle_id FOREIGN KEY (id_cycle)
+      REFERENCES cahier_courant.cahier_cycle (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT cahier_cycle_groupe_groupe_id FOREIGN KEY (id_groupe)
+      REFERENCES cahier_courant.cahier_groupe (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+create table cahier_courant.cahier_piece_jointe_cycle_seance (
+  id_piece_jointe integer NOT NULL, 
+  id_cycle_seance integer not null,
+  CONSTRAINT id_cahier_piece_jointe_cycle_seance PRIMARY KEY (id_piece_jointe, id_cycle_seance),
+  CONSTRAINT cahier_piece_jointe_cycle_seance_seance_id FOREIGN KEY (id_cycle_seance)
+      REFERENCES cahier_courant.cahier_cycle_seance (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT cahier_piece_jointe_cycle_seance_pj_id FOREIGN KEY (id_piece_jointe)
+      REFERENCES cahier_courant.cahier_piece_jointe (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+create table cahier_courant.cahier_piece_jointe_cycle_devoir (
+  id_piece_jointe integer NOT NULL, 
+  id_cycle_devoir integer not null,
+  CONSTRAINT id_cahier_piece_jointe_cycle_devoir PRIMARY KEY (id_piece_jointe, id_cycle_devoir),
+  CONSTRAINT cahier_piece_jointe_cycle_devoir_devoir_id FOREIGN KEY (id_cycle_devoir)
+      REFERENCES cahier_courant.cahier_cycle_devoir (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT cahier_piece_jointe_cycle_devoir_pj_id FOREIGN KEY (id_piece_jointe)
+      REFERENCES cahier_courant.cahier_piece_jointe (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+--ALTER TABLE cahier_courant.cahier_groupe ADD COLUMN groupe_collaboratif boolean DEFAULT false;
+--ALTER TABLE cahier_courant.cahier_groupe ADD COLUMN nom_long varchar(255) DEFAULT null;
+
+DROP SEQUENCE IF EXISTS cahier_cycle;
+CREATE SEQUENCE cahier_cycle MINVALUE 1;
+
+DROP SEQUENCE IF EXISTS cahier_cycle_seance;
+CREATE SEQUENCE cahier_cycle_seance MINVALUE 1;
+
+DROP SEQUENCE IF EXISTS cahier_cycle_devoir;
+CREATE SEQUENCE cahier_cycle_devoir MINVALUE 1;
+
   

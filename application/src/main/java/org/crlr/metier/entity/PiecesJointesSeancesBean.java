@@ -115,7 +115,7 @@ public class PiecesJointesSeancesBean implements Serializable {
      * Mutateur seance.
      * @param seance La séance à modifier
      */
-    public void setDevoir(SeanceBean seance) {
+    public void setSeance(SeanceBean seance) {
         this.seance = seance;
     }
     
@@ -152,7 +152,7 @@ public class PiecesJointesSeancesBean implements Serializable {
     /**
      * idSeance.
      *
-     * @param idSeance id du devoir.
+     * @param idSeance id de la seance.
      */
     public void setIdSeance(Integer idSeance) {
         if (this.pk == null) {

@@ -8,6 +8,7 @@
 package org.crlr.test.services;
 
 
+import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

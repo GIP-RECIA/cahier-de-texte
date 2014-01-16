@@ -31,7 +31,8 @@ public class ConsulterSeanceQO implements Serializable {
     /** Charge egalement les infos visa ? .*/
     private Boolean avecInfoVisa;
     
-    
+    /** Id enseigannt réelment connecté.  Id de l'enseigant remplacé*/
+    private Integer idEnseignantConnecte;
     
     public ConsulterSeanceQO() {
         super();
@@ -106,6 +107,20 @@ public class ConsulterSeanceQO implements Serializable {
      */
     public void setAvecInfoVisa(Boolean avecInfoVisa) {
         this.avecInfoVisa = avecInfoVisa;
+    }
+
+    /**
+     * @return the idEnseignantConnecte
+     */
+    public Integer getIdEnseignantConnecte() {
+        return idEnseignantConnecte;
+    }
+
+    /**
+     * @param idEnseignantConnecte the idEnseignantConnecte to set
+     */
+    public void setIdEnseignantConnecte(Integer idEnseignantConnecte) {
+        this.idEnseignantConnecte = idEnseignantConnecte;
     }
     
 }

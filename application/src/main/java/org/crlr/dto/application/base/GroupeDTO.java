@@ -28,6 +28,9 @@ public class GroupeDTO implements Serializable {
     /** identifiant du groupe ou de la classe. */
     private Integer id;
     
+    /** Indique si le groupe est collaboratif ou non. */
+    private Boolean groupeCollaboratif;
+    
     /** Indique si le groupe est selectionner. */
     private Boolean selectionner;
     
@@ -109,4 +112,21 @@ public class GroupeDTO implements Serializable {
     public void setSelectionner(Boolean selectionner) {
         this.selectionner = selectionner;
     }
+
+    /**
+     * Accesseur de groupeCollaboratif {@link #groupeCollaboratif}.
+     * @return retourne groupeCollaboratif
+     */
+    public Boolean getGroupeCollaboratif() {
+        return groupeCollaboratif;
+    }
+
+    /**
+     * Mutateur de groupeCollaboratif {@link #groupeCollaboratif}.
+     * @param groupeCollaboratif le groupeCollaboratif to set
+     */
+    public void setGroupeCollaboratif(Boolean groupeCollaboratif) {
+        this.groupeCollaboratif = groupeCollaboratif;
+    }
+    
 }

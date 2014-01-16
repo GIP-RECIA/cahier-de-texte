@@ -125,6 +125,12 @@ public interface GroupeClasseFacadeService {
      * @return la liste des eleves
      */
     public List<UserDTO> findListeEleve(RechercheGroupeQO rechercheGroupeQO);
-    
+ 
+    /**
+     * Recherche les groupes collaboratif dans lesquels intervient un enseignant.
+     * @param idEnseignant l'identifiant de l'enseignant
+     * @return Les groupes collaboratifs.
+     */
+    public List<GroupeDTO> findGroupesCollaboratifEnseignant(Integer idEnseignant);    
 }
 

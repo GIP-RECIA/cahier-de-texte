@@ -21,24 +21,25 @@ import org.crlr.dto.application.visa.VisaDTO;
 import org.crlr.log.Log;
 import org.crlr.log.LogFactory;
 import org.crlr.utils.ObjectUtils;
+import org.crlr.web.contexte.utils.ContexteUtils;
 import org.crlr.web.dto.FileUploadDTO;
 import org.crlr.web.dto.TypeCouleur;
 
 /**
  * Un DTO pour contenir une seance.
- *
+ * 
  * @author $author$
  * @version $Revision: 1.2 $
  */
 public class SeanceDTO implements Serializable {
     protected static final Log log = LogFactory.getLog(SeanceDTO.class);
-    
+
     /**  */
     private static final long serialVersionUID = -826585374240054242L;
-    
+
     /** Id de la séance. */
     private Integer id;
-    
+
     /** Code de la séance. */
     private String code;
 
@@ -47,115 +48,124 @@ public class SeanceDTO implements Serializable {
 
     /** Date de la séance. */
     private Date date;
-    
+
     /** Heure de début de la séance. */
     private Integer heureDebut;
-    
+
     /** Minute de l'heure de début. */
     private Integer minuteDebut;
 
     /** Heure de fin de la séance. */
     private Integer heureFin;
-    
+
     /** Minute de l'heure de fin. */
     private Integer minuteFin;
 
     /** Description de la séance. */
     private String description;
-    
+
     /** La description en HTML avec des images dragmath. */
     private String descriptionHTML;
-    
+
     /** La description pour le pdf avec des renvoies. */
     private String descriptionPDF;
-    
+
     /** Annotations personnelles de l'enseignant. */
     private String annotations;
 
     /** La annotations en HTML avec des images dragmath. */
     private String annotationsHTML;
 
-    
-    
     private SequenceDTO sequenceDTO;
-    
+
     /** Identifiant de l'enseignant. */
     private EnseignantDTO enseignantDTO;
-    
+        
     
     /** Libelle de la matiere correspondant à la seance. */
     private String matiere;
-    
-    
+
     /**
      * Couleur de la seance dans l'emploi du temps.
      */
     private TypeCouleur typeCouleur;
-    
+
     private String emploiDeTempsDescription;
-    
-    private List<FileUploadDTO> files;   
-    
+
+    private List<FileUploadDTO> files;
+
     private FileUploadDTO pieceJointeSelectionne;
-    
+
     private List<DevoirDTO> devoirs;
-    
+
     /** Date de dernière modification de la seance. */
-    private Date dateMaj;    
-    
+    private Date dateMaj;
+
     /** Visa directeur. */
     private VisaDTO visaDirecteur;
-    
+
     /** Visa inspecteur. */
     private VisaDTO visaInspecteur;
-    
+        
+    private Boolean accesEcriture;
+
     /**
      * Consturcteur.
      */
-    public SeanceDTO(){
+    public SeanceDTO() {
         devoirs = new ArrayList<DevoirDTO>();
         files = new ArrayList<FileUploadDTO>();
         enseignantDTO = new EnseignantDTO();
         sequenceDTO = new SequenceDTO();
     }
-    
+
     /**
-     * Copie depuis seanceSrc les champs dans la seance :
-     * - annotations
-     * - description
-     * - intitule
-     * @param seanceSrc la seance source
+     * Copie depuis seanceSrc les champs dans la seance : - annotations -
+     * description - intitule
+     * 
+     * @param seanceSrc
+     *            la seance source
      */
     public void copieFrom(final SeanceDTO seanceSrc) {
         this.description = seanceSrc.getDescription();
         this.annotations = seanceSrc.getAnnotations();
+        
+        Integer enseignantId = seanceSrc.getIdEnseignant();
+        Integer idUtilisateurConnecte = ContexteUtils.getContexteUtilisateur().getUtilisateurDTOConnecte().getUserDTO().getIdentifiant();
+        
+        if (enseignantId == null || !enseignantId.equals(idUtilisateurConnecte)) {
+            log.debug("Ne pas copier les annotations personnel en mode remplaçant");
+            this.annotations = "";
+        }
+            
+        
         this.intitule = seanceSrc.getIntitule();
-        
+
         this.devoirs = new ArrayList<DevoirDTO>();
-        
-        for(DevoirDTO devoirSrc : seanceSrc.getDevoirs()) {
+
+        for (DevoirDTO devoirSrc : seanceSrc.getDevoirs()) {
             DevoirDTO devoirCopie = ObjectUtils.clone(devoirSrc);
             devoirCopie.setId(null);
-            
-            for(FileUploadDTO pjSrc : devoirCopie.getFiles()) {
+
+            for (FileUploadDTO pjSrc : devoirCopie.getFiles()) {
                 pjSrc.setIdDevoir(null);
             }
-            
+
             devoirs.add(devoirCopie);
         }
-        
+
         this.files = new ArrayList<FileUploadDTO>();
-        
-        for(FileUploadDTO pjSrc : seanceSrc.getFiles()) {
+
+        for (FileUploadDTO pjSrc : seanceSrc.getFiles()) {
             FileUploadDTO pjCopie = ObjectUtils.clone(pjSrc);
             pjCopie.setIdDevoir(null);
             files.add(pjCopie);
         }
     }
-    
+
     /**
      * Acceusseur id.
-     *
+     * 
      * @return id
      */
     public Integer getId() {
@@ -164,16 +174,17 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Mutateur id.
-     *
-     * @param id l'id à modifier
+     * 
+     * @param id
+     *            l'id à modifier
      */
     public void setId(Integer id) {
         this.id = id;
     }
-    
+
     /**
      * Acceusseur code.
-     *
+     * 
      * @return code
      */
     public String getCode() {
@@ -182,8 +193,9 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Mutateur code.
-     *
-     * @param code le code à modifier
+     * 
+     * @param code
+     *            le code à modifier
      */
     public void setCode(String code) {
         this.code = code;
@@ -191,7 +203,7 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Accesseur intitule.
-     *
+     * 
      * @return intitule
      */
     public String getIntitule() {
@@ -200,16 +212,19 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Accesseur intituleSeance.
+     * 
      * @return le intituleSeance
      */
     public String getIntituleSeanceCourt() {
-        return org.apache.commons.lang.StringUtils.abbreviate(getIntitule(), 25);
+        return org.apache.commons.lang.StringUtils
+                .abbreviate(getIntitule(), 25);
     }
-    
+
     /**
      * Mutateur intitule.
-     *
-     * @param intitule L'intitule à modifier
+     * 
+     * @param intitule
+     *            L'intitule à modifier
      */
     public void setIntitule(String intitule) {
         this.intitule = intitule;
@@ -217,7 +232,7 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Accesseur date.
-     *
+     * 
      * @return date
      */
     public Date getDate() {
@@ -226,24 +241,27 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Mutateur date.
-     *
-     * @param date La date à  modifier
+     * 
+     * @param date
+     *            La date à modifier
      */
     public void setDate(Date date) {
         this.date = date;
     }
 
-    /** 
+    /**
      * Setter de la date a partir d'une Long (nombre de jours depuis ...).
-     * @param date la date
+     * 
+     * @param date
+     *            la date
      */
     public void setDateLong(Long date) {
         this.date = new Date(date);
     }
-    
+
     /**
      * Accesseur heureDebut.
-     *
+     * 
      * @return heureDebut
      */
     public Integer getHeureDebut() {
@@ -252,8 +270,9 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Mutateur heureDebut.
-     *
-     * @param heureDebut heureDebut à modifier
+     * 
+     * @param heureDebut
+     *            heureDebut à modifier
      */
     public void setHeureDebut(Integer heureDebut) {
         this.heureDebut = heureDebut;
@@ -261,7 +280,7 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Accesseur heureFin.
-     *
+     * 
      * @return heureFin .
      */
     public Integer getHeureFin() {
@@ -270,10 +289,11 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Retourne l'heure de la seance au format texte lisible.
-     * @return xxhxx 
+     * 
+     * @return xxhxx
      */
     public String getHoraireDebut() {
-        if (heureDebut >= 0 && minuteDebut >=0) {
+        if (heureDebut >= 0 && minuteDebut >= 0) {
             return String.format("%02dh%02d", heureDebut, minuteDebut);
         } else {
             return "";
@@ -282,20 +302,22 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Retourne l'heure de la seance au format texte lisible.
-     * @return xxhxx 
+     * 
+     * @return xxhxx
      */
     public String getHoraireFin() {
-        if (heureFin >= 0 && minuteFin >=0) {
+        if (heureFin >= 0 && minuteFin >= 0) {
             return String.format("%02dh%02d", heureFin, minuteFin);
         } else {
             return "";
         }
     }
-    
+
     /**
      * Mutateur heureFin.
-     *
-     * @param heureFin heureFin à modifier
+     * 
+     * @param heureFin
+     *            heureFin à modifier
      */
     public void setHeureFin(Integer heureFin) {
         this.heureFin = heureFin;
@@ -303,7 +325,7 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Accesseur description.
-     *
+     * 
      * @return description .
      */
     public String getDescription() {
@@ -311,55 +333,69 @@ public class SeanceDTO implements Serializable {
     }
 
     /**
-     * Mutateur description.
-     * Transforme le contenu de la description au cas où il y aurait des liens pour s'assurer qu'ils s'ouvrent dans une autre page.
-     * @param description La description à modifier
+     * Mutateur description. Transforme le contenu de la description au cas où
+     * il y aurait des liens pour s'assurer qu'ils s'ouvrent dans une autre
+     * page.
+     * 
+     * @param description
+     *            La description à modifier
      */
     public void setDescription(String description) {
-    	String[] monSplit = description.split("<a");
-    	if(monSplit.length>1){
-    		try{
-    			String maDescModifie = monSplit[0];
-    			// il y a un lien dans la description.
-    			for(int i = 0;i<monSplit.length;i++){
-    				if(i>0){
-    					if(monSplit[i].contains("onclick=\"window.open(this.href); return false;")){
-    						//Une sauvegarde a été effectué avec ce contenu. On le garde et on rajoute que le <a devant.
-    						maDescModifie += "<a "+monSplit[i];
-    					}else{
-    						maDescModifie += "<a onclick=\"window.open(this.href); return false;\" "+monSplit[i]; 
-    					}    					
-    				}
-    			}
-    			this.description = maDescModifie;
-    		}catch(Exception e){
-    			this.description = description;
-    			e.printStackTrace();
-    		}
-    	}else{
-    		this.description = description;
-    	}
+        if (description != null) {
+            String[] monSplit = description.split("<a");
+            if (monSplit.length > 1) {
+                try {
+                    String maDescModifie = monSplit[0];
+                    // il y a un lien dans la description.
+                    for (int i = 0; i < monSplit.length; i++) {
+                        if (i > 0) {
+                            if (monSplit[i]
+                                    .contains("onclick=\"window.open(this.href); return false;")) {
+                                // Une sauvegarde a été effectué avec ce contenu. On
+                                // le garde et on rajoute que le <a devant.
+                                maDescModifie += "<a " + monSplit[i];
+                            } else {
+                                maDescModifie += "<a onclick=\"window.open(this.href); return false;\" "
+                                        + monSplit[i];
+                            }
+                        }
+                    }
+                    this.description = maDescModifie;
+                } catch (Exception e) {
+                    this.description = description;
+                    log.error(e, "exception");
+                }
+            } else {
+                this.description = description;
+            }
+        } else {
+            this.description = description;
+        }
     }
 
     /**
      * Accesseur minuteDebut.
+     * 
      * @return le minuteDebut.
      */
     public Integer getMinuteDebut() {
         return minuteDebut;
     }
-    
+
     /**
      * Accesseur minuteDebut.
+     * 
      * @return le minuteDebut.
      */
     public String getMinuteDebutAffichage() {
-        return org.crlr.utils.StringUtils.formatNumber(2,minuteDebut);
+        return org.crlr.utils.StringUtils.formatNumber(2, minuteDebut);
     }
 
     /**
      * Mutateur minuteDebut.
-     * @param minuteDebut le minuteDebut à modifier.
+     * 
+     * @param minuteDebut
+     *            le minuteDebut à modifier.
      */
     public void setMinuteDebut(Integer minuteDebut) {
         this.minuteDebut = minuteDebut;
@@ -367,6 +403,7 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Accesseur minuteFin.
+     * 
      * @return le minuteFin.
      */
     public Integer getMinuteFin() {
@@ -375,16 +412,17 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Mutateur minuteFin.
-     * @param minuteFin le minuteFin à modifier.
+     * 
+     * @param minuteFin
+     *            le minuteFin à modifier.
      */
     public void setMinuteFin(Integer minuteFin) {
         this.minuteFin = minuteFin;
     }
 
-    
-
     /**
      * Accesseur idEnseignant.
+     * 
      * @return le idEnseignant.
      */
     public Integer getIdEnseignant() {
@@ -393,18 +431,22 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Mutateur idEnseignant.
-     * @param idEnseignant le idEnseignant à modifier.
+     * 
+     * @param idEnseignant
+     *            le idEnseignant à modifier.
      */
     public void setIdEnseignant(Integer idEnseignant) {
-        getEnseignantDTO().setId( idEnseignant );
+        getEnseignantDTO().setId(idEnseignant);
     }
 
     /**
      * Accesseur idGroupe.
+     * 
      * @return le idGroupe.
      */
     public Integer getIdGroupe() {
-        if (getSequenceDTO() != null && TypeGroupe.GROUPE == getSequenceDTO().getTypeGroupe()) {
+        if (getSequenceDTO() != null
+                && TypeGroupe.GROUPE == getSequenceDTO().getTypeGroupe()) {
             return getSequenceDTO().getGroupesClassesDTO().getId();
         }
         return null;
@@ -412,52 +454,57 @@ public class SeanceDTO implements Serializable {
 
     /**
      * 
-     * @param id id
+     * @param id
+     *            id
      */
     @Deprecated
     public void setIdGroupe(Integer id) {
         getSequenceDTO().getGroupesClassesDTO().setId(id);
     }
-   
 
     /**
      * Accesseur idClasse.
+     * 
      * @return le idClasse.
      */
-    public Integer getIdClasse() {        
-        if (getSequenceDTO() != null && TypeGroupe.CLASSE == getSequenceDTO().getGroupesClassesDTO().getTypeGroupe()) {
+    public Integer getIdClasse() {
+        if (getSequenceDTO() != null
+                && TypeGroupe.CLASSE == getSequenceDTO().getGroupesClassesDTO()
+                        .getTypeGroupe()) {
             return getSequenceDTO().getGroupesClassesDTO().getId();
         }
         return null;
     }
 
     /**
-     * @param id id
+     * @param id
+     *            id
      */
     @Deprecated
     public void setIdClasse(Integer id) {
         getSequenceDTO().getGroupesClassesDTO().setId(id);
     }
 
-    
-
     /**
      * Accesseur de designationClasse {@link #designationClasse}.
-     * @return retourne designationClasse 
+     * 
+     * @return retourne designationClasse
      */
     public String getDesignationClasse() {
-        if (getSequenceDTO() != null && 
-                TypeGroupe.CLASSE == getSequenceDTO().getGroupesClassesDTO().getTypeGroupe()) {
+        if (getSequenceDTO() != null
+                && TypeGroupe.CLASSE == getSequenceDTO().getGroupesClassesDTO()
+                        .getTypeGroupe()) {
             return getSequenceDTO().getGroupesClassesDTO().getDesignation();
         }
         return null;
-        
+
     }
-    
 
     /**
      * Utilise plutôt groupeClasseDTO dans la séquence.
-     * @param designation d
+     * 
+     * @param designation
+     *            d
      */
     @Deprecated
     public void setDesignationGroupe(String designation) {
@@ -466,32 +513,33 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Utilise plutôt groupeClasseDTO dans la séquence.
-     * @param designation d
+     * 
+     * @param designation
+     *            d
      */
     @Deprecated
     public void setDesignationClasse(String designation) {
         getSequenceDTO().getGroupesClassesDTO().setDesignation(designation);
     }
 
-   
-
     /**
      * Accesseur de designationGroupe {@link #designationGroupe}.
-     * @return retourne designationGroupe 
+     * 
+     * @return retourne designationGroupe
      */
     public String getDesignationGroupe() {
-        if (getSequenceDTO() != null && 
-                TypeGroupe.GROUPE == getSequenceDTO().getGroupesClassesDTO().getTypeGroupe()) {
+        if (getSequenceDTO() != null
+                && TypeGroupe.GROUPE == getSequenceDTO().getGroupesClassesDTO()
+                        .getTypeGroupe()) {
             return getSequenceDTO().getGroupesClassesDTO().getDesignation();
         }
         return null;
     }
 
-   
-
     /**
      * Accesseur de matiere {@link #matiere}.
-     * @return retourne matiere 
+     * 
+     * @return retourne matiere
      */
     public String getMatiere() {
         return matiere;
@@ -499,7 +547,9 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Mutateur de matiere {@link #matiere}.
-     * @param matiere the matiere to set
+     * 
+     * @param matiere
+     *            the matiere to set
      */
     public void setMatiere(String matiere) {
         this.matiere = matiere;
@@ -507,6 +557,7 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Accesseur de typeCouleur.
+     * 
      * @return le typeCouleur
      */
     public TypeCouleur getTypeCouleur() {
@@ -515,7 +566,9 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Mutateur de typeCouleur.
-     * @param typeCouleur le typeCouleur à modifier.
+     * 
+     * @param typeCouleur
+     *            le typeCouleur à modifier.
      */
     public void setTypeCouleur(TypeCouleur typeCouleur) {
         this.typeCouleur = typeCouleur;
@@ -523,6 +576,7 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Accesseur de files.
+     * 
      * @return le files
      */
     public List<FileUploadDTO> getFiles() {
@@ -531,14 +585,17 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Mutateur de files.
-     * @param files le files à modifier.
+     * 
+     * @param files
+     *            le files à modifier.
      */
     public void setFiles(List<FileUploadDTO> files) {
         this.files = files;
     }
-    
+
     /**
      * Accesseur de files.
+     * 
      * @return le files
      */
     public List<FileUploadDTO> getListeFichierJointDTO() {
@@ -547,7 +604,9 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Mutateur de files.
-     * @param files le files à modifier.
+     * 
+     * @param files
+     *            le files à modifier.
      */
     public void setListeFichierJointDTO(List<FileUploadDTO> files) {
         this.files = files;
@@ -555,6 +614,7 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Accesseur de pieceJointeSelectionne.
+     * 
      * @return le pieceJointeSelectionne
      */
     public FileUploadDTO getPieceJointeSelectionne() {
@@ -563,7 +623,9 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Mutateur de pieceJointeSelectionne.
-     * @param pieceJointeSelectionne le pieceJointeSelectionne à modifier.
+     * 
+     * @param pieceJointeSelectionne
+     *            le pieceJointeSelectionne à modifier.
      */
     public void setPieceJointeSelectionne(FileUploadDTO pieceJointeSelectionne) {
         this.pieceJointeSelectionne = pieceJointeSelectionne;
@@ -571,6 +633,7 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Accesseur de devoirs.
+     * 
      * @return le devoirs
      */
     public List<DevoirDTO> getDevoirs() {
@@ -579,7 +642,9 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Mutateur de devoirs.
-     * @param devoirs le devoirs à modifier.
+     * 
+     * @param devoirs
+     *            le devoirs à modifier.
      */
     public void setDevoirs(List<DevoirDTO> devoirs) {
         this.devoirs = devoirs;
@@ -587,6 +652,7 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Accesseur de devoirs.
+     * 
      * @return le devoirs
      */
     public List<DevoirDTO> getListeDevoirDTO() {
@@ -595,26 +661,26 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Mutateur de devoirs.
-     * @param devoirs le devoirs à modifier.
+     * 
+     * @param devoirs
+     *            le devoirs à modifier.
      */
     public void setListeDevoirDTO(List<DevoirDTO> devoirs) {
         this.devoirs = devoirs;
     }
 
-    
-
-
-
     /**
      * Valide qu'il existe un fond à utiliser.
+     * 
      * @return vrai sss il existe une couleur.
      */
-    public Boolean getHasBackground(){
-        return this.typeCouleur != null ;
+    public Boolean getHasBackground() {
+        return this.typeCouleur != null;
     }
-    
+
     /**
      * Retourne le type de jour correspondant à la date de la seance.
+     * 
      * @return un TypeJour
      */
     public TypeJour getTypeJour() {
@@ -623,28 +689,33 @@ public class SeanceDTO implements Serializable {
         }
         final GregorianCalendar queryCal = new GregorianCalendar();
         queryCal.setTime(date);
-        final TypeJour jour = TypeJour.getTypeJour(queryCal.get(Calendar.DAY_OF_WEEK));
-        return jour; 
+        final TypeJour jour = TypeJour.getTypeJour(queryCal
+                .get(Calendar.DAY_OF_WEEK));
+        return jour;
     }
-    
+
     /**
      * Retourne le TypeGroupe (classe ou groupe).
+     * 
      * @return groupe ou classe.
      */
     public TypeGroupe getTypeGroupe() {
-        if (getSequenceDTO() != null && getSequenceDTO().getGroupesClassesDTO() != null) {
+        if (getSequenceDTO() != null
+                && getSequenceDTO().getGroupesClassesDTO() != null) {
             return getSequenceDTO().getGroupesClassesDTO().getTypeGroupe();
         } else {
             log.error("Null type");
             return null;
         }
-        
+
     }
-    
-    
+
     /**
-     * Initialise une seance avec tout ce qui peut être recupere de la case de l'EDT.
-     * @param detail : une case de l'emploi du temps.
+     * Initialise une seance avec tout ce qui peut être recupere de la case de
+     * l'EDT.
+     * 
+     * @param detail
+     *            : une case de l'emploi du temps.
      */
     public void initFromEDT(final DetailJourEmploiDTO detail) {
         if (detail != null) {
@@ -652,31 +723,34 @@ public class SeanceDTO implements Serializable {
             this.setHeureFin(detail.getHeureFin());
             this.setMinuteDebut(detail.getMinuteDebut());
             this.setMinuteFin(detail.getMinuteFin());
-            
-            this.getSequenceDTO().setGroupesClassesDTO(detail.getGroupeOuClasse());
+
+            this.getSequenceDTO().setGroupesClassesDTO(
+                    detail.getGroupeOuClasse());
 
             this.getEnseignantDTO().setCivilite(detail.getCiviliteNomPrenom());
-            this.getSequenceDTO().setIdEnseignement(detail.getMatiere().getId());
+            this.getSequenceDTO()
+                    .setIdEnseignement(detail.getMatiere().getId());
         }
     }
-    
+
     /**
-     * Initialise les champ de la seance qui peuvent l'etre a partir 
-     * d'une sequence. 
-     * Les champs initialises sont :
-     * - code sequence
-     * - id sequence
-     * @param sequence la séquence
+     * Initialise les champ de la seance qui peuvent l'etre a partir d'une
+     * sequence. Les champs initialises sont : - code sequence - id sequence
+     * 
+     * @param sequence
+     *            la séquence
      */
     public void initFromSequence(final SequenceDTO sequence) {
-        if (sequence == null) { return; }
+        if (sequence == null) {
+            return;
+        }
         this.setSequenceDTO(sequence);
-        
-        
+
     }
 
     /**
      * Accesseur de annotations {@link #annotations}.
+     * 
      * @return retourne annotations
      */
     public String getAnnotations() {
@@ -685,7 +759,9 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Mutateur de annotations {@link #annotations}.
-     * @param annotations le annotations to set
+     * 
+     * @param annotations
+     *            le annotations to set
      */
     public void setAnnotations(String annotations) {
         this.annotations = annotations;
@@ -699,7 +775,8 @@ public class SeanceDTO implements Serializable {
     }
 
     /**
-     * @param emploiDeTempsDescription the emploiDeTempsDescription to set
+     * @param emploiDeTempsDescription
+     *            the emploiDeTempsDescription to set
      */
     public void setEmploiDeTempsDescription(String emploiDeTempsDescription) {
         this.emploiDeTempsDescription = emploiDeTempsDescription;
@@ -707,6 +784,7 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Accesseur de descriptionHTML {@link #descriptionHTML}.
+     * 
      * @return retourne descriptionHTML
      */
     public String getDescriptionHTML() {
@@ -715,7 +793,9 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Mutateur de descriptionHTML {@link #descriptionHTML}.
-     * @param descriptionHTML le descriptionHTML to set
+     * 
+     * @param descriptionHTML
+     *            le descriptionHTML to set
      */
     public void setDescriptionHTML(String descriptionHTML) {
         this.descriptionHTML = descriptionHTML;
@@ -723,6 +803,7 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Accesseur de annotationsHTML {@link #annotationsHTML}.
+     * 
      * @return retourne annotationsHTML
      */
     public String getAnnotationsHTML() {
@@ -731,7 +812,9 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Mutateur de annotationsHTML {@link #annotationsHTML}.
-     * @param annotationsHTML le annotationsHTML to set
+     * 
+     * @param annotationsHTML
+     *            le annotationsHTML to set
      */
     public void setAnnotationsHTML(String annotationsHTML) {
         this.annotationsHTML = annotationsHTML;
@@ -745,7 +828,8 @@ public class SeanceDTO implements Serializable {
     }
 
     /**
-     * @param descriptionPDF the descriptionPDF to set
+     * @param descriptionPDF
+     *            the descriptionPDF to set
      */
     public void setDescriptionPDF(String descriptionPDF) {
         this.descriptionPDF = descriptionPDF;
@@ -759,7 +843,8 @@ public class SeanceDTO implements Serializable {
     }
 
     /**
-     * @param enseignant the enseignant to set
+     * @param enseignant
+     *            the enseignant to set
      */
     public void setEnseignantDTO(EnseignantDTO enseignant) {
         this.enseignantDTO = enseignant;
@@ -771,13 +856,14 @@ public class SeanceDTO implements Serializable {
     public SequenceDTO getSequenceDTO() {
         return sequenceDTO;
     }
-    
+
     public SequenceDTO getSequence() {
         return sequenceDTO;
     }
 
     /**
-     * @param sequenceDTO the sequenceDTO to set
+     * @param sequenceDTO
+     *            the sequenceDTO to set
      */
     public void setSequenceDTO(SequenceDTO sequenceDTO) {
         this.sequenceDTO = sequenceDTO;
@@ -785,6 +871,7 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Accesseur de dateMaj {@link #dateMaj}.
+     * 
      * @return retourne dateMaj
      */
     public Date getDateMaj() {
@@ -793,7 +880,9 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Mutateur de dateMaj {@link #dateMaj}.
-     * @param dateMaj le dateMaj to set
+     * 
+     * @param dateMaj
+     *            le dateMaj to set
      */
     public void setDateMaj(Date dateMaj) {
         this.dateMaj = dateMaj;
@@ -801,6 +890,7 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Accesseur de visaDirecteur {@link #visaDirecteur}.
+     * 
      * @return retourne visaDirecteur
      */
     public VisaDTO getVisaDirecteur() {
@@ -809,7 +899,9 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Mutateur de visaDirecteur {@link #visaDirecteur}.
-     * @param visaDirecteur le visaDirecteur to set
+     * 
+     * @param visaDirecteur
+     *            le visaDirecteur to set
      */
     public void setVisaDirecteur(VisaDTO visaDirecteur) {
         this.visaDirecteur = visaDirecteur;
@@ -817,6 +909,7 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Accesseur de visaInspecteur {@link #visaInspecteur}.
+     * 
      * @return retourne visaInspecteur
      */
     public VisaDTO getVisaInspecteur() {
@@ -825,13 +918,54 @@ public class SeanceDTO implements Serializable {
 
     /**
      * Mutateur de visaInspecteur {@link #visaInspecteur}.
-     * @param visaInspecteur le visaInspecteur to set
+     * 
+     * @param visaInspecteur
+     *            le visaInspecteur to set
      */
     public void setVisaInspecteur(VisaDTO visaInspecteur) {
         this.visaInspecteur = visaInspecteur;
     }
 
-    
+    /**
+     * @return the accesEcriture
+     */
+    public Boolean getAccesEcriture() {
+        return accesEcriture;
+    }
+
+    /**
+     * @param accesEcriture the accesEcriture to set
+     */
+    public void setAccesEcriture(Boolean accesEcriture) {
+        this.accesEcriture = accesEcriture;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return "SeanceDTO [id=" + id + ", code=" + code + ", intitule="
+                + intitule + ", date=" + date + ", heureDebut=" + heureDebut
+                + ", minuteDebut=" + minuteDebut + ", heureFin=" + heureFin
+                + ", minuteFin=" + minuteFin + ", description=" + description
+                + ", descriptionHTML=" + descriptionHTML + ", descriptionPDF="
+                + descriptionPDF + ", annotations=" + annotations
+                + ", annotationsHTML=" + annotationsHTML + ", sequenceDTO="
+                + sequenceDTO + ", enseignantDTO=" + enseignantDTO
+                + ", matiere=" + matiere + ", typeCouleur=" + typeCouleur
+                + ", emploiDeTempsDescription=" + emploiDeTempsDescription
+                + ", files=" + files + ", pieceJointeSelectionne="
+                + pieceJointeSelectionne + ", devoirs=" + devoirs
+                + ", dateMaj=" + dateMaj + ", visaDirecteur=" + visaDirecteur
+                + ", visaInspecteur=" + visaInspecteur + ", accesEcriture="
+                + accesEcriture + "] dateMaj " + (dateMaj == null ? '-' : dateMaj.getTime());
+    }
 
     
+
+  
+    
+   
+
 }

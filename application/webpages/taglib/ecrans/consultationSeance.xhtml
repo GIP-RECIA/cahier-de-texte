@@ -44,6 +44,11 @@
 	    <h:outputLabel styleClass="libelle" value="Intitulé :" />
 	    <h:outputText value="#{seanceDetail.intitule}" />
 	    <t:div rendered="#{afficheFromVisa}" >
+            <t:div rendered="#{seanceDetail.idEnseignant ne seanceDetail.sequenceDTO.idEnseignant}">
+                
+                <h:outputLabel styleClass="libelle" value="Enseignant remplacé :"/>
+                <h:outputText value="#{seanceDetail.sequenceDTO.enseignantDTO.nomComplet}" />
+            </t:div>
 		    <h:outputLabel styleClass="libelle" value="Dernière modification :"/>
 		    <h:outputText style="text-align: center; #{seanceDetail.alerteDateMaj ? 'background-color: #ff0000;' : ''}"
 		                  value="#{cr:formatDate(seanceDetail.dateMaj,'dd/MM/yyyy')}" />

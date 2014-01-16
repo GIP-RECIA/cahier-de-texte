@@ -7,6 +7,7 @@
 
 package org.crlr.test.services;
 
+import static org.junit.Assert.*;
 import java.util.List;
 
 import org.crlr.dto.ResultatDTO;

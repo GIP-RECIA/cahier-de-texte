@@ -26,9 +26,9 @@ import org.crlr.dto.application.base.Profil;
 import org.crlr.dto.application.base.TypeSkin;
 import org.crlr.dto.application.base.UtilisateurDTO;
 import org.crlr.exception.base.CrlrRuntimeException;
-import org.crlr.log.Log;
-import org.crlr.log.LogFactory;
 import org.crlr.utils.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.DistinguishedName;
@@ -56,7 +56,7 @@ public class LdapBusiness implements LdapBusinessService, InitializingBean {
     private static Map<String, TypeSkin> mapCgSkin = new HashMap<String, TypeSkin>();
     
     /** Logger */
-    protected final Log log = LogFactory.getLog(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     /**
      * Methode appellée lors de l'initialisation de la classe.
@@ -106,7 +106,7 @@ public class LdapBusiness implements LdapBusinessService, InitializingBean {
         final DistinguishedName dn = new DistinguishedName();
         dn.add("ou", branchePersonne);
         
-        log.debug("Recherche de l'utilisateur avec le filtre uid={0}", id);
+        log.debug("Recherche de l'utilisateur avec le filtre uid={}", id);
 
         return (UtilisateurDTO) ldapTemplate.search(dn, "uid=" + id,
                                                     new EntryAttributesMapperUtilisateurDTO(environnement,
@@ -283,7 +283,7 @@ public class LdapBusiness implements LdapBusinessService, InitializingBean {
             final UserDTO userDTO = new UserDTO();
 
             userDTO.setUid(attrs.get("uid").get().toString());
-            log.debug("Mappage de l'utilisateur avec l'uid uid={0}", userDTO.getUid());
+            log.debug("Mappage de l'utilisateur avec l'uid uid={}", userDTO.getUid());
             userDTO.setNom(attrs.get("sn").get().toString());
             userDTO.setPrenom(attrs.get("givenName").get().toString());
 
@@ -307,6 +307,8 @@ public class LdapBusiness implements LdapBusinessService, InitializingBean {
 
             utilisateurDTO.setCivilite(civilite);
 
+            log.debug("Gestion de skin");
+            
             //gestion des valeurs propres à un environnement.
             switch (environnement) {
                 case CRLR:
@@ -321,6 +323,7 @@ public class LdapBusiness implements LdapBusinessService, InitializingBean {
                     break;
                 case Aquitaine:
                     gestionProfilCRC(attrs, utilisateurDTO);
+                    log.debug("Mettre skin de l'aquitaine");
                   //skin statique
                     utilisateurDTO.setTypeSkin(TypeSkin.AQUITAINE);
                     break;
@@ -330,7 +333,7 @@ public class LdapBusiness implements LdapBusinessService, InitializingBean {
                                                    environnement.name());
             }
 
-            log.debug("Fin du mappage de l'utilisateur avec l'uid uid={0}", userDTO.getUid());
+            log.debug("Fin du mappage de l'utilisateur avec l'uid uid={}", userDTO.getUid());
             return utilisateurDTO;
         }
 

@@ -50,11 +50,13 @@ public class ContexteUtilisateur implements Serializable {
 
     /**
      * Dto des informations de l'utilisateur.
+     * Dans le cas d'un remplaçement, ce champ contient le remplacé. 
      */
     private UtilisateurDTO utilisateurDTO;
 
     /** 
-     * Infos de l'utilisateur qui s'est réellement connecté.
+     * Infos de l'utilisateur qui s'est réellement connecté (le remplaçant).
+     * 
      * ce champ est renseigné lorsque le directeur est passé en mode simulation d'un eleve :
      * - ce champ contient les infos du directeur,
      * - les infos de l'eleve choisi sont stocké dans le champ utilisateurDTO 
@@ -329,4 +331,17 @@ public class ContexteUtilisateur implements Serializable {
         this.utilisateurDTOOrigine = utilisateurDTOOrigine;
     }
     
+    /**
+     * Retourne l'UtilisateurDTO qui est reellement connecte. 
+     * En mode simulation ou remplacement, on recupere le utilisateurDTOOrigine 
+     * sinon c'est le utilisateurDTO.
+     * @return UtilisateurDTO
+     */
+    public UtilisateurDTO getUtilisateurDTOConnecte() {
+        if (this.utilisateurDTOOrigine != null) {
+            return this.utilisateurDTOOrigine;
+        } else {
+            return this.utilisateurDTO;
+        }
+    }
 }

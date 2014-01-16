@@ -9,13 +9,15 @@ package org.crlr.dto.application.base;
 
 import java.io.Serializable;
 
+import com.google.common.collect.ComparisonChain;
+
 /**
  * Fichier de stockage.
  *
  * @author breytond.
  * @version $Revision: 1.3 $
   */
-public class FichierStockageDTO implements Serializable {
+public class FichierStockageDTO implements Serializable, Comparable<FichierStockageDTO> {
     /** Serial UID. */
     private static final long serialVersionUID = -6236127360926292999L; 
 
@@ -127,6 +129,16 @@ public class FichierStockageDTO implements Serializable {
      */
     public String toString() {
         return nom;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     */
+    @Override
+    public int compareTo(FichierStockageDTO o) {
+        
+        return ComparisonChain.start().compare(cheminComplet, o.cheminComplet)
+                .compare(type,o.type).result();
     }
     
     

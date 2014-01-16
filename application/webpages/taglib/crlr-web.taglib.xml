@@ -326,6 +326,10 @@
         <source>ecrans/tableauPlanningColonne.xhtml</source>
     </tag>
     <tag>
+        <tag-name>devoirColonne</tag-name>
+        <source>ecrans/devoirColonne.xhtml</source>
+    </tag>
+    <tag>
         <tag-name>seanceSemaineColonne</tag-name>
         <source>ecrans/seanceSemaineColonne.xhtml</source>
     </tag>

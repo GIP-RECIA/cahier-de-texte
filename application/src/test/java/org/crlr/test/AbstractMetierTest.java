@@ -8,6 +8,10 @@
 package org.crlr.test;
 
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -29,28 +33,36 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
-import org.crlr.log.Log;
-import org.crlr.log.LogFactory;
 import org.crlr.message.ConteneurMessage;
 import org.crlr.message.Message;
 import org.crlr.utils.Chrono;
 import org.crlr.utils.IOUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * Classe de base pour tests unitaires des services métier.
  *
  * @author breytond
  */
+@RunWith(SpringJUnit4ClassRunner.class)
+///spring-dao.xml",
+@ContextConfiguration(locations={"/spring-domain.xml", "/test-config.xml"})
 public abstract class AbstractMetierTest
-    extends AbstractDependencyInjectionSpringContextTests {
+    extends AbstractJUnit4SpringContextTests {
     /** Chemin du package de la classe. */
-    private static final String PACKAGE_ROOT_PATH =
-        '/' + AbstractMetierTest.class.getPackage().getName().replace('.', '/');
+    //public static final String PACKAGE_ROOT_PATH =
+     //   '/' + AbstractMetierTest.class.getPackage().getName().replace('.', '/');
 
     /** log. */
-    protected final Log log = LogFactory.getLog(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     /** jdbcTemplate permettant d'effectuer des requêtes. */
     protected SimpleJdbcTemplate jdbcTemplate;
@@ -71,21 +83,9 @@ public abstract class AbstractMetierTest
      */
     protected AbstractMetierTest() {
         super();
-        setAutowireMode(AUTOWIRE_BY_NAME);
+       // setAutowireMode(super.AUTOWIRE_BY_NAME);
     }
 
-    /**
-     * Chargement de la configuration Spring.
-     *
-     * @return le tableau de configuration.
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[] {
-                   "classpath:/spring-dao.xml", "classpath:/spring-domain.xml",
-                   PACKAGE_ROOT_PATH + "/test-config.xml",
-               };
-    }
 
     /**
      * Initialisation de l'instance de la classe de test avant les appels
@@ -93,8 +93,8 @@ public abstract class AbstractMetierTest
      *
      * @throws Exception exception.
      */
-    @Override
-    protected final void onSetUp() throws Exception {
+    @Before
+    public final void onSetUp() throws Exception {
         // Lancement du chrono si utilisé
         if (useChrono) {
             chrono.start();
@@ -106,8 +106,8 @@ public abstract class AbstractMetierTest
      *
      * @throws Exception exception.
      */
-    @Override
-    protected final void onTearDown() throws Exception {
+    @After
+    public final void onTearDown() throws Exception {
         doTearDown();
 
         jdbcTemplate = null;
@@ -115,7 +115,7 @@ public abstract class AbstractMetierTest
         // Arret du chrono si utilisé et affichage du temps passé
         if (useChrono) {
             chrono.stop();
-            log.debug("Temps passé dans le service : {0} ms", chrono.getElapsed());
+            log.debug("Temps passé dans le service : {} ms", chrono.getElapsed());
             chrono.reset();
         }
     }
@@ -146,8 +146,8 @@ public abstract class AbstractMetierTest
      * @param expected DOCUMENT ME!
      * @param test DOCUMENT ME!
      */
-    protected void assertEquals(Date expected, Date test) {
-        super.assertEquals(org.apache.commons.lang.time.DateUtils.round(expected, Calendar.DATE),
+    protected void assertEqualsDate(Date expected, Date test) {
+        assertEquals(org.apache.commons.lang.time.DateUtils.round(expected, Calendar.DATE),
                 org.apache.commons.lang.time.DateUtils.round(test, Calendar.DATE));
     }
     
@@ -194,9 +194,9 @@ public abstract class AbstractMetierTest
                     sb.append(valeur);
                     sb.append("',\t");
                 } catch (IllegalArgumentException e) {
-                    log.error(e, "Erreur à la récupération de l'attribut");
+                    log.error("Erreur à la récupération de l'attribut",e);
                 } catch (IllegalAccessException e) {
-                    log.error(e, "Erreur à la récupération de l'attribut");
+                    log.error("Erreur à la récupération de l'attribut", e);
                 }
             }
             sb.append("\n");
@@ -267,9 +267,9 @@ public abstract class AbstractMetierTest
                     }
                     donneesClasse.get(field)[i] = valeurString;
                 } catch (IllegalArgumentException e) {
-                    log.error(e, "afficherListe");
+                    log.error("afficherListe", e);
                 } catch (IllegalAccessException e) {
-                   log.error(e, "afficherListe");
+                   log.error("afficherListe",e );
                 }
             }
         }
@@ -431,9 +431,9 @@ public abstract class AbstractMetierTest
                 sb.append(valeurString);
                 sb.append("\n");
             } catch (IllegalArgumentException e) {
-               log.error(e, "afficherObjet");
+               log.error( "afficherObjet",e);
             } catch (IllegalAccessException e) {
-                log.error(e, "afficherObjet");
+                log.error( "afficherObjet",e);
             }
         }
         log.debug(sb.toString());

@@ -43,8 +43,14 @@ public class VisaDTO {
     /** id du visa. */
     private Integer id;
     
-    /** Id Enseignant. */
+    /** Id de l'enseignant normal (correspondant à la sequence). */
     private Integer  idEnseignant;
+    
+    /** Id de l'enseignant qui est vise. Dans le cas normal, doit être egal à idEnseignant. 
+     * Pour un remplacement :
+     *     idEnseignant = enseignant absent et idEnseignantVisa = enseignant reamplaçant qui est vise. 
+     */
+    private Integer idEnseignantVisa; 
 
     /** Id Etablissement. */
     private Integer  idEtablissement;
@@ -213,6 +219,23 @@ public class VisaDTO {
         this.idEnseignant = idEnseignant;
     }
 
+    
+    /**
+     * Accesseur de idEnseignantVisa {@link #idEnseignantVisa}.
+     * @return retourne idEnseignantVisa
+     */
+    public Integer getIdEnseignantVisa() {
+        return idEnseignantVisa;
+    }
+
+    /**
+     * Mutateur de idEnseignantVisa {@link #idEnseignantVisa}.
+     * @param idEnseignantVisa le idEnseignantVisa to set
+     */
+    public void setIdEnseignantVisa(Integer idEnseignantVisa) {
+        this.idEnseignantVisa = idEnseignantVisa;
+    }
+
     /**
      * Accesseur de idEtablissement {@link #idEtablissement}.
      * @return retourne idEtablissement
@@ -287,6 +310,21 @@ public class VisaDTO {
      */
     public void setEnseignementDTO(EnseignementDTO enseignementDTO) {
         this.enseignementDTO = enseignementDTO;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return "VisaDTO [id=" + id + ", idEnseignant=" + idEnseignant
+                + ", idEnseignantVisa=" + idEnseignantVisa
+                + ", idEtablissement=" + idEtablissement + ", classeGroupe="
+                + classeGroupe + ", enseignementDTO=" + enseignementDTO
+                + ", dateMaj=" + dateMaj + ", dateVisa=" + dateVisa
+                + ", typeVisa=" + typeVisa + ", profil=" + profil
+                + ", estModifie=" + estModifie + ", estPerime=" + estPerime
+                + "] dateMaj " + (dateMaj == null ? '-' : dateMaj.getTime());
     }
     
     

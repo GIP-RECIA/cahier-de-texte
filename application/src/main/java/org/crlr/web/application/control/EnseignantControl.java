@@ -38,14 +38,10 @@ import org.springframework.util.CollectionUtils;
  * Sous controleur pour l'IHM de sélection de classe / groupe.
  * 
  */
-@ManagedBean(name = "enseignant")
-@ViewScoped
 public class EnseignantControl extends AbstractControl<EnseignantForm> {
     
-    @ManagedProperty(value="#{sequenceService}")
     protected transient SequenceService sequenceService;
     
-    @ManagedProperty(value="#{groupeClasseService}")
     protected transient GroupeClasseService groupeClasseService;
     
     /**
@@ -56,13 +52,7 @@ public class EnseignantControl extends AbstractControl<EnseignantForm> {
         listener = null;
     }
 
-    
-
-
-    
     private EnseignantListener listener;
-
-    
  
     /**
      * @author G-CG34-FRMP
@@ -132,7 +122,10 @@ public class EnseignantControl extends AbstractControl<EnseignantForm> {
      * Clone la valeur de l'objet enseignant de la recherche.
      */
     public void selectionnerEnseignant() {
+        
         form.setEnseignantSelectionne(ObjectUtils.clone(form.getEnseignantSelectionne()));
+        
+        log.debug("EnseignantControl ens {} form {}", form.getEnseignantSelectionne(), form );
         form.setFiltreEnseignant("");
                 
         if (listener != null) {
@@ -270,8 +263,7 @@ public class EnseignantControl extends AbstractControl<EnseignantForm> {
         this.groupeClasseService = groupeClasseService;
     }
 
-  
-
+   
    
 
 }

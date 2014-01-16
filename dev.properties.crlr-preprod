@@ -1,0 +1,8 @@
+dist.name.base = CRLR_CAHIER-DE-TEXTE
+
+vserver.machine.address = FRMP0154.frml.bull.fr
+entarchive.machine.address = FRMP0133.frml.bull.fr
+
+#archives.dir = /opt/ArchivesLEA
+vserver.dir = /opt
+

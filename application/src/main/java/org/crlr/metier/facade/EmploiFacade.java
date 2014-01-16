@@ -251,6 +251,13 @@ public class EmploiFacade implements EmploiFacadeService {
                                     DateUtils.formatTime(etablissement.getHeureFin(), 
                                             0)));
                 }
+                
+                if( ! org.apache.commons.lang.StringUtils.isEmpty(detailJourEmploiDTO.getCodeSalle()) && detailJourEmploiDTO.getCodeSalle().length() > 15) {
+                    cm.add(new Message(TypeReglesEmploi.EMPLOI_16.name(),
+                    		detailJourEmploiDTO.getJour(), 
+                            DateUtils.formatTime(detailJourEmploiDTO.getHeureDebut(), detailJourEmploiDTO.getMinuteDebut()),
+                            DateUtils.formatTime(detailJourEmploiDTO.getHeureFin(), detailJourEmploiDTO.getMinuteFin()) ));
+                }
             }
         }
 
@@ -334,10 +341,8 @@ public class EmploiFacade implements EmploiFacadeService {
         Assert.isNotNull("dateFin", dateFin);
 
         // recherche des
-        final Set<Integer> listeIdSequenceEtab = sequenceHibernateBusinessService
-                .findSequenceEtablissement(idEtablissement, idEnseignant);
         return seanceHibernateBusinessService.findSeanceSemaine(dateDebut,
-                dateFin, idEnseignant, listeIdSequenceEtab);
+                dateFin, idEnseignant, idEtablissement);
     }
 
     /**

@@ -67,6 +67,9 @@ public class DevoirFacade implements DevoirFacadeService {
 
     @Autowired
     private SequenceFacadeService sequenceFacadeService;
+    
+    @Autowired
+    private SeanceFacadeService seeanceFacadeService;
 
     /** DOCUMENTATION INCOMPLETE! */
     @Autowired
@@ -179,7 +182,10 @@ public class DevoirFacade implements DevoirFacadeService {
         }
     
 
-        return devoirHibernateBusinessService.listeDevoirAffichage(rechercheDevoirQO);
+        ResultatDTO<List<ResultatRechercheDevoirDTO>> resultat =
+                devoirHibernateBusinessService.listeDevoirAffichage(rechercheDevoirQO);
+        
+        return resultat;
     }
     
     /**
@@ -276,15 +282,25 @@ public class DevoirFacade implements DevoirFacadeService {
         final Integer idEnseignant = rechercheDevoirQO.getIdEnseignant();
         final Integer idEleve = rechercheDevoirQO.getIdEleve();
         
+        final ResultatDTO<List<ResultatRechercheDevoirDTO>> resultat;
+        
         if(idInspecteur != null){
-            return listeDevoirAffichageInspecteur(rechercheDevoirQO);
+            resultat = listeDevoirAffichageInspecteur(rechercheDevoirQO);
         } else if(idEnseignant != null) {
-            return listeDevoirAffichageEnseignant(rechercheDevoirQO);
+            resultat = listeDevoirAffichageEnseignant(rechercheDevoirQO);
         } else if(idEleve != null) {
-            return listeDevoirAffichageEleve(rechercheDevoirQO);
+            resultat = listeDevoirAffichageEleve(rechercheDevoirQO);
+        } else {
+            resultat = null;
         }
         
-        return null;
+        if (resultat != null) {
+            for (ResultatRechercheDevoirDTO devoir : resultat.getValeurDTO()) {
+                seeanceFacadeService.mettreDroitsAccess(rechercheDevoirQO.getIdEnseignantConnecte(), devoir.getSeance());
+            }
+        }
+        
+        return resultat;
     }
     
     /**
@@ -300,7 +316,15 @@ public class DevoirFacade implements DevoirFacadeService {
             final List<GroupeBean> groupes = groupeHibernateBusinessService.findGroupesEleve(rechercheSeanceQO.getIdEleve());
             rechercheSeanceQO.setListeGroupeBean(groupes);
         }
-        return devoirHibernateBusinessService.findDevoirForPlanning(rechercheSeanceQO);
+        
+        ResultatDTO<List<DevoirDTO>> resultat =
+                devoirHibernateBusinessService.findDevoirForPlanning(rechercheSeanceQO);
+        
+        for (DevoirDTO devoir : resultat.getValeurDTO()) {
+            seeanceFacadeService.mettreDroitsAccess(rechercheSeanceQO.getIdEnseignantConnecte(), devoir.getSeance());
+        }
+        
+        return resultat;
         
     }
 

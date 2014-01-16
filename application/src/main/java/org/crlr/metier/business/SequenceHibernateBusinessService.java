@@ -127,19 +127,6 @@ public interface SequenceHibernateBusinessService {
                             throws MetierException;
 
     /**
-     * Permet de vérifier les droits sur une séquence.
-     *
-     * @param idEnseignant id l'enseignant.
-     * @param idSequence id de la séquence.
-     *
-     * @return true ou false
-     *
-     * @throws MetierException Exception
-     */
-    public boolean checkDroitSequence(Integer idEnseignant, Integer idSequence)
-                               throws MetierException;
-
-    /**
      * Controle l'unicité d'une séquence (enseignant, enseignement,
      * classe/groupe, intitulé).
      *

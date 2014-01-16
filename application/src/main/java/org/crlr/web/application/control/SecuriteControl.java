@@ -10,6 +10,10 @@ package org.crlr.web.application.control;
 
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.ManagedProperty;
+import javax.faces.bean.RequestScoped;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 
@@ -25,8 +29,6 @@ import org.crlr.dto.application.base.UtilisateurDTO;
 import org.crlr.dto.securite.AuthentificationQO;
 import org.crlr.dto.securite.TypeAuthentification;
 import org.crlr.exception.metier.MetierException;
-import org.crlr.log.Log;
-import org.crlr.log.LogFactory;
 import org.crlr.message.Message;
 import org.crlr.services.ConfidentialiteService;
 import org.crlr.services.PreferencesService;
@@ -42,29 +44,38 @@ import org.crlr.web.utils.FacesUtils;
 import org.crlr.web.utils.MessageUtils;
 import org.crlr.web.utils.NavigationUtils;
 import org.jasig.cas.client.authentication.AttributePrincipal;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Gestion du formulaire d'authentification.
  *
  * @author breytond.
  */
+@ManagedBean(name = "securite")
+@RequestScoped
 public class SecuriteControl extends AbstractControl<SecuriteForm> {
     
-    protected final Log log = LogFactory.getLog(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     /** The contexte utilisateur. */
+    @ManagedProperty(value = "#{contexteUtilisateur}")
     private ContexteUtilisateur contexteUtilisateur;
 
     /** confidentialiteService. */
+    @ManagedProperty(value = "#{confidentialiteService}")
     private transient ConfidentialiteService confidentialiteService;
 
     /** Le service d'acces aux preferences de l'utilisateur. */
+    @ManagedProperty(value = "#{preferencesService}")
     private transient PreferencesService preferencesService;
     
     /** The menu control. */
+    @ManagedProperty(value = "#{menu}")
     private MenuControl menuControl;
     
     /** The skin control. */
+    @ManagedProperty(value = "#{skin}")
     private SkinControl skinControl;
     
     
@@ -170,7 +181,7 @@ public class SecuriteControl extends AbstractControl<SecuriteForm> {
     /**
      * {@inheritDoc}
      */
-    
+    @PostConstruct
     public void onLoad() {
                 
         final ExternalContext g = FacesContext.getCurrentInstance().getExternalContext();
@@ -182,8 +193,10 @@ public class SecuriteControl extends AbstractControl<SecuriteForm> {
         
         //Authentification CAS permet de ne pas s'auhentifier en base.
         if (!org.apache.commons.lang.StringUtils.isEmpty(casUser)) {
-            log.debug("Connexion effectuée via CAS : {0}", casUser);
+            log.debug("Connexion effectuée via CAS : {}", casUser);
             initialiseEtRedirige(casUser);
+        } else {
+            log.debug("casUser est vide");
         }
         //Message du securityPhaseListener
         final Message message = (Message)g.getApplicationMap().get("Message");
@@ -216,7 +229,7 @@ public class SecuriteControl extends AbstractControl<SecuriteForm> {
         try {
             final ResultatDTO<UtilisateurDTO> resultat = confidentialiteService.initialisationAuthentification(criteres);
             initialiserContexteUtilisateur(resultat.getValeurDTO(), casUser);
-            log.info("Connexion de l'utilisateur déjà effectuée via CAS : {0}", casUser);
+            log.info("Connexion de l'utilisateur déjà effectuée via CAS : {}", casUser);
             final ContexteUtilisateur contexteUtilisateur = ContexteUtils.getContexteUtilisateur();
             final UtilisateurDTO utilisateurDTO = contexteUtilisateur.getUtilisateurDTO();
             if (!BooleanUtils.isTrue(utilisateurDTO.getVraiOuFauxAdmCentral())) {
@@ -257,7 +270,7 @@ public class SecuriteControl extends AbstractControl<SecuriteForm> {
                 FacesUtils.redirect("/ecrans/application/preferenceCahier.xhtml");
             }
         } catch (MetierException e) {
-            log.debug("{0}", e.getMessage());
+            log.warn("{}", e);
             contexteUtilisateur.reset();         
         }
         
@@ -305,6 +318,7 @@ public class SecuriteControl extends AbstractControl<SecuriteForm> {
         }
         
         final TypeSkin typeSkin = utilisateurDTO.getTypeSkin();
+        log.debug("TypeSkin {}", typeSkin);
         if (typeSkin != null) {
             skinControl.init(typeSkin);
         }

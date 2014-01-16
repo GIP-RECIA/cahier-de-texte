@@ -17,13 +17,14 @@ import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
-import org.crlr.log.Log;
-import org.crlr.log.LogFactory;
+
 import org.crlr.message.ConteneurMessage;
 import org.crlr.message.Message;
 import org.crlr.utils.Assert;
 import org.crlr.utils.ObjectUtils;
 import org.crlr.web.servlet.listener.MessagesValidationListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
 /**
@@ -32,7 +33,7 @@ import org.springframework.util.CollectionUtils;
  * @author breytond
  */
 public final class MessageUtils {
-    protected static final Log log = LogFactory.getLog(MessageUtils.class);
+    protected static final Logger log = LoggerFactory.getLogger(MessageUtils.class);
     
 /**
  * 
@@ -183,7 +184,9 @@ public final class MessageUtils {
         final FacesMessage facesMessage = generateMessage(msg, clazz);
         if (facesMessage != null) {
             fc.addMessage(null, facesMessage);
-            log.error("adding faces message ", fc.toString());
+            log.debug("adding faces message {} ", facesMessage.getDetail());
+        } else {
+            log.error("facesMessages est null");
         }
     }
     
@@ -195,20 +198,20 @@ public final class MessageUtils {
      * @return le message.
      */
     private static <T> FacesMessage generateMessage(final Message msg, final Class<T> clazz) {
-        final Log log = LogFactory.getLog(clazz);
+        
         final FacesMessage facesMsg = convert(msg);
         if (facesMsg == null) {
-            log.warning("Message non traité : {0}", msg);
+            log.warn("Message non traité : {}", msg);
             return facesMsg;
         }
 
-        log.debug("Ajout du message : {0}", msg);
+        log.debug("Ajout du message : {}", msg);
         final FacesContext fc = FacesContext.getCurrentInstance();
         for (final Iterator<FacesMessage> i = fc.getMessages(); i.hasNext();) {
             final FacesMessage tmpFacesMsg = i.next();
             if (equals(tmpFacesMsg, facesMsg)) {
                 log.debug("Le message a déjà été traité " +
-                               "(il ne sera pas ajouté une seconde fois) : {0}", msg);
+                               "(il ne sera pas ajouté une seconde fois) : {}", msg);
                 return null;
             }
         }
@@ -258,7 +261,7 @@ public final class MessageUtils {
      */
     private static <T> Set<FacesMessage> handleMessages(final ConteneurMessage cm, final Exception e, final Class<T> clazz) {
         final Set<FacesMessage> messages = new HashSet<FacesMessage>();
-        final Log log = LogFactory.getLog(clazz);
+        
         if ((cm == null) || (cm.size() == 0)) {
             if (e != null) {
                 final Message msg =
@@ -273,7 +276,7 @@ public final class MessageUtils {
             return messages;
         }
 
-        log.info("Traitement des messages du conteneur : {0}", cm);
+        log.info("Traitement des messages du conteneur : {}", cm);
 
         for (final Message msg : cm) {
             final FacesMessage facesMessage = generateMessage(msg, clazz);

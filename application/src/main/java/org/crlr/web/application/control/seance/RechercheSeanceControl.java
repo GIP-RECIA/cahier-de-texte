@@ -166,6 +166,9 @@ AbstractPopupControl<RechercheSeanceForm> implements EnseignementListener, Class
             ContexteUtils.getContexteUtilisateur().getUtilisateurDTO().getIdEtablissement();
         form.getCriteres().setIdEtablissement(idEtablissement);
 
+        form.getCriteres().setIdEnseignantConnecte(ContexteUtils.getContexteUtilisateur().getUtilisateurDTOConnecte().getUserDTO().getIdentifiant());
+        
+        
         form.getCriteres().setGroupeClasseSelectionne(classeGroupeControl.getForm().getGroupeClasseSelectionne());
         
         try {

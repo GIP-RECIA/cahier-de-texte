@@ -75,6 +75,15 @@ public class SeanceDelegate implements SeanceService {
     /**
      * {@inheritDoc}
      */
+    public ResultatDTO<Integer> saveListeSeance(List<SaveSeanceQO> listeSeanceQO) 
+                       throws MetierException {
+        return seanceFacadeService.saveListeSeance(listeSeanceQO);
+    }
+    
+    
+    /**
+     * {@inheritDoc}
+     */
     public ResultatDTO<Integer> deleteSeance(SeanceDTO resultatRechercheSeanceDTO)
                       throws MetierException {
         return seanceFacadeService.deleteSeance(resultatRechercheSeanceDTO);

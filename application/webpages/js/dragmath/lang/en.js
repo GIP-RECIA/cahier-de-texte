@@ -1,4 +1,4 @@
-﻿CKEDITOR.plugins.setLang("dragmath","en",{
+CKEDITOR.plugins.setLang("dragmath","en",{
   dragmath:
     {
 	 title:'Dragmath',

@@ -6,35 +6,73 @@
 	version="1.0">
 
 	<persistence-unit name="CahierTexte" transaction-type="RESOURCE_LOCAL">
+        
+        <exclude-unlisted-classes>true</exclude-unlisted-classes>
 		<provider>org.hibernate.ejb.HibernatePersistence</provider>
-		<class>org.crlr.metier.entity.AnneeScolaireBean</class>
+        
+       <!--  <class>org.crlr.metier.entity.</class>   -->
+        
+        <class>org.crlr.metier.entity.AnneeScolaireBean</class>
+        <class>org.crlr.metier.entity.ArchiveDevoirBean</class>
+        <class>org.crlr.metier.entity.ArchivePiecesJointesDevoirsBean</class>
+        <class>org.crlr.metier.entity.ArchivePiecesJointesSeancesBean</class>
+		
+        <class>org.crlr.metier.entity.ArchiveSeanceBean</class>
+        <class>org.crlr.metier.entity.ClasseBean</class>
+        <class>org.crlr.metier.entity.CycleBean</class>
+        <class>org.crlr.metier.entity.CycleDevoirBean</class>
+        <class>org.crlr.metier.entity.CycleGroupeBean</class>
+        <class>org.crlr.metier.entity.CycleSeanceBean</class>
+        
 		<class>org.crlr.metier.entity.DevoirBean</class>
+        <class>org.crlr.metier.entity.EleveBean</class>
 		<class>org.crlr.metier.entity.ElevesClassesBean</class>
 		<class>org.crlr.metier.entity.ElevesGroupesBean</class>
+        
+        <class>org.crlr.metier.entity.EmploiBean</class>
+        
 		<class>org.crlr.metier.entity.EnseignantBean</class>
+        <class>org.crlr.metier.entity.EnseignantsClassesBean</class>
 		<class>org.crlr.metier.entity.EnseignantsEnseignementsBean</class>
+        <class>org.crlr.metier.entity.EnseignantsGroupesBean</class>
+        
 		<class>org.crlr.metier.entity.EnseignementBean</class>
-		<class>org.crlr.metier.entity.EleveBean</class>
+        
+        <class>org.crlr.metier.entity.EnseignementLibelleBean</class>
+		
 		<class>org.crlr.metier.entity.EtablissementBean</class>
 		<class>org.crlr.metier.entity.EtablissementsElevesBean</class>
 		<class>org.crlr.metier.entity.EtablissementsEnseignantsBean</class>
-		<class>org.crlr.metier.entity.SeanceBean</class>
-		<class>org.crlr.metier.entity.ClasseBean</class>
+				
 		<class>org.crlr.metier.entity.GroupeBean</class>
 		<class>org.crlr.metier.entity.GroupesClassesBean</class>
+        <class>org.crlr.metier.entity.InspecteurBean</class>
+        <class>org.crlr.metier.entity.OuvertureInspecteurBean</class>
+        
+        <class>org.crlr.metier.entity.PeriodeEmploiBean</class>
+        
 		<class>org.crlr.metier.entity.PieceJointeBean</class>
+        
+        <class>org.crlr.metier.entity.PiecesJointesCycleDevoirsBean</class>
+        
+        <class>org.crlr.metier.entity.PiecesJointesCycleSeancesBean</class>
+        
+        <class>org.crlr.metier.entity.PiecesJointesDevoirsBean</class>
+        
+        <class>org.crlr.metier.entity.PiecesJointesSeancesBean</class>
+        
+        <class>org.crlr.metier.entity.PreferencesBean</class>
+        <class>org.crlr.metier.entity.RemplacementBean</class>
+        
+        <class>org.crlr.metier.entity.SeanceBean</class>
 		<class>org.crlr.metier.entity.SequenceBean</class>
 		<class>org.crlr.metier.entity.TypeDevoirBean</class>
-		<class>org.crlr.metier.entity.EnseignantsClassesBean</class>
-		<class>org.crlr.metier.entity.EnseignantsGroupesBean</class>
-		<class>org.crlr.metier.entity.PiecesJointesSeancesBean</class>
-		<class>org.crlr.metier.entity.PiecesJointesDevoirsBean</class>
-		<class>org.crlr.metier.entity.EnseignementLibelleBean</class>
-		<class>org.crlr.metier.entity.EmploiBean</class>
-		<class>org.crlr.metier.entity.PreferencesBean</class>
-		<class>org.crlr.metier.entity.InspecteurBean</class>
-		<class>org.crlr.metier.entity.OuvertureInspecteurBean</class>
-        <class>org.crlr.metier.entity.PeriodeEmploiBean</class>
-        <class>org.crlr.metier.entity.VisaBean</class>
+		
+		<class>org.crlr.metier.entity.VisaBean</class>
+        <class>org.crlr.metier.entity.VisaSeanceBean</class>
+        <properties>
+            <property name="hibernate.archive.autodetection" value=""/>
+            <property name="hibernate.show_sql" value="true" />
+          </properties>
 	</persistence-unit>
 </persistence>

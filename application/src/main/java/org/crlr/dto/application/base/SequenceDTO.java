@@ -13,6 +13,7 @@ import java.util.Date;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.crlr.alimentation.DTO.EnseignantDTO;
 
 /**
  * Un DOT pour contenir une sequence.
@@ -55,14 +56,18 @@ public class SequenceDTO implements Serializable, Identifiable {
      */
     private String designationEnseignement;
     
-    /** Id de l'enseignant. */
-    private Integer idEnseignant;
+   
+    private EnseignantDTO enseignantDTO;
+    
+    /** id de l'établissement. */
+    private Integer idEtablissement;
 
     /**
      * Constructeur par defaut.
      */
     public SequenceDTO() {
         groupesClassesDTO = new GroupesClassesDTO();
+        enseignantDTO = new EnseignantDTO();
     }
     
     public boolean estRenseigne() {
@@ -224,7 +229,7 @@ public class SequenceDTO implements Serializable, Identifiable {
      * @return retourne idEnseignant
      */
     public Integer getIdEnseignant() {
-        return idEnseignant;
+        return getEnseignantDTO().getId();
     }
 
     /**
@@ -232,7 +237,7 @@ public class SequenceDTO implements Serializable, Identifiable {
      * @param idEnseignant le idEnseignant to set
      */
     public void setIdEnseignant(Integer idEnseignant) {
-        this.idEnseignant = idEnseignant;
+        getEnseignantDTO().setId(idEnseignant);
     }
 
     /**
@@ -303,6 +308,34 @@ public class SequenceDTO implements Serializable, Identifiable {
     @Deprecated
     public String getCodeClasseGroupe() {
         return groupesClassesDTO.getCode();
+    }
+
+    /**
+     * @return the idEtablissement
+     */
+    public Integer getIdEtablissement() {
+        return idEtablissement;
+    }
+
+    /**
+     * @param idEtablissement the idEtablissement to set
+     */
+    public void setIdEtablissement(Integer idEtablissement) {
+        this.idEtablissement = idEtablissement;
+    }
+
+    /**
+     * @return the enseignantDTO
+     */
+    public EnseignantDTO getEnseignantDTO() {
+        return enseignantDTO;
+    }
+
+    /**
+     * @param enseignantDTO the enseignantDTO to set
+     */
+    public void setEnseignantDTO(EnseignantDTO enseignantDTO) {
+        this.enseignantDTO = enseignantDTO;
     }
     
     

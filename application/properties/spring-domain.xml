@@ -13,6 +13,7 @@ xsi:schemaLocation="
     <bean id="confidentialiteService" class="org.crlr.services.ConfidentialiteDelegate" />
     <bean id="ldapService" class="org.crlr.services.LdapDelegate"/>
     <bean id="seanceService" class="org.crlr.services.SeanceDelegate"/>
+    <bean id="cycleService" class="org.crlr.services.CycleDelegate"/>
     <bean id="sequenceService" class="org.crlr.services.SequenceDelegate"/>
     <bean id="groupeClasseService" class="org.crlr.services.GroupeClasseDelegate"/>
     <bean id="devoirService" class="org.crlr.services.DevoirDelegate"/>
@@ -24,12 +25,15 @@ xsi:schemaLocation="
     
     <bean id="emploiFacade" class="org.crlr.metier.facade.EmploiFacade"/>
     <bean id="seanceFacade" class="org.crlr.metier.facade.SeanceFacade"/>
+    <bean id="cycleFacade" class="org.crlr.metier.facade.CycleFacade"/>
     <bean id="visaFacade" class="org.crlr.metier.facade.VisaFacade"/>
         
     <bean id="preferencesService" class="org.crlr.services.PreferencesDelegate"/>
     <bean id="inspectionService" class="org.crlr.services.InspectionDelegate"/>
     <bean id="visaService" class="org.crlr.services.VisaDelegate"/>
     <bean id="importEDTService" class="org.crlr.services.ImportEDTDelegate"/>
+
+    <bean id="remplacementService" class="org.crlr.services.RemplacementDelegate"/>
     
     
 </beans>

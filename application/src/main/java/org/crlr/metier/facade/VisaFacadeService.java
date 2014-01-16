@@ -13,6 +13,8 @@ import java.util.List;
 import org.crlr.alimentation.DTO.EnseignantDTO;
 import org.crlr.dto.ResultatDTO;
 import org.crlr.dto.application.base.ArchiveSeanceDTO;
+import org.crlr.dto.application.base.Profil;
+import org.crlr.dto.application.base.UtilisateurDTO;
 import org.crlr.dto.application.seance.RechercheVisaSeanceQO;
 import org.crlr.dto.application.visa.DateListeVisaSeanceDTO;
 import org.crlr.dto.application.visa.RechercheVisaQO;
@@ -34,8 +36,15 @@ public interface VisaFacadeService {
      * @param listeEnseignant liste des id des enseignants à charger. 
      * @return une liste de VisaEnseignantDTO pour chacun des enseignants passes en entree.
      */
-    public ResultatDTO<List<VisaEnseignantDTO>> findListeVisaEnseignant(final List<EnseignantDTO> listeEnseignant);
+    public ResultatDTO<List<VisaEnseignantDTO>> findListeVisaEnseignant(final Profil profilUser, 
+            Integer idEtablissement, final List<EnseignantDTO> listeEnseignant);
   
+    /**
+     * 
+     * @param utilisateurDTO
+     * @return
+     */
+    public ResultatDTO<List<EnseignantDTO>> findListeEnseignant(final UtilisateurDTO utilisateurDTO);
     /**
      * {@inheritDoc}
      */
@@ -74,5 +83,16 @@ public interface VisaFacadeService {
      */
     public ResultatDTO<Boolean> saveListeVisaSeance(final List<ResultatRechercheVisaSeanceDTO> listeVisaSeance) throws MetierException;
     
+    /**
+     * Retourne le texte d'aide pour l'écran visaListe.
+     * @return le texte au format html
+     */
+    public String getAideContextuelleListe();
+    
+    /**
+     * Retourne le texte d'aide pour l'écran visaSeance.
+     * @return le texte au format html
+     */
+    public String getAideContextuelleSeance();
    
 }

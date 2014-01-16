@@ -274,14 +274,7 @@ public final class Alimentation {
         //Insertion de l'année scolaire en cours
         operationSqlService.addAnneeScol(exercice, dateRentree, dateSortie, periodes);
 
-        log.info("*** Insertion des types de devoir ***");
-
-        //Insertion des types de devoir
-        final Properties propsTypeDevoir = PropertiesUtils.load(TYPES_DEVOIR_PROPERTIES);
         
-        final String chaine = propsTypeDevoir.getProperty("typesDevoir");
-        final String[] typesDevoir = chaine.split(",");        
-
         log.info("*** Vérification de la base de données ***");
         if ( operationSqlService.existEtablissement()){
             log.info("Des établissements existent déjà dans la base de données - " +
@@ -296,11 +289,22 @@ public final class Alimentation {
         
         Environnement env = Environnement.valueOf(envStr);
         
-        if (Environnement.Aquitaine != env) {
-            //Dans l'aquitain, la syncronisation des établissemens / des enseignants / des élèves / des inspecteurs s'éffectuent par la propagation.
+        //Garde pour Récia / Région centre 
+        if (Environnement.CRC == env) {
+            //Dans l'aquitain et la CRLR, la syncronisation des établissemens 
+            //  ,des enseignants, des élèves, des inspecteurs s'éffectuent par la propagation.
+            
+            log.info("*** Insertion des types de devoir ***");
+
+            //Insertion des types de devoir
+            final Properties propsTypeDevoir = PropertiesUtils.load(TYPES_DEVOIR_PROPERTIES);
+            
+            final String chaine = propsTypeDevoir.getProperty("typesDevoir");
+            final String[] typesDevoir = chaine.split(",");        
+
+            //Dans la CRLR et l'aquitain, les établissements sont synchronisées par la tache changementAnnee dans la module propagation
             getEtablissements(operationSqlService, operationLdapService, typesDevoir);
-        
-        
+
             getEnseignants(operationSqlService, operationLdapService);
         
             getEleves(operationSqlService, operationLdapService);

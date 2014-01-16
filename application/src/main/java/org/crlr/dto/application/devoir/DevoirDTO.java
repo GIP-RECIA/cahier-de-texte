@@ -17,6 +17,8 @@ import org.crlr.dto.application.base.SeanceDTO;
 import org.crlr.dto.application.seance.ImageDTO;
 import org.crlr.utils.DateUtils;
 import org.crlr.web.dto.FileUploadDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * DOCUMENTATION INCOMPLETE!
@@ -39,9 +41,6 @@ public class DevoirDTO implements Serializable {
 
     /** la date de remise du devoir. */
     private Date dateRemise;
-
-    /** la date de remise du devoir. */
-    //private DateDTO dateRemiseDTO;
     
     /** L'intitulé du devoir. */
     private String intitule;
@@ -85,11 +84,6 @@ public class DevoirDTO implements Serializable {
     private FileUploadDTO pieceJointeSelectionne;
     
     
-    /** Nom de l'enseignement. */
-    private String nomEnseignant;
-    
-    /** Civilité de l'enseignement. */
-    private String civiliteEnseignant;
     
     /** Designation de la classe (exclusif avec designationGroupe). */
     private String designationClasse;
@@ -104,6 +98,8 @@ public class DevoirDTO implements Serializable {
     private ChargeTravailDTO chargeTravail;
     
     private boolean open;
+    
+    protected final Logger log = LoggerFactory.getLogger(getClass());
     
     
     /**
@@ -255,7 +251,7 @@ public class DevoirDTO implements Serializable {
     			this.description = maDescModifie;
     		}catch(Exception e){
     			this.description = description;
-    			e.printStackTrace();
+    			log.error("ex", e);
     		}
     	}else{
     		this.description = description;
@@ -450,7 +446,7 @@ public class DevoirDTO implements Serializable {
      * @return le nomEnseignant
      */
     public String getNomEnseignant() {
-        return nomEnseignant;
+        return getSeance().getEnseignantDTO().getNom();
     }
 
     /**
@@ -458,7 +454,7 @@ public class DevoirDTO implements Serializable {
      * @param nomEnseignant le nomEnseignant à modifier.
      */
     public void setNomEnseignant(String nomEnseignant) {
-        this.nomEnseignant = nomEnseignant;
+        getSeance().getEnseignantDTO().setNom(nomEnseignant);
     }
 
     /**
@@ -466,7 +462,7 @@ public class DevoirDTO implements Serializable {
      * @return le civiliteEnseignant
      */
     public String getCiviliteEnseignant() {
-        return civiliteEnseignant;
+        return getSeance().getEnseignantDTO().getCivilite();
     }
 
     /**
@@ -474,7 +470,7 @@ public class DevoirDTO implements Serializable {
      * @param civiliteEnseignant le civiliteEnseignant à modifier.
      */
     public void setCiviliteEnseignant(String civiliteEnseignant) {
-        this.civiliteEnseignant = civiliteEnseignant;
+        getSeance().getEnseignantDTO().setCivilite(civiliteEnseignant);
     }
 
     /**

@@ -7,6 +7,7 @@
 
 package org.crlr.web.application.control.seance;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -39,8 +40,6 @@ import org.crlr.dto.application.seance.SaveSeanceQO;
 import org.crlr.dto.application.seance.TypeReglesSeance;
 import org.crlr.dto.application.sequence.RechercheSequenceQO;
 import org.crlr.exception.metier.MetierException;
-import org.crlr.log.Log;
-import org.crlr.log.LogFactory;
 import org.crlr.message.Message;
 import org.crlr.services.DevoirService;
 import org.crlr.services.EmploiService;
@@ -52,12 +51,16 @@ import org.crlr.utils.PropertiesUtils;
 import org.crlr.web.application.control.AbstractPopupControl;
 import org.crlr.web.application.control.PopupPiecesJointesControl;
 import org.crlr.web.application.control.emploi.PlanningMensuelControl;
+import org.crlr.web.application.control.remplacement.GestionRemplacementControl;
 import org.crlr.web.application.form.AbstractForm;
 import org.crlr.web.application.form.seance.AjoutSeanceForm;
+import org.crlr.web.contexte.ContexteUtilisateur;
 import org.crlr.web.contexte.utils.ContexteUtils;
 import org.crlr.web.dto.FileUploadDTO;
 import org.crlr.web.utils.MessageUtils;
 import org.crlr.web.utils.NavigationUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * AjoutSeanceControl.
@@ -67,7 +70,12 @@ import org.crlr.web.utils.NavigationUtils;
  */
 @ManagedBean(name = "ajoutSeance")
 @ViewScoped
-public class AjoutSeanceControl extends AbstractPopupControl<AjoutSeanceForm> {
+public class AjoutSeanceControl extends AbstractPopupControl<AjoutSeanceForm> implements Serializable {
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -3869826187160906763L;
 
     /** Controleur de piece jointe. */
     @ManagedProperty(value = "#{popupPiecesJointes}")
@@ -84,8 +92,11 @@ public class AjoutSeanceControl extends AbstractPopupControl<AjoutSeanceForm> {
     /** Service emploi du temps. */
     @ManagedProperty(value = "#{emploiService}")
     private transient EmploiService emploiService;
+    
+    @ManagedProperty(value = "#{gestionRemplacement}")
+    private transient GestionRemplacementControl gestionRemplacementControl;
 
-    protected static final Log log = LogFactory.getLog(AjoutSeanceControl.class);
+    protected static final Logger log = LoggerFactory.getLogger(AjoutSeanceControl.class);
     
     /**
      * Mutateur de popupPiecesJointesControl {@link #popupPiecesJointesControl}.
@@ -135,14 +146,7 @@ public class AjoutSeanceControl extends AbstractPopupControl<AjoutSeanceForm> {
         super(new AjoutSeanceForm());
     }
 
-    /**
-     * {@inheritDoc}
-     */    
-    @PostConstruct
-    public void onLoad() {
-
-        form.reset();
-
+    private void chargerTypeDevoirs() {
         // Charge la liste des type de devoir configures pour
         // l'etablissement
         final UtilisateurDTO utilisateurDTO = ContexteUtils
@@ -151,8 +155,10 @@ public class AjoutSeanceControl extends AbstractPopupControl<AjoutSeanceForm> {
                 .findListeTypeDevoir(utilisateurDTO.getIdEtablissement())
                 .getValeurDTO();
         form.setListeTypeDevoir(listeTypeDevoir);
-
-        // Initialise le nombre de devoir et seance precedente par defaut
+    }
+    
+    private void initialiseNombreDevoirEtSeancePrecedente() {
+     // Initialise le nombre de devoir et seance precedente par defaut
         // qu'il faut créer avec une seance
         final Properties properties = PropertiesUtils.load("/config.properties");
         final Integer nombreDevoirParDefaut;
@@ -171,8 +177,88 @@ public class AjoutSeanceControl extends AbstractPopupControl<AjoutSeanceForm> {
         }
         form.setNombreDevoirParDefaut(nombreDevoirParDefaut);
         form.setNombreSeancePrecedenteParDefaut(nombreSeancePrecedenteParDefaut);
+    }
+    
+    /**
+     * 
+     * @return true si une séance a été prise en compte
+     */
+    private boolean gererSeanceDepuisEcranRechercheSeance() {
+     // Modification d'une seance depuis la recherche de seance.
+        final ResultatRechercheSeanceDTO resultatRechercheSeanceDTO = (ResultatRechercheSeanceDTO) ContexteUtils
+                .getContexteOutilControl().recupererEtSupprimerObjet(
+                        RechercheSeanceControl.class.getName());
+
+        // Cas de duplication ou de modification
+        if (resultatRechercheSeanceDTO == null) {
+            return false;
+        }
+        
+        form.setAfficheRetour(true);
+
+        form.setResultatRechercheSeanceDTO(resultatRechercheSeanceDTO);
+        alimenterSeance(resultatRechercheSeanceDTO.getId());
+
+        // si on duplique, on vide le ID de la seance pour transformer en
+        // ajout
+        if (AbstractForm.MODE_DUPLICATE.equals(resultatRechercheSeanceDTO
+                .getMode())) {
+            form.getSeance().setId(null);
+            form.getSeance().setVisaDirecteur(null);
+            form.getSeance().setVisaInspecteur(null);
+            form.getSeance().setAccesEcriture(true);
+        }
+        
+        Integer enseignantId = form.getSeance().getIdEnseignant();
+        Integer idUtilisateurConnecte = ContexteUtils.getContexteUtilisateur().getUtilisateurDTOConnecte().getUserDTO().getIdentifiant();
+        
+        if (enseignantId == null || !enseignantId.equals(idUtilisateurConnecte)) {
+            log.debug("Effacter les annotations personnel du remplaçé en mode remplaçant");
+            form.getSeance().setAnnotations("");
+        }
+        
+        return true;
+    
+    }
+    
+    /**
+     * 
+     * @return true si une séance a été prise en compte
+     */
+    private boolean gererSeanceDepuisEcranPlanningDevoir() {
+        final SeanceDTO ajouteSeanceDTO = (SeanceDTO) ContexteUtils
+                .getContexteOutilControl().recupererEtSupprimerObjet(
+                        PlanningMensuelControl.CREER_SEANCE_DEPUIS_DEVOIR_CLE);
+
+        if (ajouteSeanceDTO == null) {
+            return false;
+        }
+        
+        form.setAfficheRetour(true);
+        alimenterSeanceAjoute(ajouteSeanceDTO);
+        return true;
+            
+        
+    }
+    
+    /**
+     * {@inheritDoc}
+     */    
+    @PostConstruct
+    public void onLoad() {
+
+        
+        form.reset();
+
+        chargerTypeDevoirs();
+
+        initialiseNombreDevoirEtSeancePrecedente();
+        
         completeListeDevoir(form.getSeance());
 
+        final UtilisateurDTO utilisateurDTO = ContexteUtils
+                .getContexteUtilisateur().getUtilisateurDTO();
+        
         if (Profil.ENSEIGNANT == utilisateurDTO.getProfil()) {
             // Charge les seance qui peuvent etre selectionne pour la date du
             // jour.
@@ -181,47 +267,23 @@ public class AjoutSeanceControl extends AbstractPopupControl<AjoutSeanceForm> {
         } else {
             log.info("Profil pas enseignant, ne cherche pas les séquences");
         }
-        /*
-         * if (listeSequence.size()>0) { final SequenceDTO sequence =
-         * form.getListeSequence().get(0);
-         * form.setSequenceSelected(sequence);
-         * chargerListeSeancePrecedente(form.getSeance(),
-         * form.getSequenceSelected()); }
-         */
+       
 
-
-        // Modification d'une seance depuis la recherche de seance.
-        final ResultatRechercheSeanceDTO resultatRechercheSeanceDTO = (ResultatRechercheSeanceDTO) ContexteUtils
-                .getContexteOutilControl().recupererEtSupprimerObjet(
-                        RechercheSeanceControl.class.getName());
-
-        // Cas de duplication ou de modification
-        if (resultatRechercheSeanceDTO != null) {
-            form.setAfficheRetour(true);
-
-            form.setResultatRechercheSeanceDTO(resultatRechercheSeanceDTO);
-            alimenterSeance(resultatRechercheSeanceDTO.getId());
-
-            // si on duplique, on vide le ID de la seance pour transformer en
-            // ajout
-            if (AbstractForm.MODE_DUPLICATE.equals(resultatRechercheSeanceDTO
-                    .getMode())) {
-                form.getSeance().setId(null);
-                form.getSeance().setVisaDirecteur(null);
-                form.getSeance().setVisaInspecteur(null);
-            }
+        if (gererSeanceDepuisEcranRechercheSeance()) {
             return;
         }
 
-        final SeanceDTO ajouteSeanceDTO = (SeanceDTO) ContexteUtils
-                .getContexteOutilControl().recupererEtSupprimerObjet(
-                        PlanningMensuelControl.CREER_SEANCE_DEPUIS_DEVOIR_CLE);
-
-        if (ajouteSeanceDTO != null) {
-            form.setAfficheRetour(true);
-            alimenterSeanceAjoute(ajouteSeanceDTO);
+        if (gererSeanceDepuisEcranPlanningDevoir()) {
+            return;
         }
+        
+        
+        //Une nouvelle séance a toujours l'accès d'écriture
+        form.getSeance().setAccesEcriture(true);
+        
 
+        //BOUCHON
+        //form.getSeance().setDate(DateUtils.creer(2012, 11, 15));
     }
 
     /**
@@ -266,7 +328,7 @@ public class AjoutSeanceControl extends AbstractPopupControl<AjoutSeanceForm> {
         final List<SequenceDTO> listeSequenceARetour = new ArrayList<SequenceDTO>();
         
         if (seance == null) {
-            log.warning("Seance null");
+            log.warn("Seance null");
             return listeSequenceARetour;
         }
         
@@ -341,6 +403,9 @@ public class AjoutSeanceControl extends AbstractPopupControl<AjoutSeanceForm> {
         
         // Charge la liste des date proposees pour la remise d'un devoir
         form.setListeDateRemiseDevoir(chargerListeDateRemiseDevoir(form.getSeance()));
+        
+                
+        
     }
 
     /**
@@ -354,7 +419,7 @@ public class AjoutSeanceControl extends AbstractPopupControl<AjoutSeanceForm> {
 
         // Charge les info de la seance selectionnee et la positionne dans la
         // case selectionnee
-        final UtilisateurDTO utilisateur = ContexteUtils.getContexteUtilisateur().getUtilisateurDTO();
+        final UtilisateurDTO utilisateur = ContexteUtils.getContexteUtilisateur().getUtilisateurDTOConnecte();
         final SeanceDTO seance = chargerConsulterSeanceDTO(idSeance);
        
         // Ce partie complémentaire n'est pas fait si on en en mode archive ou pas enseignant 
@@ -385,6 +450,9 @@ public class AjoutSeanceControl extends AbstractPopupControl<AjoutSeanceForm> {
        
         // Positionne la seance dans le form
         form.setSeance(ObjectUtils.clone(seance));
+        
+        //Pour que l'IHM est desactivé dans le cas où un remplaçant n'a pas le droit d'accés
+        gestionRemplacementControl.getForm().setDateEffet(form.getSeance().getDate());
     }
 
     /**
@@ -428,6 +496,12 @@ public class AjoutSeanceControl extends AbstractPopupControl<AjoutSeanceForm> {
         consulterSeanceQO.setId(idSeance);
         consulterSeanceQO.setArchive(form.getModeArchive());
         consulterSeanceQO.setExercice(form.getExercice());
+        
+        final ContexteUtilisateur contextUtilisateur = ContexteUtils.getContexteUtilisateur();
+        
+        consulterSeanceQO.setIdEnseignantConnecte(
+                contextUtilisateur.getUtilisateurDTOConnecte().getUserDTO().getIdentifiant());
+        
         
         if (BooleanUtils.isNotTrue(form.getModeArchive())) {
             consulterSeanceQO.setAvecInfoVisa(true);
@@ -508,6 +582,10 @@ public class AjoutSeanceControl extends AbstractPopupControl<AjoutSeanceForm> {
             final RechercheSeanceQO rechercheSeanceQO = new RechercheSeanceQO();
             final UtilisateurDTO utilisateurDTO = ContexteUtils
                     .getContexteUtilisateur().getUtilisateurDTO();
+            
+            rechercheSeanceQO.setIdEnseignantConnecte(ContexteUtils
+                    .getContexteUtilisateur().getUtilisateurDTOConnecte().getUserDTO().getIdentifiant());
+            
             rechercheSeanceQO.setTypeGroupe(sequence.getTypeGroupe());
             rechercheSeanceQO.setIdClasseGroupe(sequence.getIdClasseGroupe());
             rechercheSeanceQO.setIdEnseignant(utilisateurDTO.getUserDTO()
@@ -594,6 +672,7 @@ public class AjoutSeanceControl extends AbstractPopupControl<AjoutSeanceForm> {
     public void sauver() {
         final SeanceDTO seance = form.getSeance();
         
+        
         if (seance == null) {
             log.error("Problème : séance est null");
             return;
@@ -607,6 +686,11 @@ public class AjoutSeanceControl extends AbstractPopupControl<AjoutSeanceForm> {
             form.resetChampsObligatoire();
         }
         
+        if (seance.getSequence() == null) {
+            MessageUtils.addMessage(new Message(TypeReglesSeance.SEANCE_20.name()), this.getClass());
+            form.setListeChampsObligatoire(new HashSet<String>(org.crlr.utils.CollectionUtils.creerList(TypeReglesSeance.SEANCE_20.name())));
+        }
+                
         if (seance.getId() == null) {
             ajouterSeance(seance);
         } else {
@@ -654,13 +738,11 @@ public class AjoutSeanceControl extends AbstractPopupControl<AjoutSeanceForm> {
     }
 
     /**
-     * Enregistre une nouvelle seance.
-     * 
-     * @param seance
-     *            la seance.     
+     * Construit un objet SaveSeanceQO a partir d'un SeanceDTO.
+     * @param seance le seance DTO
+     * @return un SaveSeanceQO
      */
-    private void ajouterSeance(final SeanceDTO seance) {
-        
+    public SaveSeanceQO construitAjoutSaveSeanceQO(final SeanceDTO seance) {
         final SequenceDTO sequence = seance.getSequence();
         
         final SaveSeanceQO saveSeanceQO = new SaveSeanceQO();
@@ -688,13 +770,27 @@ public class AjoutSeanceControl extends AbstractPopupControl<AjoutSeanceForm> {
         saveSeanceQO.setMode(AbstractForm.MODE_AJOUT);
 
         final UtilisateurDTO utilisateurDTO = ContexteUtils
-                .getContexteUtilisateur().getUtilisateurDTO();
-        saveSeanceQO.setIdEnseignant(utilisateurDTO.getUserDTO()
-                .getIdentifiant());
+                .getContexteUtilisateur().getUtilisateurDTOConnecte();
+        
+        saveSeanceQO.setIdEnseignant(utilisateurDTO.getUserDTO().getIdentifiant());
+        
+        
+        
         saveSeanceQO.setAnneeScolaireDTO(utilisateurDTO.getAnneeScolaireDTO());
         saveSeanceQO.setListeDevoirDTO(retirerDevoirVide(seance.getDevoirs()));
         saveSeanceQO.setListeFichierJointDTO(seance.getFiles());
-
+        
+        return saveSeanceQO;
+    }
+    
+    /**
+     * Enregistre une nouvelle seance.
+     * 
+     * @param seance
+     *            la seance.     
+     */
+    private void ajouterSeance(final SeanceDTO seance) {
+        final SaveSeanceQO saveSeanceQO = construitAjoutSaveSeanceQO(seance);
         try {
             final ResultatDTO<Integer> resultatDTO = this.seanceService
                     .saveSeance(saveSeanceQO);
@@ -744,22 +840,23 @@ public class AjoutSeanceControl extends AbstractPopupControl<AjoutSeanceForm> {
         saveSeanceQO.setAnnotations(seance.getAnnotations());
         
         final UtilisateurDTO utilisateurDTO = ContexteUtils
-                .getContexteUtilisateur().getUtilisateurDTO();
+                .getContexteUtilisateur().getUtilisateurDTOConnecte();
         saveSeanceQO.setIdEnseignant(utilisateurDTO.getUserDTO()
                 .getIdentifiant());
         saveSeanceQO.setListeDevoirDTO(retirerDevoirVide(seance.getDevoirs()));
         saveSeanceQO.setListeFichierJointDTO(seance.getFiles());
+        
         try {
             saveSeanceQO.setId(seance.getId());
             final ResultatDTO<Integer> resultatDTO = this.seanceService
                     .modifieSeance(saveSeanceQO);
             seance.setIntitule(saveSeanceQO.getIntitule());
-            log.debug("Modification de la seance result = {0}", resultatDTO
+            log.debug("Modification de la seance result = {}", resultatDTO
                     .getValeurDTO());
             form.resetChampsObligatoire();
         } catch (final MetierException e) {
             form.setListeChampsObligatoire(MessageUtils.getAllCodeMessage(e.getConteneurMessage()));
-            log.debug("{0}", e.getMessage());
+            log.debug("{}", e);
         }
     }
 
@@ -796,7 +893,12 @@ public class AjoutSeanceControl extends AbstractPopupControl<AjoutSeanceForm> {
         final SeanceDTO seanceSrc = form.getSeance();
         if (seanceSrc != null) {
             final SeanceDTO seanceNew = new SeanceDTO();
+            
             seanceNew.copieFrom(seanceSrc);
+            
+            //Pour faire le contrôl de remplaçement / annotations, il nous faut l'id d'enseinant
+            seanceNew.setIdEnseignant(seanceSrc.getIdEnseignant());
+            
             form.setSeanceCopie(seanceNew);
         }
     }
@@ -1244,5 +1346,13 @@ public class AjoutSeanceControl extends AbstractPopupControl<AjoutSeanceForm> {
      */
     public void afficherDevoir() {
         
+    }
+
+    /**
+     * @param gestionRemplacementControl the gestionRemplacementControl to set
+     */
+    public void setGestionRemplacementControl(
+            GestionRemplacementControl gestionRemplacementControl) {
+        this.gestionRemplacementControl = gestionRemplacementControl;
     }
 }

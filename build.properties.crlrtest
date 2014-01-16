@@ -1,0 +1,33 @@
+#################
+# Configuration #
+#################
+
+# Répertoire d'installation de Tomcat
+tomcat.home=C:/source/apache-tomcat-6.0.32
+
+# Répertoire de déploiement (webapps)
+deploy.home=C:/source/apache-tomcat-6.0.32/webapps
+
+###############
+# Développeur #
+###############
+
+# Nom de l'application
+application.name=cahier-texte
+
+#Durée de la session en milliseconde (minute*60*1000) : 10 min = 600000
+application.session=1200000
+
+
+#########
+#  CAS  #
+#########
+cas.auth=true
+
+#CAS Prod CRLR
+cas.finalURL=https://FRMP0136.frml.bull.fr:8443/cas
+cas.uri.login=/login
+cas.uri.validate=/serviceValidate
+cas.uri.client=b016653.fr.ad.bull.net:8080
+#cas.uri.client=frmp0162.frml.bull.fr
+cas.filter.pattern=/ecrans/*

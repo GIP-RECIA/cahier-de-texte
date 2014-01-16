@@ -245,4 +245,7 @@ public interface EtablissementHibernateBusinessService {
      * @return l'établissement
      */
     public EtablissementDTO findEtablissement(final Integer idEtablissement);
+
+	public boolean etablissementExist(String sirenEtablissement);
 }
+

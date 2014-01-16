@@ -1,4 +1,4 @@
-﻿var dmAppletWidth = 540;
+var dmAppletWidth = 540;
 var dmAppletHeight = 340;
 
 

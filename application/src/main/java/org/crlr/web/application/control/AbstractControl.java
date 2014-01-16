@@ -10,11 +10,12 @@ package org.crlr.web.application.control;
 import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
-import org.crlr.log.Log;
-import org.crlr.log.LogFactory;
+
 import org.crlr.utils.DateUtils;
 import org.crlr.web.application.form.AbstractForm;
 import org.crlr.web.utils.FacesUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Contrôleur JSF de base. Tous les contrôleurs JSF de l'application
@@ -25,8 +26,8 @@ import org.crlr.web.utils.FacesUtils;
  * @param <F> le formulaire spécifique
  */
 public abstract class AbstractControl<F extends AbstractForm> {
-    /** Instance de {@link Log} accessible pour les sous-classes. */
-    protected final Log log = LogFactory.getLog(getClass());
+    /** Instance de {@link Logger} accessible pour les sous-classes. */
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     /** Formulaire lié au contrôleur, qui étend AbstractForm. */
     protected F form ;

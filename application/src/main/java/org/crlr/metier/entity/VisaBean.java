@@ -408,6 +408,23 @@ public class VisaBean implements Serializable {
         this.listeVisaSeance = listeVisaSeance;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return "VisaBean [id=" + id + ", dateVisa=" + dateVisa + ", profil="
+                + profil + ", typeVisa=" + typeVisa + ", idEtablissement="
+                + idEtablissement + ", idEnseignant=" + idEnseignant
+                + ", idEnseignement=" + idEnseignement + ", idClasse="
+                + idClasse + ", idGroupe=" + idGroupe + ", dateMaj=" + dateMaj
+                + ", etablissement=" + etablissement + ", listeVisaSeance="
+                + listeVisaSeance + ", enseignant=" + enseignant
+                + ", enseignement=" + enseignement + ", classe=" + classe
+                + ", groupe=" + groupe + "]";
+    }
+
+  
 
     
 }

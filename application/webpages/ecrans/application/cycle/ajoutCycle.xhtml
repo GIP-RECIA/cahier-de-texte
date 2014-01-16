@@ -1,0 +1,792 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:crx="urn:crlr:ext"
+    xmlns:cr="urn:crlr"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:rich="http://richfaces.org/rich"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    >
+
+<cr:page titrePage="Ajout d'une séquence pédagogique">    
+    <h:outputScript library="js" name="jquery-ui-1.8.20.custom.js" target="head" />
+    <h:outputScript library="js" name="jquery.qtip.js" target="head" />
+    <h:outputScript library="js" name="ajoutCycle.js" target="head" />
+    <h:outputStylesheet library="css" name="jquery.qtip.css" target="head" />
+    <h:outputStylesheet library="css" name="ajoutCycle.css" target="head" />
+    
+    <cr:menuAction id="idMenuAction">
+        <cr:elemMenuAction 
+                idaction="idRetourPrecedent" 
+                bean="#{ajoutCycle}" 
+                cible="retour"
+                title="Retour"
+                rendered="#{ajoutCycle.form.afficheRetour}"
+                render="idPanelSaisirCycle"
+                status="statuspop" 
+                image="back.png" />
+        <cr:elemMenuAction 
+              idaction="idSauver" bean="#{ajoutCycle}" cible="sauver"
+              image="save.png" 
+              title="Sauvegarder"
+              render="idPanelSaisirCycle,idMenuAction" 
+              status="statuspop"
+              rendered="#{not ajoutCycle.form.readOnly}"
+              oncomplete="setModificationFormulaire(false); initFormulaire(); " />
+        <cr:elemMenuAction idaction="idSupprimer" bean="#{ajoutCycle}"
+              cible="supprimer"
+              image="delete.png" 
+              title="Supprimer la séquence pédagogique"
+              rendered="#{not empty ajoutCycle.form.cycle.id and not ajoutCycle.form.readOnly}"
+              render="idPanelSaisirCycle,idMenuAction,idPanelListeSeance"
+              oncomplete="setModificationFormulaire(false); initFormulaire();"
+              status="statuspop"  
+              confirm="Voulez-vous vraiement supprimer cette séquence pédagogique ?" />
+        <cr:elemMenuAction idaction="idAjouterSeance" bean="#{ajoutCycle}"
+              cible="ajouterSeance"
+              image="seanceAjout.png" 
+              title="Ajouter une séance à la séquence pédagogique"
+              rendered="#{not empty ajoutCycle.form.cycle.id}"
+              render=":idPopupSeance_form:idPopupSeance_panel"
+              oncomplete="
+                #{rich:component('idPopupSeance')}.show(); 
+                #{rich:component('idPopupSeance')}.moveTo(10, 10);
+                if (#{rich:element('richTabPanel')}) {
+                         #{rich:component('richTabPanel')}.switchToItem('tabSeance');
+                }
+                "
+              status="statuspop"  />
+        <cr:elemMenuAction idaction="idTrierListeSeance" bean="#{ajoutCycle}"
+              cible="initTrierListeSeance"
+              image="tri.png" 
+              title="Modifier l'ordre des séances pédagogiques"
+              rendered="#{not empty ajoutCycle.form.cycle.id}"
+              render=":idPopupTrierListeSeance_form:idPopupTrierListeSeance_panel"
+              oncomplete="
+                #{rich:component('idPopupTrierListeSeance')}.show(); 
+                #{rich:component('idPopupTrierListeSeance')}.moveTo(10, 10);
+                gestionDragDropCycle();
+                "
+              status="statuspop"  />
+        <cr:elemMenuAction idaction="idAppliquerCycle" bean="#{ajoutCycle}"
+              cible="appliquerCycle"
+              image="carnetApply.png" 
+              title="Appliquer la séquence pédagogique à une classe/groupe scolaire"
+              rendered="#{empty contexteUtilisateur.utilisateurDTOOrigine and not empty ajoutCycle.form.cycle.id}"
+              oncomplete=""
+              status="statuspop"  />
+              
+    </cr:menuAction>
+    
+    <t:div style="display: none;"><cr:saisieEditeur rendered="true" id="saisieEditeurInvisible" commentaire="Editeur bidon qui permet de faire marcher dans le composant cr:saisieCycleSeance les champs de saisie de editeur" /></t:div>
+
+
+    <a4j:jsFunction action="#{ajoutCycle.deplacerSeance}"
+                    execute="@this"
+                    status="statuspop"
+                    name="deplacerSeance"
+                    oncomplete="gestionDragDropCycle();"
+                    render=":idPopupTrierListeSeance_form:idPopupTrierListeSeance_panel"
+                    >
+      <a4j:param assignTo="#{ajoutCycle.form.idClassDrag}" name="idClassDrag" />
+      <a4j:param assignTo="#{ajoutCycle.form.idClassDrop}" name="idClassDrop" />
+    </a4j:jsFunction>
+        
+    <a4j:outputPanel id="idPanelSaisirCycle">
+        <rich:panel header="#{ajoutCycle.form.titreEcran}">
+            <table class="grille" style="">
+                <tr>
+                    <td><h:outputLabel value="Titre*" style="width: 80px;" styleClass="libelle" title="Titre de la séquence pédagogique" /></td>
+                    <td>
+                        <h:inputText value="#{ajoutCycle.form.cycle.titre}" 
+                        id="idCycleSeanceTitre"
+                        disabled="#{ajoutCycle.form.readOnly}"
+                        readonly="#{ajoutCycle.form.readOnly}"
+                        styleClass="checkSauvegarde #{fn:contains(ajoutCycle.form.listeChampsObligatoire, 'CYCLE_05') ? 'messageErreur' : ''}"
+                        style="width: 99% !important;  #{empty ajoutCycle.form.cycle.titre ? 'width: 300px;' : 'width: 99%;'}" 
+                        />
+                    </td>
+                    <td style="width: 255px;"><h:outputLabel id="idLibellePartage" value="#{ajoutCycle.libelleListeGroupe}" styleClass="libelle listeGroupeSelected" title="#{ajoutCycle.libelleListeGroupeTip}"/></td>
+                    <td style="width: 20px;">        
+                        <cr:liena4j idliena4j="idAjouterGroupe" 
+                            bean="#{ajoutCycle}"
+                            cible="initSelectionGroupe"
+                            oncomplete="#{rich:component('idPopupGroupe')}.show();"
+                            rendered="#{not ajoutCycle.form.readOnly}"
+                            status="statuspop"
+                            render=":idPopupGroupe_form:tableListeGroupe" >
+                            <h:graphicImage
+                               id="idimageajoutergroupe"
+                               library="images/icones" 
+                               name="GestionGrp22.png"
+                               title="Modifier la liste des groupes"
+                               /> 
+                        </cr:liena4j>                    
+                    </td>
+                </tr>
+                <tr>
+                    <td ><h:outputLabel value="Objectifs" styleClass="libelle" title="Objectifs de la séquence pédagogique" /></td>
+                    <td colspan="4">
+                        <h:inputTextarea id="idObjectifCycle" value="#{ajoutCycle.form.cycle.objectif}" readonly="#{ajoutCycle.form.readOnly}" style="width: 99%; height:45px;" styleClass="checkSauvegarde" />
+                    </td>
+                </tr>
+                <tr>
+                    <td ><h:outputLabel value="Pré-requis" styleClass="libelle" title="Pré-requis de la séquence pédagogique" /></td>
+                    <td colspan="4">
+                        <h:inputTextarea id="idPrerequisCycle" value="#{ajoutCycle.form.cycle.prerequis}" readonly="#{ajoutCycle.form.readOnly}" style="width: 99%; height:45px;" styleClass="checkSauvegarde" rows="3" />
+                    </td>
+                </tr>
+                <tr>
+                    <td ><h:outputLabel value="Description" styleClass="libelle" title="Description de la séquence pédagogique" /></td>
+                    <td colspan="4">
+                        <h:inputTextarea id="idDescriptionCycle" value="#{ajoutCycle.form.cycle.description}" readonly="#{ajoutCycle.form.readOnly}" style="width: 99%; height:45px;" styleClass="checkSauvegarde" rows="3" />
+                    </td>
+                </tr>
+            </table>
+        </rich:panel>        
+    </a4j:outputPanel>
+    
+    <t:div id="zoneTable" style="overflow:auto; height: 100px;">
+    <a4j:outputPanel id="idPanelListeSeance" >
+        <cr:table idTable="tableListingSeance"
+              style="width: 90%;"
+              liste="#{ajoutCycle.form.cycle.listeSeance}"
+              entete="Liste des séances pédagogiques"
+              nbLignes="13"
+              rendered="#{not empty ajoutCycle.form.cycle.listeSeance}">
+            <cr:colonne id="idIntitule" libelleColonne="Intitulé" align="left" style="white-space:normal;">
+                <h:outputText value="#{ligne.intitule}" />
+            </cr:colonne>
+            <cr:colonne id="idObjectifs" libelleColonne="Objectifs" align="left" style="white-space:normal;">
+                <h:outputText escape="false" value="#{ligne.objectifCourt}" />
+            </cr:colonne>
+            <cr:colonne id="idDescription" libelleColonne="Description" align="left" style="white-space:normal;">
+                <h:outputText 
+                        rendered="true" 
+                        escape="false"
+                        styleClass="description champLatex"
+                        style="display:block;" 
+                        value="#{ligne.descriptionCourt}" />    
+            </cr:colonne>
+            <cr:colonne libelleColonne="Actions" align="center" id="" style="width: 50px;">
+                <cr:liena4j 
+                 idliena4j="selectionner"
+                 bean="#{ajoutCycle}"
+                 cible="afficherSeance"
+                 oncomplete="
+                    #{rich:component('idPopupSeance')}.show(); 
+	                if (#{rich:element('richTabPanel')}) {
+	                         #{rich:component('richTabPanel')}.switchToItem('tabSeance');
+	                }
+                    "
+                 rendered="true"
+                 render=":idPopupSeance_form:idPopupSeance_panel"
+                 status="statuspop"      
+                 title="#{ligne.readOnly ? 'Consulter' : 'Modifier'}" >
+                    <h:graphicImage
+	                    id="viewLatex_image"
+	                    library="images/icones" 
+	                    name="#{ligne.readOnly ? 'aide-saisie.png' : 'edit.gif'}"
+	                    title="#{ligne.readOnly ? 'Consulter' : 'Modifier'} la description de la séance"
+	                    /> 
+                    <f:setPropertyActionListener value="#{ligne}" target="#{ajoutCycle.form.cycleSeanceSelected}" />
+                </cr:liena4j>
+            </cr:colonne>
+        </cr:table>
+    </a4j:outputPanel>
+    </t:div>
+    
+    <cr:popupConfirmSauvegardeModification 
+        libelleMessage="Voulez-vous enregistrer vos modifications avant de quitter cette page ?"
+        bean="#{ajoutCycle}" 
+        cible="sauver" 
+        render="idPanelSaisirCycle" 
+        oncomplete="setModificationFormulaire(false);" 
+        action="" />
+        
+    <cr:popup idPopup="idPopupListeEnseignant" tailleAuto="true" hauteurPopup="370" largeurPopup="490"
+        titrePopup="Liste des enseignant du groupe">
+        <t:div id="idDivListeEnseignant" rendered="#{not empty ajoutCycle.form.groupeSelected}">
+		    <t:div id="zoneListeEnseignant" style="overflow:auto; height: 320px;">
+		    <a4j:outputPanel id="idPanelListeEnseignant" >
+		        <cr:table idTable="tableListingEnseignant"
+		              liste="#{ajoutCycle.form.listeEnseignant}"
+		              entete="#{ajoutCycle.form.groupeSelected.intitule}"
+		              rendered="#{not empty ajoutCycle.form.listeEnseignant}">
+		            <cr:colonne id="idNomEnseignant" libelleColonne="Nom" align="left" style="white-space:normal; width: 200px;">
+		                <h:outputText value="#{ligne.nom}" />
+		            </cr:colonne>
+		            <cr:colonne id="idPrenomEnseignant" libelleColonne="Prénom" align="left" style="white-space:normal; width: 200px;">
+		                <h:outputText value="#{ligne.prenom}" />
+		            </cr:colonne>
+		        </cr:table>
+		    </a4j:outputPanel>
+		    </t:div>            
+        </t:div>
+    </cr:popup>        
+    
+</cr:page>
+
+<cr:popupModifiable
+        idPopup="idPopupTrierListeSeance" 
+        tailleAuto="true" 
+        largeurPopup="500"
+        titrePopup="Ordre des séances pédagogiques">
+     
+    <cr:menuAction id="idMenuActionPopupTier" surcharge="false">
+            <cr:elemMenuAction 
+              idaction="idSauverOrdreTri" 
+              bean="#{ajoutCycle}" cible="trierListeSeance"
+              image="save.png" 
+              title="Sauvegarder l'ordre des séances"
+              oncomplete="
+              if (#{facesContext.maximumSeverity == null or facesContext.maximumSeverity.ordinal le 0} ) {
+                #{rich:component('idPopupTrierListeSeance')}.hide();
+              }" 
+              rendered="true" 
+              render=":formulaire_principal:idPanelListeSeance"
+            />
+        </cr:menuAction>     
+        <h:panelGroup 
+            layout="block" 
+            style="height: 400px;">
+                  
+            <t:div id="idPaneltableListingTriSeance" rendered="#{not empty ajoutCycle.form.listeSeanceTri}">
+            <table class="entete" style="width: 99%;">
+                <thead>
+                    <tr class="seanceDrop">
+                        <th class="rf-p-hdr" colspan="6">
+                            Liste des séances de la séquence pédagogiques
+                        </th>
+                    </tr>
+                    <tr>    
+                        <th> </th>
+                        <th>Intitulé</th>
+                        <th>Enseignement</th>
+                    </tr>
+                </thead>
+                <ui:repeat value="#{ajoutCycle.form.listeSeanceTri}" var="ligne" varStatus="varstatus">
+                    <tr class="#{varstatus.index % 2 eq 0 ? 'pair' : 'impair' } seanceDrop idDropTri_#{ligne.id}"  >
+                        <td title="#{ligne.intitule}" >
+                            <h:graphicImage
+			                    id="idLigneTriSeance"
+			                    library="images/icones" 
+			                    name="flecheDroite.png" 
+			                    class="seanceDrag idDragTri_#{ligne.id}"
+			                    title="Glisser / déposer pour modifier l'ordre"
+			                 /> 
+                        </td>
+                        <td><h:outputText value="#{ligne.intitule}" /></td>
+                        <td><h:outputText value="#{ligne.enseignement}" /></td>
+                    </tr>
+                </ui:repeat>
+            </table>        
+        </t:div>
+    </h:panelGroup>
+</cr:popupModifiable>
+
+<cr:popupListeFiltrable idPopup="idPopupGroupe" 
+        tailleAuto="true"
+        largeurPopup="490"
+        hauteur="300"
+        titrePopup="Liste des groupes collaboratifs">
+        
+        <cr:menuAction id="idMenuActionPopupGroupe" surcharge="false">
+            <cr:elemMenuAction 
+              idaction="idValiderSelectionGroupe" 
+              bean="#{ajoutCycle}" cible="ajouterGroupe"
+              image="valider.png" 
+              title="Valider"
+              oncomplete="
+              if (#{facesContext.maximumSeverity == null or facesContext.maximumSeverity.ordinal le 0} ) {
+                #{rich:component('idPopupGroupe')}.hide();
+                mettreTooltips();
+                setModificationFormulaire(true);
+              }" 
+              rendered="true" 
+              render=":formulaire_principal:idLibellePartage"
+            />        
+        </cr:menuAction>
+        <cr:table 
+              idTable="tableListeGroupe"
+              liste="#{ajoutCycle.form.listeGroupeSelection}"
+              entete=""
+              avecPagination="false"
+              nbLignes=""
+              rendered="true">
+            <cr:colonne id="idColonneSelectGroupe" taille="60">
+                <f:facet name="header">
+                    <h:panelGroup>
+                        <h:outputText value="Autoriser" title="Autorise les membres du groupe à accéder à cette séquence pédagogique" />
+                    </h:panelGroup>
+                </f:facet>
+                <h:selectBooleanCheckbox id="idSelectGroupe" 
+                    value="#{ligne.valeur1}" >
+                </h:selectBooleanCheckbox>
+            </cr:colonne>
+            <rich:column
+                    style="width: 97%;" 
+                    filterValue="#{ajoutCycle.form.filtreGroupe}" 
+                    filterExpression="#{fn:containsIgnoreCase(ligne.valeur2.intitule,ajoutCycle.form.filtreGroupe)}"
+                    >
+                    <f:facet name="header">
+                        <h:panelGroup>
+                            <h:outputText value="Intitulé : " />
+                            <h:inputText value="#{ajoutCycle.form.filtreGroupe}" id="filterText">
+                                <a4j:ajax event="keyup" render=":idPopupGroupe_form:tableListeGroupe" 
+                                    status="statuspop" oncomplete="transfertFocus(this.id,'#{rich:clientId('filterText')}');">
+                                    <a4j:attachQueue requestDelay="500" />
+                                </a4j:ajax>  
+                            </h:inputText>
+                        </h:panelGroup>
+                    </f:facet>
+                    <h:outputText value="#{ligne.valeur2.intitule}"/>
+            </rich:column>
+            <rich:column>
+                <cr:liena4j 
+                 idliena4j="idLienAfficheListeEnseignant"
+                 bean="#{ajoutCycle}"
+                 cible="afficheEnseignantGroupe"
+                 oncomplete="
+                    #{rich:component('idPopupListeEnseignant')}.show(); 
+                    "
+                 rendered="true"
+                 render=":formulaire_principal:idPopupListeEnseignant"
+                 status="statuspop"      
+                 title="Afficher la liste des enseignants du groupe" >
+                    <h:graphicImage
+                        id="viewLatex_image"
+                        library="images/icones" 
+                        name="aide-saisie.png"
+                        /> 
+                    <f:setPropertyActionListener value="#{ligne.valeur2}" target="#{ajoutCycle.form.groupeSelected}" />
+                </cr:liena4j>
+            </rich:column>
+        </cr:table>
+</cr:popupListeFiltrable>
+
+<cr:popupModifiable idPopup="idPopupSeance" largeurPopup="800" popupUseRichEditor="true" maxlength="50" statusPopup="statuspop" titrePopup="Détail de la séance">
+        <cr:menuAction id="idMenuActionPopupSeance" surcharge="false">
+            <cr:elemMenuAction 
+              idaction="idSauverSeance" 
+              bean="#{ajoutCycle}" cible="sauverSeance"
+              image="save.png" 
+              title="Sauvegarder"
+              oncomplete="
+              if (#{facesContext.maximumSeverity == null or facesContext.maximumSeverity.ordinal le 0} ) {
+                #{rich:component('idPopupSeance')}.hide();
+              }" 
+              rendered="#{ajoutCycle.form.seanceSelectedModifiable}" 
+              render=":formulaire_principal:idPanelListeSeance"
+            />
+            <cr:elemMenuAction 
+              idaction="idDeleteSeance" bean="#{ajoutCycle}" cible="deleteSeance"
+              image="delete.png" 
+              title="Supprimer la séance"
+              confirm="Voulez-vous vraiment supprimer cette séance ?"
+              render=":formulaire_principal:idPanelListeSeance" 
+              oncomplete="if (#{facesContext.maximumSeverity == null or facesContext.maximumSeverity.ordinal le 0} ) {
+                #{rich:component('idPopupSeance')}.hide(); 
+              }" 
+              rendered="#{ajoutCycle.form.seanceSelectedModifiable and not empty ajoutCycle.form.cycleSeanceSelected.id}"
+            />
+        </cr:menuAction>
+
+        <rich:tabPanel switchType="client" selectedTab="seance" id="richTabPanel">
+            <rich:tab id="SEANCE" header="#{ajoutCycle.form.seanceTitre}" name="tabSeance">
+                <t:div style="height:450px; overflow:auto;">
+                    <table class="grille" style="">
+                        <tr>
+                            <td style="width: 100px;"><h:outputLabel value="Intitulé" styleClass="libelle" title="Intitulé de la séance" /></td>
+                            <td style="width: 450px;"> 
+                                <h:inputText value="#{ajoutCycle.form.cycleSeanceSelected.intitule}" readonly="#{not ajoutCycle.form.seanceSelectedModifiable}" style="width:100%;" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="width: 100px;"><h:outputLabel value="Enseignement" styleClass="libelle" title="Enseignement de la séance" /></td>
+                            <td style="width: 450px;"> 
+                                <h:inputText value="#{ajoutCycle.form.cycleSeanceSelected.enseignement}" readonly="#{not ajoutCycle.form.seanceSelectedModifiable}" style="width:100%;" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="width: 100px;"><h:outputLabel value="Objectifs" styleClass="libelle" title="Objectifs de la séance" /></td>
+                            <td style="width: 450px;">
+                                <h:inputTextarea value="#{ajoutCycle.form.cycleSeanceSelected.objectif}" readonly="#{not ajoutCycle.form.seanceSelectedModifiable}" style="width:100%;" rows="3" />
+                            </td>
+                        </tr>
+                    </table>
+                    <h:outputLabel value="Description" styleClass="libelle" title="Description de la séance" style="padding:3px;" />
+                    <table class="grille" style="">
+                        <tr>
+	                        <td style="">
+	                            <cr:saisieEditeur id="idSaisieDescriptionSeance"
+	                                rendered="#{ajoutCycle.form.seanceSelectedModifiable}"  
+	                                hauteur="127px" 
+	                                largeur="100%" 
+	                                titre="" desc="Description de la séance" valeur="#{ajoutCycle.form.cycleSeanceSelected.description}"
+	                            />            
+                                 <t:div id="idSaisieDescriptionHTMLSeance" style="#{ajoutCycle.form.seanceSelectedModifiable ? 'display:none' : 'display:block;' }" styleClass="description">
+                                     <t:div style="display: block; margin: 3px;" >            
+			                            <h:outputText rendered="true" escape="false"
+			                                styleClass="champLatex"
+			                                id= "idSaisieDescriptionHTMLSeanceX"
+			                                
+			                                value="#{ajoutCycle.form.cycleSeanceSelected.descriptionHTML}" />
+			                         </t:div>
+			                    </t:div>    
+	                        </td>
+                            <td style="width: 20px; text-align:center; #{ajoutCycle.form.seanceSelectedModifiable ? '' : 'display:none;'}">
+                                <cr:lien id="afterAjouterPieceJointeSeance" bean="#{ajoutCycle}"
+                                    cible="afterAjouterPieceJointeSeance"
+                                    render="ListeDesPiecesJointe"
+                                    titre="" />
+                                <cr:lien id="ajouterPieceJointeSeance" 
+                                    bean="#{ajoutCycle}"
+                                    cible="ajouterPieceJointeSeance"
+                                    render=":idPopupPiecesJointes_form:idPopupPiecesJointes_panel"
+                                    image="iconePieceJointe.png"
+                                    oncomplete="#{rich:component('idPopupPiecesJointes')}.show();"
+                                    desc="Ajouter une pièce jointe à la séance">
+                                    <f:setPropertyActionListener 
+                                        value="#idPopupSeance_form\\:afterAjouterPieceJointeSeance" 
+                                        target="#{ajoutCycle.form.raffraichirTabAfterUpload}" />
+                                </cr:lien> 
+                                <br/>
+                                <br/>
+                                <cr:liena4j 
+                                 idliena4j="viewLatex"
+                                 bean="#{ajoutCycle}"
+                                 cible="chargeImagesLatex"
+                                 oncomplete="
+                                    visualiserLatex(
+                                        '#{rich:clientId('viewLatex')}',
+                                        'idSaisieDescriptionSeance',
+                                        'idSaisieDescriptionHTMLSeance',
+                                        'la description de la séance'
+                                        );
+                                    "
+                                 rendered="#{ajoutCycle.form.seanceSelectedModifiable}"
+                                 render="idSaisieDescriptionHTMLSeance"
+                                 >
+                                 
+                                 <h:graphicImage
+                                    id="viewLatex_image"
+                                    library="images/icones" 
+                                    name="aide-saisie.png"
+                                    title="Visualiser la description de la séance"
+                                    /> 
+                                </cr:liena4j>
+                            </td>
+                        </tr>   
+                    </table>
+                    <t:div id="idPannelDesAnnotations" rendered="#{ajoutCycle.form.seanceSelectedModifiable or ajoutCycle.form.cycleSeanceSelected.annotationsVisible}">
+	                    <h:outputLabel value="Annotations personnelles" 
+	                        styleClass="libelle" title="Annotations personnelles" style="padding:3px; padding-right: 100px;" />
+	                    <h:selectBooleanCheckbox id="idPartagerAnnotations"  
+	                        value="#{ajoutCycle.form.cycleSeanceSelected.annotationsVisible}"
+	                        styleClass="checkSauvegarde" />
+	                    <h:outputLabel value="Partagées avec les autres enseignants"  
+	                        styleClass="libelle" title="En cochant cette case, ces annotations sont visibles par les autres enseignants ayant accès à cette séquence pédagogique" 
+	                        style="padding:3px;" />
+	                        
+	                    <table class="grille" style="">
+	                        <tr>
+	                            <td>
+	                                <cr:saisieEditeur id="idSaisieAnnotationsSeance"
+	                                    rendered="#{ajoutCycle.form.seanceSelectedModifiable}"  
+	                                    hauteur="60px" 
+	                                    largeur="100%" 
+	                                    titre="" desc="Annotations personnelles" valeur="#{ajoutCycle.form.cycleSeanceSelected.annotations}"
+	                                />
+	                                 <t:div id="idSaisieAnnotationsHTMLSeance" style="#{ajoutCycle.form.seanceSelectedModifiable ? 'display:none' : 'display:block;' }" styleClass="description">
+			                             <t:div style="display: block; margin: 3px;" >            
+			                                <h:outputText rendered="true" escape="false"
+			                                    styleClass="champLatex"
+			                                    id= "idSaisieAnnotationsHTMLSeanceX"
+			                                    
+			                                    value="#{ajoutCycle.form.cycleSeanceSelected.annotationsHTML}" />
+			                             </t:div>
+	                                </t:div>    
+	                            </td>
+	                            <td style="width: 20px; text-align:center; #{ajoutCycle.form.seanceSelectedModifiable ? '' : 'display:none;'}">
+	                                <br/>
+	                                <cr:liena4j 
+	                                 idliena4j="viewLatexAnnotations"
+	                                 bean="#{ajoutCycle}"
+	                                 cible="chargeImagesLatexAnnotations"
+	                                 oncomplete="
+	                                    visualiserLatex(
+	                                        '#{rich:clientId('viewLatexAnnotations')}',
+	                                        'idSaisieAnnotationsSeance',
+	                                        'idSaisieAnnotationsHTMLSeance',
+	                                        'les annotations personnelles'
+	                                        );
+	                                    "
+	                                 rendered="#{ajoutCycle.form.seanceSelectedModifiable}"
+	                                 render="idSaisieAnnotationsHTMLSeance"
+	                                 >
+	                                 
+	                                 <h:graphicImage
+	                                    id="viewLatexAnnotations_image"
+	                                    library="images/icones" 
+	                                    name="aide-saisie.png"
+	                                    title="Visualiser les annotations personnelles"
+	                                    /> 
+	                                </cr:liena4j>
+	                            </td>
+	                        </tr>   
+	                    </table>
+	                </t:div>
+	                <table class="grille" style="">
+                        <tr>
+                            <td>
+                                <t:div id="ListeDesPiecesJointe"> 
+                                    <h:outputLabel styleClass="" value="Pièces jointes :" rendered="#{not empty ajoutCycle.form.cycleSeanceSelected.listePieceJointe}" />
+                                    <br/>
+                                    <ui:repeat keepSaved="false"
+					                     value="#{ajoutCycle.form.cycleSeanceSelected.listePieceJointe}"
+					                     var="ligne">
+                                        <ui:fragment rendered="#{ligne.activerLien}">
+                                            <a class="pieceJointeLien"
+                                                href="#{ligne.pathFullDownload}"
+                                                target="_blank"
+                                                title="Télécharger #{ligne.nomCourt}">
+                                                #{ligne.nomCourt}
+                                            </a>
+                                        </ui:fragment>
+                                        <h:outputText rendered="#{!ligne.activerLien}"
+                                            styleClass=""
+                                            value="#{ligne.nom}" />
+                                        <cr:lien bean="#{ajoutCycle}" id="supprimerPieceJointeSeance" 
+                                            confirm="Etes-vous sur de vouloir supprimer : #{ligne.nomCourt} ?"
+                                            cible="deletePieceJointeSeance" image="delete.gif" desc="Supprimer #{ligne.nomCourt}"
+                                            render="ListeDesPiecesJointe" 
+                                            rendered="#{ajoutCycle.form.seanceSelectedModifiable}"
+                                             >
+                                            <f:setPropertyActionListener value="#{ligne}" target="#{ajoutCycle.form.pieceJointeASupprimer}" />
+                                        </cr:lien>
+                                    </ui:repeat>                                
+                                </t:div>
+			                </td>
+			            </tr>
+			        </table>
+                </t:div>
+            </rich:tab>
+            <rich:tab id="TAB_DEVOIR" header="Travail à faire" rendered="true">
+                <t:div id="idListeDesDevoirsSeance" styleClass="listeDesDevoirsCycleSeance" >
+                    <c:forEach items="#{ajoutCycle.form.cycleSeanceSelected.listeCycleDevoir}" var="cycleDevoir" varStatus="indexDevoir">
+	                    <table class="grille" style="">
+	                        <tr>
+	                            <td><h:outputLabel value="Intitulé" styleClass="libelle" title="Intitulé du travail à faire" /></td>
+	                            <td> <h:inputText value="#{cycleDevoir.intitule}" readonly="#{not ajoutCycle.form.seanceSelectedModifiable}" style="width:100%;" /></td>
+	                        </tr>
+	                        <tr>
+	                            <td><h:outputLabel value="Remise pour" styleClass="libelle" title="Date de remise du travail à faire" /></td>
+	                            <td>
+                                    <cr:saisieTexte desc="Date de remise"
+                                                    id="dateRemise#{indexDevoir.index}"
+                                                    largeur="180"
+                                                    modifiable="#{ajoutCycle.form.seanceSelectedModifiable}"
+                                                    rendered="#{not ajoutCycle.form.seanceSelectedModifiable}"
+                                                    style="vertical-align: bottom;"
+                                                    styleClassError="${fn:contains(controleur.form.listeChampsObligatoire, 'CYCLE_02')}"
+                                                    titre=""
+                                                    valeur="#{cycleDevoir.dateRemise.libelle}">
+                                                    </cr:saisieTexte>
+                                    <cr:saisieListe desc="Date de remise"
+                                                    donnees=""
+                                                    id="selectDateRemise#{indexDevoir.index}"
+                                                    rendered="#{ajoutCycle.form.seanceSelectedModifiable}"
+                                                    style="width: 180px; vertical-align:middle;"
+                                                    titre=""
+                                                    valeur="#{cycleDevoir.dateRemise}">
+                                      <f:converter converterId="selectOneDtoConverter" />
+                                      <f:selectItem itemLabel=""
+                                                    itemValue="" />
+                                      <f:selectItems itemLabel="#{dateRemise.libelle}"
+                                                     itemValue="#{dateRemise}"
+                                                     value="#{ajoutCycle.form.listeDateRemise}"
+                                                     var="dateRemise" />
+                                      <f:attribute name="converterListe"
+                                                   value="#{ajoutCycle.form.listeDateRemise}" />
+                                    </cr:saisieListe>
+	                            </td>
+	                        </tr>
+	                        <tr>
+	                           <td><h:outputLabel value="Type" styleClass="libelle" title="Type de travail à faire" /></td>
+	                           <td>
+						            <cr:saisieTexte desc="Type du travail à faire"
+						                            id="intituleTypeDevoir#{indexDevoir.index}"
+						                            largeur="180"
+						                            modifiable="#{ajoutCycle.form.seanceSelectedModifiable}"
+						                            rendered="#{not ajoutCycle.form.seanceSelectedModifiable}"
+						                            style="vertical-align: bottom;"
+						                            styleClassError="${fn:contains(controleur.form.listeChampsObligatoire, 'CYCLE_03')}"
+						                            titre=""
+						                            valeur="#{cycleDevoir.typeDevoirDTO.libelle}">
+						                            </cr:saisieTexte>
+						            <cr:saisieListe desc="Type du travail à faire"
+						                            donnees=""
+						                            id="selectTypeTravail#{indexDevoir.index}"
+						                            rendered="#{ajoutCycle.form.seanceSelectedModifiable}"
+						                            style="width: 180px; vertical-align:middle;"
+						                            titre=""
+						                            valeur="#{cycleDevoir.typeDevoirDTO}">
+						              <f:converter converterId="selectOneDtoConverter" />
+						              <f:selectItem itemLabel=""
+						                            itemValue="" />
+						              <f:selectItems itemLabel="#{typeDevoir.libelle}"
+						                             itemValue="#{typeDevoir}"
+						                             value="#{ajoutCycle.form.listeTypeDevoir}"
+						                             var="typeDevoir" />
+						              <f:attribute name="converterListe"
+						                           value="#{ajoutCycle.form.listeTypeDevoir}" />
+						            </cr:saisieListe>
+					            </td>
+	                        </tr>
+	                    </table>
+	                    <h:outputLabel value="Description" styleClass="libelle" title="Description du travail à faire" style="padding:3px;" />
+	                    <table class="grille" style="">
+	                        <tr>
+	                            <td style="">
+	                                <cr:saisieEditeur id="#{cr:concat('idSaisieDescriptionDevoir', indexDevoir.index)}"
+	                                    rendered="#{ajoutCycle.form.seanceSelectedModifiable}"  
+	                                    hauteur="127px" 
+	                                    largeur="100%" 
+	                                    titre="" desc="Description du travail à faire" valeur="#{cycleDevoir.description}"
+	                                />            
+	                                 <t:div id="idSaisieDescriptionHTMLDevoir${indexDevoir.index}" style="#{ajoutCycle.form.seanceSelectedModifiable ? 'display:none' : 'display:block;' }" styleClass="description">
+	                                     <t:div style="display: block; margin: 3px;" >            
+	                                        <h:outputText rendered="true" escape="false"
+	                                            styleClass="champLatex"
+	                                            value="#{cycleDevoir.descriptionHTML}" />
+	                                     </t:div>
+	                                </t:div>    
+	                            </td>
+	                            <td style="width: 20px; text-align:center; #{ajoutCycle.form.seanceSelectedModifiable ? '' : 'display:none;'}">
+	                                <cr:lien id="afterAjouterPieceJointeDevoir${indexDevoir.index}" bean="#{ajoutCycle}"
+	                                    cible="afterAjouterPieceJointeDevoir"
+	                                    render="ListeDesPiecesJointeDevoir${indexDevoir.index}"
+	                                    titre="">
+	                                    <f:setPropertyActionListener value="#{cycleDevoir}" target="#{ajoutCycle.form.cycleDevoirSelected}" />
+	                                </cr:lien>
+	                                <cr:lien id="ajouterPieceJointeDevoir${indexDevoir.index}" 
+	                                    bean="#{ajoutCycle}"
+	                                    cible="ajouterPieceJointeDevoir"
+	                                    render=":idPopupPiecesJointes_form:idPopupPiecesJointes_panel"
+	                                    image="iconePieceJointe.png"
+	                                    oncomplete="#{rich:component('idPopupPiecesJointes')}.show();"
+	                                    desc="Ajouter une pièce jointe au travail à faire">
+	                                    <f:setPropertyActionListener 
+	                                        value="#idPopupSeance_form\\:afterAjouterPieceJointeDevoir#{indexDevoir.index}" 
+	                                        target="#{ajoutCycle.form.raffraichirTabAfterUpload}" />
+	                                </cr:lien> 
+	                                <br/>
+	                                <br/>
+	                                <cr:liena4j 
+	                                 idliena4j="viewLatexDevoir${indexDevoir.index}"
+	                                 bean="#{ajoutCycle}"
+	                                 cible="chargeImagesLatexDevoir"
+	                                 oncomplete="
+	                                    var idLatex = 'viewLatexDevoir' + '#{indexDevoir.index}';
+	                                    var idDescriptionDevoir = 'idSaisieDescriptionDevoir' + '#{indexDevoir.index}';
+	                                    var idDescriptionHTMLDevoir = 'idSaisieDescriptionHTMLDevoir' + '#{indexDevoir.index}';
+	                                    var idLatexRich = '#{rich:clientId(cr:concat('viewLatexDevoir',indexDevoir.index))}'; 
+	                                    visualiserLatex(
+	                                        idLatexRich,
+	                                        idDescriptionDevoir,
+	                                        idDescriptionHTMLDevoir,
+	                                        'la description du travail à faire'
+	                                        );
+	                                    "
+	                                 rendered="#{ajoutCycle.form.seanceSelectedModifiable}"
+	                                 render="idSaisieDescriptionHTMLDevoir#{indexDevoir.index}"
+	                                 >
+	                                 <f:setPropertyActionListener value="#{cycleDevoir}" target="#{ajoutCycle.form.cycleDevoirSelected}" />
+	                                 <h:graphicImage
+	                                    id="viewLatex_image${indexDevoir.index}"
+	                                    library="images/icones" 
+	                                    name="aide-saisie.png"
+	                                    title="Visualiser la description du travail à faire"
+	                                    /> 
+	                                </cr:liena4j>
+	                                <br/>
+	                                <br/>
+	                                <a4j:commandLink action="#{ajoutCycle['deleteDevoir']}"
+						                             id="deleteDevoir#{indexDevoir.index}"
+						                             onclick="resetFormTarget(); if (!confirm('Voulez-vous vraiment supprimer ce travail à faire ?')) { return false; } desactiveClick(this.id, this.onclick);"
+						                             render="idListeDesDevoirsSeance"
+						                             rendered="#{ajoutCycle.form.seanceSelectedModifiable}"
+						                             title="Supprimer le travail à faire">
+						              <f:setPropertyActionListener target="#{ajoutCycle.form.cycleDevoirSelected}"
+						                                           value="#{cycleDevoir}" />
+						              <h:graphicImage library="images/icones"
+						                              name="delete.gif" />
+						            </a4j:commandLink>
+	                            </td>
+	                        </tr>   
+	                    </table>     
+	                    <table class="grille" style="">
+	                        <tr>
+	                            <td colspan="2"> 
+	                                <t:div id="ListeDesPiecesJointeDevoir#{indexDevoir.index}"> 
+	                                    <h:outputLabel styleClass="" value="Pièces jointes :" rendered="#{not empty cycleDevoir.listePieceJointe}" />
+	                                    <br/>
+	                                    <ui:repeat keepSaved="false"
+	                                         value="#{cycleDevoir.listePieceJointe}"
+	                                         var="ligne">
+	                                        <ui:fragment rendered="#{ligne.activerLien}">
+	                                            <a class="pieceJointeLien"
+	                                                href="#{ligne.pathFullDownload}"
+	                                                target="_blank"
+	                                                title="Télécharger #{ligne.nomCourt}">
+	                                                #{ligne.nomCourt}
+	                                            </a>
+	                                        </ui:fragment>
+	                                        <h:outputText rendered="#{!ligne.activerLien}"
+	                                            styleClass=""
+	                                            value="#{ligne.nom}" />
+	                                        <cr:lien bean="#{ajoutCycle}" id="supprimerPieceJointeDevoir#{indexDevoir.index}" 
+	                                            confirm="Etes-vous sur de vouloir supprimer : #{ligne.nomCourt} ?"
+	                                            cible="deletePieceJointeDevoir" image="delete.gif" desc="Supprimer #{ligne.nomCourt}"
+	                                            render="ListeDesPiecesJointeDevoir#{indexDevoir.index}" 
+	                                            rendered="#{ajoutCycle.form.seanceSelectedModifiable}"
+	                                             >
+	                                            <f:setPropertyActionListener value="#{ligne}" target="#{ajoutCycle.form.pieceJointeASupprimer}" />
+	                                            <f:setPropertyActionListener value="#{cycleDevoir}" target="#{ajoutCycle.form.cycleDevoirSelected}" />
+	                                        </cr:lien>
+	                                    </ui:repeat>                                
+	                                </t:div>	                            
+	                            </td>
+	                        </tr>
+	                    </table>
+	                    <hr/>
+                    </c:forEach>
+                </t:div>
+                <t:div style="height:32px; padding-top:5px;" rendered="#{ajoutCycle.form.seanceSelectedModifiable}">
+                    <cr:lien id="idAjouterDevoir" bean="#{ajoutCycle}"
+                        cible="ajouterDevoir"
+                        render="idListeDesDevoirsSeance"
+                        image="add.png"
+                        desc="Ajouter un travail à faire" 
+                        
+                        />
+                </t:div>
+            </rich:tab>
+        </rich:tabPanel>
+</cr:popupModifiable>
+
+<cr:popupPiecesJointes 
+    idPopup="idPopupPiecesJointes" tailleAuto="true"
+    largeurPopup="660" titrePopup="Pièces jointes"
+    statusPopup="statuspopup" raffraichirTabAfterUpload="#{ajoutCycle.form.raffraichirTabAfterUpload}" />
+    
+
+
+<cr:popupStatus idStatus="statuspop" />
+
+</html>

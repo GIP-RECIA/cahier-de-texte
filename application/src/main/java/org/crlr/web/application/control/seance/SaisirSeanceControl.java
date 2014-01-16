@@ -31,6 +31,9 @@ import org.crlr.dto.application.devoir.DevoirDTO;
 import org.crlr.dto.application.emploi.DetailJourEmploiDTO;
 import org.crlr.dto.application.emploi.RechercheEmploiQO;
 import org.crlr.dto.application.emploi.SemaineDTO;
+import org.crlr.dto.application.remplacement.RechercheRemplacementQO;
+import org.crlr.dto.application.remplacement.RemplacementDTO;
+import org.crlr.dto.application.remplacement.TypeReglesRemplacement;
 import org.crlr.dto.application.seance.RechercheSeanceQO;
 import org.crlr.dto.application.seance.ResultatRechercheSeanceDTO;
 import org.crlr.dto.application.sequence.RechercheSequenceQO;
@@ -40,6 +43,7 @@ import org.crlr.message.Message.Nature;
 import org.crlr.services.EmploiService;
 import org.crlr.services.EtablissementService;
 import org.crlr.services.ImagesServlet;
+import org.crlr.services.RemplacementService;
 import org.crlr.services.SeanceService;
 import org.crlr.utils.ObjectUtils;
 import org.crlr.web.application.control.AbstractControl;
@@ -51,6 +55,7 @@ import org.crlr.web.dto.GrilleHoraireDTO;
 import org.crlr.web.dto.MoisDTO;
 import org.crlr.web.utils.MessageUtils;
 import org.crlr.web.utils.NavigationUtils;
+import org.joda.time.LocalDate;
 
 import com.google.gson.Gson;
 
@@ -80,6 +85,11 @@ public class SaisirSeanceControl extends AbstractControl<SaisirSeanceForm> {
     
     @ManagedProperty(value = "#{ajoutSeance}")
     private transient AjoutSeanceControl ajoutSeanceControl;
+    
+    /** Service Remplacement. */
+    @ManagedProperty(value = "#{remplacementService}")
+    private transient RemplacementService remplacementService;
+
     
     private static final String ERREUR_GENERIQUE = "Une erreur est survenue.";
 
@@ -144,7 +154,7 @@ public class SaisirSeanceControl extends AbstractControl<SaisirSeanceForm> {
             
             alimenteBarreSemaine(semaineSelectionnee);
         } catch (Exception e) {
-            log.error(e, "Exception");
+            log.error( "Exception", e);
         }
         
         final UtilisateurDTO utilisateurDTO = ContexteUtils.getContexteUtilisateur().getUtilisateurDTO();
@@ -300,7 +310,7 @@ public class SaisirSeanceControl extends AbstractControl<SaisirSeanceForm> {
         rechercheSeanceQO.setIdEtablissement(idEtablissement);
         rechercheSeanceQO.setDateDebut(form.getSemaineSelectionne().getLundi());
         rechercheSeanceQO.setDateFin(form.getSemaineSelectionne().getDimanche());
-        
+        rechercheSeanceQO.setIdEnseignantConnecte(ContexteUtils.getContexteUtilisateur().getUtilisateurDTOConnecte().getUserDTO().getIdentifiant());
         try {
             final ResultatDTO<List<ResultatRechercheSeanceDTO>> resultat = seanceService.findSeance(rechercheSeanceQO);
             final List<ResultatRechercheSeanceDTO> listeResultat = resultat.getValeurDTO();
@@ -446,6 +456,10 @@ public class SaisirSeanceControl extends AbstractControl<SaisirSeanceForm> {
     /**
      * Methode appelee lors de l'ajout d'une nouvelle seance sur une case de l'emploi du temps vide
      * pour laquelle il n'y a qu'une seul séquence possible.
+     * 
+     * Aussi une fois la séquence est sélectionnée
+     * 
+     * jsFunction : afficherSelectionSequence ; appeler quand une case EDT est cliquée
      */
     public void ajouterNouvelleSeance() {
         final Integer indice = form.getPlageSelectedIndex();
@@ -460,8 +474,38 @@ public class SaisirSeanceControl extends AbstractControl<SaisirSeanceForm> {
         // Met a jour les champs de la seance en correspondance avec la case de l'EDT
         final SeanceDTO nouvelleSeance = new SeanceDTO();
         nouvelleSeance.initFromEDT(caseAgenda.getDetail());
-         
+        nouvelleSeance.setAccesEcriture(true);
         nouvelleSeance.setDate(caseAgenda.getDate());
+        
+        final ContexteUtilisateur contexteUtilisateur = ContexteUtils.getContexteUtilisateur();
+        final UtilisateurDTO utilisateur = contexteUtilisateur.getUtilisateurDTO();
+        final UtilisateurDTO utilisateurConnecte = contexteUtilisateur.getUtilisateurDTOConnecte();
+        
+        //Mode remplaçement
+        if (!utilisateur.getUserDTO().getIdentifiant().equals(utilisateurConnecte.getUserDTO().getIdentifiant())) {
+            
+
+            //Verification si l'enseignant est en mode remplaçaent
+            RechercheRemplacementQO rechercheRemplacementQO = new RechercheRemplacementQO();
+            
+            //L'id de séquence est l'enseignant absent
+            rechercheRemplacementQO.setIdEnseignantAbsent(utilisateur.getUserDTO().getIdentifiant());
+            
+            rechercheRemplacementQO.setIdEnseignantRemplacant(utilisateurConnecte.getUserDTO().getIdentifiant());
+            
+            rechercheRemplacementQO.setIdEtablissement(utilisateur.getIdEtablissement());
+            
+            rechercheRemplacementQO.setDate(new LocalDate(nouvelleSeance.getDate()));
+            
+            List<RemplacementDTO> listeRemplacementsDTO = 
+                    remplacementService.findListeRemplacement(rechercheRemplacementQO).getValeurDTO();
+            
+            if (CollectionUtils.isEmpty(listeRemplacementsDTO)) {
+                MessageUtils.addMessage(new Message(TypeReglesRemplacement.REMPLACEMENT_14.name(), Nature.BLOQUANT), getClass());
+                return;
+            }
+        
+        }
        
         //Intialise le choix de séquences
         List<SequenceDTO> listeSequences = 
@@ -516,18 +560,22 @@ public class SaisirSeanceControl extends AbstractControl<SaisirSeanceForm> {
     
     /**
      * Methode appelee lors de l'ajout d'une nouvelle seance libre (sans plage EDT correspondante.
+     * 
+     * Le but est d'initialiser les objets, mais pas pour faire des contrôls quel qu'ils soient
      */
     public void ajouterNouvelleSeanceLibre() {
         
         //  Ajoute une nouvelle plage pour la creation d'une seance libre
         // La plage n'est pas ajoutee dans la liste agenda pour le moment.
         final SeanceDTO seance = new SeanceDTO();
+        seance.setAccesEcriture(true);
         final AgendaSeanceDTO plageAgenda = new AgendaSeanceDTO();
         ajoutSeanceControl.getForm().setSeance(seance);
         
        
         form.setPlagePrepare(plageAgenda);
         form.setPlageSelectedIndex(null);
+        
     }    
 
     /**
@@ -552,6 +600,36 @@ public class SaisirSeanceControl extends AbstractControl<SaisirSeanceForm> {
         }
         
         plageAgenda.setDate(seance.getDate()); 
+        
+        final ContexteUtilisateur contexteUtilisateur = ContexteUtils.getContexteUtilisateur();
+        final UtilisateurDTO utilisateur = contexteUtilisateur.getUtilisateurDTO();
+        final UtilisateurDTO utilisateurConnecte = contexteUtilisateur.getUtilisateurDTOConnecte();
+        
+        //Mode remplaçement
+        if (!utilisateur.getUserDTO().getIdentifiant().equals(utilisateurConnecte.getUserDTO().getIdentifiant())) {
+            
+
+            //Verification si l'enseignant est en mode remplaçaent
+            RechercheRemplacementQO rechercheRemplacementQO = new RechercheRemplacementQO();
+            
+            //L'id de séquence est l'enseignant absent
+            rechercheRemplacementQO.setIdEnseignantAbsent(utilisateur.getUserDTO().getIdentifiant());
+            
+            rechercheRemplacementQO.setIdEnseignantRemplacant(utilisateurConnecte.getUserDTO().getIdentifiant());
+            
+            rechercheRemplacementQO.setIdEtablissement(utilisateur.getIdEtablissement());
+            
+            rechercheRemplacementQO.setDate(new LocalDate(seance.getDate()));
+            
+            List<RemplacementDTO> listeRemplacementsDTO = 
+                    remplacementService.findListeRemplacement(rechercheRemplacementQO).getValeurDTO();
+            
+            if (CollectionUtils.isEmpty(listeRemplacementsDTO)) {
+                MessageUtils.addMessage(new Message(TypeReglesRemplacement.REMPLACEMENT_14.name(), Nature.BLOQUANT), getClass());
+                return;
+            }
+        
+        }
     
         // Positionne toutes les sequences possible sur cette seance libre valides pour la date
         List<SequenceDTO> listeSequence = AjoutSeanceControl
@@ -560,8 +638,8 @@ public class SaisirSeanceControl extends AbstractControl<SaisirSeanceForm> {
         
         //Pour le popup choix de séquence
         plageAgenda.setListeSequence( listeSequence );
-        final ContexteUtilisateur contexteUtilisateur = ContexteUtils.getContexteUtilisateur();
-        final UtilisateurDTO utilisateur = contexteUtilisateur.getUtilisateurDTO();
+        
+        
         plageAgenda.setAfficheSelectionSequence(
                 BooleanUtils.isNotTrue(utilisateur.getVraiOuFauxEtabSaisieSimplifiee()) || 
                 listeSequence.size()>1);
@@ -720,6 +798,14 @@ public class SaisirSeanceControl extends AbstractControl<SaisirSeanceForm> {
      */
     public void setAjoutSeanceControl(AjoutSeanceControl ajoutSeanceControl) {
         this.ajoutSeanceControl = ajoutSeanceControl;
+    }
+
+
+    /**
+     * @param remplacementService the remplacementService to set
+     */
+    public void setRemplacementService(RemplacementService remplacementService) {
+        this.remplacementService = remplacementService;
     }
     
 }

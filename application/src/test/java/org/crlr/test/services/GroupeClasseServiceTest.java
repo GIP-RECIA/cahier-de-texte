@@ -25,6 +25,7 @@ import org.crlr.test.AbstractMetierTest;
 import org.crlr.utils.AssertionException;
 import org.apache.commons.collections.CollectionUtils;
 
+import static org.junit.Assert.*;
 /**
  * Test Junit pour GroupeClasseService.
  *

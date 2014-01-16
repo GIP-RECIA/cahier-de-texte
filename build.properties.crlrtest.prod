@@ -1,0 +1,31 @@
+#################
+# Configuration #
+#################
+
+# Répertoire d'installation de Tomcat
+tomcat.home=/opt/tomcatENT
+
+# Répertoire de déploiement (webapps)
+deploy.home=/opt/tomcatENT/webapps
+
+###############
+# Développeur #
+###############
+
+# Nom de l'application
+application.name=cahier-texte-testvisa
+
+#Durée de la session en milliseconde (minute*60*1000) : 10 min = 600000
+application.session=1800000
+
+
+#########
+#  CAS  #
+#########
+cas.auth=true
+cas.finalURL=https://FRMP0136.frml.bull.fr:8443/cas
+cas.uri.login=/login
+cas.uri.validate=/serviceValidate
+cas.uri.client=FRMP0138.frml.bull.fr:8080
+cas.filter.pattern=/ecrans/*
+

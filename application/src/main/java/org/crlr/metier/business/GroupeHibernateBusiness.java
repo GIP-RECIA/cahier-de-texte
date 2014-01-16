@@ -402,7 +402,9 @@ public class GroupeHibernateBusiness extends AbstractBusiness
             " new map( " +
             " G.id as idGroupe, " +
             " G.code as codeGroupe, " +
-            " G.designation as intituleGroupe )" +
+            " G.designation as intituleGroupe," +
+            " G.groupeCollaboratif as groupeCollaboratif" +
+            " )" +
             " FROM " + 
             GroupesClassesBean.class.getName() + " GC " +
             " INNER JOIN GC.groupe G " + 
@@ -418,6 +420,7 @@ public class GroupeHibernateBusiness extends AbstractBusiness
             groupeDTO.setId((Integer) result.get("idGroupe"));
             groupeDTO.setCode((String) result.get("codeGroupe"));
             groupeDTO.setIntitule((String) result.get("intituleGroupe"));
+            groupeDTO.setGroupeCollaboratif((Boolean) result.get("groupeCollaboratif"));
             listeGroupeDTO.add(groupeDTO);
         }
 
@@ -431,7 +434,7 @@ public class GroupeHibernateBusiness extends AbstractBusiness
     public List<EnseignantDTO> findEnseignantsGroupe(
             final EnseignantsClasseGroupeQO enseignantsClasseGroupeQO) {
         Assert.isNotNull("enseignantsClasseGroupeQO", enseignantsClasseGroupeQO);
-        Assert.isNotNull("etablissement", enseignantsClasseGroupeQO.getIdEtablissement());
+        //Assert.isNotNull("etablissement", enseignantsClasseGroupeQO.getIdEtablissement());
         
         final Integer idGroupe = enseignantsClasseGroupeQO.getIdGroupeClasse();
         Assert.isNotNull("idGroupe", idGroupe);
@@ -458,7 +461,8 @@ public class GroupeHibernateBusiness extends AbstractBusiness
             " FROM " +
                 EnseignantsGroupesBean.class.getName() + " EG INNER JOIN EG.enseignant E " +
             " WHERE " +
-                " EG.pk.idGroupe = :idGroupe";
+                " EG.pk.idGroupe = :idGroupe " +
+            " ORDER BY E.nom, E.prenom";
         }
             
         final Query queryEnseignant = getEntityManager().createQuery(requete).setParameter("idGroupe", idGroupe);
@@ -521,6 +525,7 @@ public class GroupeHibernateBusiness extends AbstractBusiness
             groupeDTO.setCode(groupeBean.getCode());
             groupeDTO.setId(groupeBean.getId());
             groupeDTO.setIntitule(groupeBean.getDesignation());
+            groupeDTO.setGroupeCollaboratif(groupeBean.getGroupeCollaboratif());
             groupesDTO.add(groupeDTO);
         }
         return groupesDTO;
@@ -555,5 +560,34 @@ public class GroupeHibernateBusiness extends AbstractBusiness
         return lesIdGroupe;
     }
     
-    
+    /**
+     * {@inheritDoc}
+     */
+    @SuppressWarnings("unchecked")
+    public List<GroupeDTO> findGroupesCollaboratifEnseignant(Integer idEnseignant) {
+        Assert.isNotNull("idEnseignant", idEnseignant);
+        final List<GroupeDTO> listeGroupe = new ArrayList<GroupeDTO>();
+        final String query =
+                " SELECT G " +
+                " FROM " + 
+                EnseignantsGroupesBean.class.getName() + " EG " +
+                " INNER JOIN EG.groupe G " + 
+                " WHERE " +
+                " EG.pk.idEnseignant = :idEnseignant and (G.groupeCollaboratif = true)" +
+                " ORDER BY G.designation ASC";
+
+        final List<GroupeBean> liste =
+            getEntityManager().createQuery(query).setParameter("idEnseignant", idEnseignant).getResultList();
+
+        if (!CollectionUtils.isEmpty(liste)) {
+            for (final GroupeBean groupe : liste) {
+                final GroupeDTO groupeDTO = new GroupeDTO();
+                ObjectUtils.copyProperties(groupeDTO, groupe);
+                groupeDTO.setIntitule(groupe.getDesignation());
+                listeGroupe.add(groupeDTO);
+            }
+            
+        }
+        return listeGroupe;        
+    }
 }

@@ -1,0 +1,11 @@
+dist.name.base = RECIA_CAHIER-DE-TEXTE
+
+entarchive.machine.address = FRMP0133.frml.bull.fr
+
+vserver.machine.address = FRMP0160.frml.bull.fr
+
+archives.dir = /opt/ArchivesRECIA/CDT
+vserver.dir = /opt
+
+tomcat.deploy.dir = /opt/tomcat-recia/webapps/cahier-texte
+tomcat.work.dir = /opt/tomcat-recia/work

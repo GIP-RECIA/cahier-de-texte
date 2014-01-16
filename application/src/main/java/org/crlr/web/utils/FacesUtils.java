@@ -34,6 +34,8 @@ import org.apache.commons.lang.StringUtils;
 import org.crlr.web.contexte.ContexteUtilisateur;
 import org.crlr.web.contexte.utils.ContexteUtils;
 import org.crlr.web.dto.FileUploadDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Méthodes utilitaires pour JSF.
@@ -48,6 +50,8 @@ public final class FacesUtils {
      * table (utilisé de manière transparente)
      */
     private static int compteur;
+    
+    protected static final Logger log = LoggerFactory.getLogger(FacesUtils.class);
     
 /**
      * The Constructor.
@@ -254,16 +258,22 @@ public final class FacesUtils {
     public static Boolean haveMessagesError() {
         Boolean isMessages = Boolean.FALSE;
         final FacesContext fc = FacesContext.getCurrentInstance();
-        if (fc != null) {
-            final Iterator<?> it = fc.getMessages();
-            while (it.hasNext()) {
-                final FacesMessage obj = (FacesMessage) it.next();
-                if (!obj.getSeverity().equals(FacesMessage.SEVERITY_INFO)) {
-                    isMessages = true;
-                    break;
-                }
+        if (fc == null) {
+            return isMessages;
+        }
+        
+        final Iterator<?> it = fc.getMessages();
+        log.debug("haveMessagesError.  # messages {}", fc.getMessageList().size());
+        
+        while (it.hasNext()) {
+            final FacesMessage obj = (FacesMessage) it.next();
+            log.debug("haveMessagesError msg {}", obj);
+            if (!obj.getSeverity().equals(FacesMessage.SEVERITY_INFO)) {
+                isMessages = true;
+                break;
             }
         }
+    
         return isMessages;
     }
 

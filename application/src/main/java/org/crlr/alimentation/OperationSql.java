@@ -50,6 +50,8 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Classe permettant d'effectuer des opérations sur la base de données du module
  * Cahier de Texte.
+ * 
+ * Utiliser pendant l'alimentation de la base.  Voir la classe Alimentation.
  *
  * @author breytond.
  * @version $Revision: 1.26 $

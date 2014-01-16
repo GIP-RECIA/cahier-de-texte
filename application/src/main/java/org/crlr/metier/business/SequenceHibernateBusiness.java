@@ -107,7 +107,7 @@ public class SequenceHibernateBusiness extends AbstractBusiness
             // Mieux de passer l'id mais au cas où il n'y a que le code
             sequenceBean =         findByCode(codeSequence);
         } else {
-            log.warning("Pas d'id ni de code");
+            log.warn("Pas d'id ni de code");
             return sequenceDTO;
         }
         
@@ -625,11 +625,17 @@ public class SequenceHibernateBusiness extends AbstractBusiness
             "SELECT SEQ.id as seqId, SEQ.code as seqCode, " +
             "CLA.code as codeCla, CLA.designation as desCla, CLA.id as idCla, " +
             "GRP.code as codeGrp, GRP.designation as desGrp, GRP.id as idGrp, " +
-            "ENS.id as idEns, coalesce(LIBENS.libelle, ENS.designation) as desEns, " +
+            "ENS.id as idEns,  " +
+            "coalesce(LIBENS.libelle, ENS.designation) as desEns, " +
             "SEQ.intitule as intSeq, SEQ.description as desSeq, " +
-            "SEQ.date_debut as debSeq, SEQ.date_fin as finSeq, SEQ.id_enseignant as idEnseignant" +
-            " FROM " + SchemaUtils.getTableAvecSchema(schema, "cahier_sequence") + 
-            " SEQ INNER JOIN " + SchemaUtils.getTableAvecSchema(schema, "cahier_enseignement") + " ENS ON (ENS.id = SEQ.id_enseignement) " +
+            "SEQ.date_debut as debSeq, SEQ.date_fin as finSeq, " +
+            "SEQ.id_enseignant as idEnseignant, " +
+            "ENSEIGNANT.nom as nomEns, ENSEIGNANT.prenom as prenomEns, ENSEIGNANT.civilite as civiliteEns, " +
+            "SEQ.id_etablissement as idEtablissement" +
+            " FROM " + SchemaUtils.getTableAvecSchema(schema, "cahier_sequence") + " SEQ " +
+            " INNER JOIN " + SchemaUtils.getTableAvecSchema(schema, "cahier_enseignement") + " ENS ON (ENS.id = SEQ.id_enseignement) " +
+            " INNER JOIN " + SchemaUtils.getTableAvecSchema(schema, "cahier_enseignant") + 
+            " ENSEIGNANT ON (ENSEIGNANT.id = SEQ.id_enseignant) " +
             " LEFT JOIN " + SchemaUtils.getTableAvecSchema(schema, "cahier_libelle_enseignement") + 
                   " LIBENS ON (LIBENS.id_etablissement=SEQ.id_etablissement and LIBENS.id_enseignement=SEQ.id_enseignement) " +
             " LEFT JOIN " + SchemaUtils.getTableAvecSchema(schema, "cahier_classe") + " CLA ON (CLA.id=SEQ.id_classe) " +
@@ -641,58 +647,47 @@ public class SequenceHibernateBusiness extends AbstractBusiness
                 .getResultList();
         
         if (!CollectionUtils.isEmpty(resultatQuery)) {
-            final Object[] result = resultatQuery.get(0);      
-            sequenceDTO.setId((Integer) result[0]);
-            sequenceDTO.setCode((String) result[1]);
+            final Object[] result = resultatQuery.get(0);    
             
-            final String codeClasse = (String) result[2];
+            int champ = 0;
+            
+            sequenceDTO.setId((Integer) result[champ++]);
+            sequenceDTO.setCode((String) result[champ++]);
+            
+            final String codeClasse = (String) result[champ++];
+            final String desgClasse = (String) result[champ++];
+            final Integer idClasse = (Integer)  result[champ++];
+            final String codeGroupe = (String) result[champ++];
+            final String desgGroupe = (String) result[champ++];
+            final Integer idGroupe = (Integer)  result[champ++];
+            
             if (codeClasse != null) {
                 sequenceDTO.setGroupesClassesDTO(new GroupesClassesDTO(
-                        (Integer) result[4],
+                        idClasse,
                         codeClasse,
                         TypeGroupe.CLASSE,
-                        (String) result[3]));
+                        desgClasse));
             } else {
                 sequenceDTO.setGroupesClassesDTO(new GroupesClassesDTO(
-                        (Integer) result[7],
-                        (String) result[5],
+                       idGroupe,
+                        codeGroupe,
                         TypeGroupe.GROUPE,
-                        (String) result[6]));
+                        desgGroupe));
             }
-            sequenceDTO.setIdEnseignement((Integer) result[8]);
-            sequenceDTO.setDesignationEnseignement((String) result[9]);
-            sequenceDTO.setIntitule((String) result[10]);
-            sequenceDTO.setDescription((String) result[11]);
-            sequenceDTO.setDateDebut((Date) result[12]);
-            sequenceDTO.setDateFin((Date) result[13]);
-            sequenceDTO.setIdEnseignant((Integer) result[14]);
+            sequenceDTO.setIdEnseignement((Integer) result[champ++]);
+            sequenceDTO.setDesignationEnseignement((String) result[champ++]);
+            sequenceDTO.setIntitule((String) result[champ++]);
+            sequenceDTO.setDescription((String) result[champ++]);
+            sequenceDTO.setDateDebut((Date) result[champ++]);
+            sequenceDTO.setDateFin((Date) result[champ++]);
+            sequenceDTO.setIdEnseignant((Integer) result[champ++]);
+            sequenceDTO.getEnseignantDTO().setNom((String) result[champ++]);
+            sequenceDTO.getEnseignantDTO().setPrenom((String) result[champ++]);
+            sequenceDTO.getEnseignantDTO().setCivilite((String) result[champ++]);
+            sequenceDTO.setIdEtablissement((Integer) result[champ++]);
         }
 
         return sequenceDTO;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @SuppressWarnings("unchecked")
-    public boolean checkDroitSequence(Integer idEnseignant, Integer idSequence)
-                               throws MetierException {
-        boolean verif = false;
-
-        final String query =
-            "SELECT S FROM " + SequenceBean.class.getName() + " S " +
-            " WHERE S.enseignant.id = :idEnseignant AND " + " S.id = :idSequence";
-
-        final List<SequenceBean> listeSequenceBean =
-            getEntityManager().createQuery(query)
-                .setParameter("idEnseignant", idEnseignant)
-                .setParameter("idSequence", idSequence).getResultList();
-
-        if (listeSequenceBean.size() > 0) {
-            verif = true;
-        }
-
-        return verif;
     }
 
     /**

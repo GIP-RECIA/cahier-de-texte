@@ -43,6 +43,7 @@
                          title="Sauvegarder"
                          idaction="idSave"
                          image="save.png"
+                         rendered="#{gestionRemplacement.vraiOuFauxHabiliteSeanceEnCours}"
                          oncomplete="if (#{cr:haveMessagesError()} == false) {setModificationFormulaire(false);} chargerAgenda(); setModificationFormulaire(false);"
                          render=":formulaire_principal:constituerEmpContenu">
                          </cr:elemMenuAction>
@@ -51,6 +52,7 @@
                          confirm="Etes-vous sûr de vouloir supprimer la période du #{cr:formatDate(constituerEmp.form.periodeSelectionnee.dateDebut, 'dd/MM/yyyy')} et toutes les cases associées?"
                          title="Supprimer l'emploi du temps courant"
                          idaction="idDelete"
+                         rendered="#{gestionRemplacement.vraiOuFauxHabiliteSeanceEnCours}"
                          image="delete.png"
                          oncomplete="chargerAgenda(); setModificationFormulaire(false);"
                          render=":formulaire_principal:constituerEmpContenu,idDelete">
@@ -59,6 +61,7 @@
                          cible="initAjoutePeriodePopup"
                          title="Ajouter une nouvelle période"
                          idaction="idTopLevelMenuAdd"
+                         rendered="#{gestionRemplacement.vraiOuFauxHabiliteSeanceEnCours}"
                          image="emploiTempsAdd.png"
                          oncomplete="#{rich:component('idPopupPeriode')}.show(); setModificationFormulaire(false);"
                          render="idPopupPeriodeContenu" />
@@ -74,7 +77,7 @@
                         bean="#{constituerEmp}" cible="initialiserSemaine2Avec1"
                         sansImage="false"
                         confirm="Votre emploi du temps de la semaine 1 va écraser celui de la semaine 2. Êtes vous sûr de vouloir continuer ?"
-                        rendered="#{constituerEmp.form.vraiOuFauxAlternanceSemaine}"
+                        rendered="#{constituerEmp.form.vraiOuFauxAlternanceSemaine and gestionRemplacement.vraiOuFauxHabiliteSeanceEnCours }"
                         desc="Initialiser la semaine 2 avec la semaine 1"
                         oncomplete="if (#{cr:haveMessagesError()} == false) {setModificationFormulaire(false); } chargerAgenda();"
                         render=":formulaire_principal:constituerEmpContenu"/>
@@ -98,7 +101,8 @@
                      timing="immediate" />
         <input type="hidden" id="listeEmploiDeTempsJSON" value="#{constituerEmp.form.listeEmploiDeTempsJSON}"/>
         <input type="hidden" id="etablissementJSON" value="#{constituerEmp.form.etablissementJSON}" />
-                     
+        <input type="hidden" id="idVraiOuFauxHabiliteSeanceEnCours"  
+         value="#{gestionRemplacement.vraiOuFauxHabiliteSeanceEnCours}" />         
       </a4j:outputPanel>
       
       
@@ -193,7 +197,7 @@
     <a4j:jsFunction action="#{constituerEmp.chargerDetailJourEmploiDTOSel}"
                     execute="@this"
                     name="afficherEventPopup"
-                    oncomplete="RichFaces.$('idPopupEvent').show();"
+                    oncomplete="#{rich:component('statuspop_wait')}.hide();RichFaces.$('idPopupEvent').show();"
                     render=":idPopupEvent_form:idPopupEventRegion">
       <a4j:param assignTo="#{constituerEmp.form.detailJourEmploiDTOSelIndex}"
                  name="index" />
@@ -261,6 +265,7 @@
                onclick="console.log('sauvegardeEvenement');"
                oncomplete="console.log('sauvegardeEvenementOnComplete'); if ( #{cr:haveMessagesError()} != true ) { #{rich:component('idPopupEvent')}.hide(); } chargerAgenda(); "
                render=":formulaire_principal:constituerEmpContenu"
+               rendered="#{gestionRemplacement.vraiOuFauxHabiliteSeanceEnCours}"
                styleClass="toolbarButton"
                value="sauvegarder"></cr:lien>
       <cr:lien bean="#{constituerEmp}"
@@ -270,6 +275,7 @@
                onclick="console.log('supprimerEvenement');"
                oncomplete="#{rich:component('idPopupEvent')}.hide();chargerAgenda();"
                render=":formulaire_principal:constituerEmpContenu"
+               rendered="#{gestionRemplacement.vraiOuFauxHabiliteSeanceEnCours}"
                styleClass="toolbarButton"
                value="supprimer" />
     </cr:menuAction>
@@ -279,7 +285,7 @@
         <cr:saisieHeureMinute avecMinute="true"
                               bean="#{constituerEmp}"
                               id="heureMinuteDebut"
-                              modifiable="true"
+                              modifiable="#{gestionRemplacement.vraiOuFauxHabiliteSeanceEnCours}"
                               titre="Début"
                               valeurHeure="#{constituerEmp.form.detailJourEmploiDTOSel.heureDebut}"
                               valeurMinute="#{constituerEmp.form.detailJourEmploiDTOSel.minuteDebut}">
@@ -289,7 +295,7 @@
         <cr:saisieHeureMinute avecMinute="true"
                               bean="#{constituerEmp}"
                               id="heureMinuteFin"
-                              modifiable="true"
+                              modifiable="#{gestionRemplacement.vraiOuFauxHabiliteSeanceEnCours}"
                               saisieLibre="true"
                               titre="Fin"
                               valeurHeure="#{constituerEmp.form.detailJourEmploiDTOSel.heureFin}"
@@ -300,6 +306,7 @@
                         requis="false"
                         largeur="300" 
                         titre="Enseignement"
+                        modifiable="#{gestionRemplacement.vraiOuFauxHabiliteSeanceEnCours}"
                         valeur="#{constituerEmp.form.detailJourEmploiDTOSel.matiere}">
 
           <f:converter converterId="selectOneDtoConverter">
@@ -314,7 +321,9 @@
       </h:panelGrid>
       <h:panelGrid columns="3">
       
-        <h:selectOneRadio value="#{constituerEmp.form.detailJourEmploiDTOSel.groupeOuClasse.typeGroupe}">
+        <h:selectOneRadio value="#{constituerEmp.form.detailJourEmploiDTOSel.groupeOuClasse.typeGroupe}"
+        disabled="#{not gestionRemplacement.vraiOuFauxHabiliteSeanceEnCours}"
+        >
                           
           <f:ajax event="change"
                   render="classeGroupeEvenementRegion" />
@@ -330,6 +339,7 @@
                             id="classeEvenement"
                             proprieteLibelle="code"
                             proprieteValeur="id"
+                            modifiable="#{gestionRemplacement.vraiOuFauxHabiliteSeanceEnCours}"
                             rendered="#{constituerEmp.form.detailJourEmploiDTOSel.groupeOuClasse.vraiOuFauxClasse}"
                             titre=""
                             valeur="#{constituerEmp.form.detailJourEmploiDTOSel.idClasse}">
@@ -338,6 +348,7 @@
                             id="groupeEvenement"
                             proprieteLibelle="code"
                             proprieteValeur="id"
+                            modifiable="#{gestionRemplacement.vraiOuFauxHabiliteSeanceEnCours}"
                             rendered="#{!constituerEmp.form.detailJourEmploiDTOSel.groupeOuClasse.vraiOuFauxClasse}"
                             titre=""
                             valeur="#{constituerEmp.form.detailJourEmploiDTOSel.idGroupe}">
@@ -348,18 +359,18 @@
       <h:panelGrid columns="2">
         <cr:saisieTexte bean=""
                         id="idPopupEventDesc"
-                        modifiable="true"
                         tabindex="1"
                         largeur="350"
+                        modifiable="#{gestionRemplacement.vraiOuFauxHabiliteSeanceEnCours}"
                         titre="Description"
                         valeur="#{constituerEmp.form.detailJourEmploiDTOSel.description}">
         </cr:saisieTexte>
         <cr:saisieTexte bean=""
                         id="idPopupEventSalle"
-                        modifiable="true"
+                        modifiable="#{gestionRemplacement.vraiOuFauxHabiliteSeanceEnCours}"
                         tabindex="2"
                         titre="Salle"
-			maxlength="15"
+                        maxlength="15"
                         valeur="#{constituerEmp.form.detailJourEmploiDTOSel.codeSalle}">
         </cr:saisieTexte>
       </h:panelGrid>
@@ -375,6 +386,7 @@
                        styleClass="libelle"
                        value="Palette" />
         <cr:saisiePaletteCouleur listeCouleur="#{constituerEmp.form.listeCouleur}"
+        modifiable="#{gestionRemplacement.vraiOuFauxHabiliteSeanceEnCours}"
          onClick="return true; jQuery('#idPopupEvent_form\\:couleurSelection').css('background-color', '#{coul.id}');"
          valeur="#{constituerEmp.form.detailJourEmploiDTOSel.typeCouleur}"/>
 
@@ -446,4 +458,5 @@
     </a4j:outputPanel>
   </cr:popupModifiable>
   <cr:popupStatus idStatus="statuspop" />
+  
 </html>

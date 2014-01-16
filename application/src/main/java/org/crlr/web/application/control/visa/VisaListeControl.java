@@ -32,6 +32,7 @@ import org.crlr.dto.application.visa.VisaDTO;
 import org.crlr.dto.application.visa.VisaDTO.VisaProfil;
 import org.crlr.dto.application.visa.VisaEnseignantDTO;
 import org.crlr.exception.metier.MetierException;
+import org.crlr.metier.facade.VisaFacadeService;
 import org.crlr.services.InspectionService;
 import org.crlr.services.VisaService;
 import org.crlr.utils.DateUtils;
@@ -71,14 +72,14 @@ public class VisaListeControl extends AbstractPopupControl<VisaListeForm>
     }
 
     /** Controleur de visaService. */
-    @ManagedProperty(value = "#{visaService}")
-    private transient VisaService visaService;
+    @ManagedProperty(value = "#{visaFacade}")
+    private transient VisaFacadeService visaService;
 
     /**
      * Mutateur de visaService {@link #visaService}.
      * @param visaService le visaService to set
      */
-    public void setVisaService(VisaService visaService) {
+    public void setVisaService(VisaFacadeService visaService) {
         this.visaService = visaService;
     }
 
@@ -135,38 +136,21 @@ public class VisaListeControl extends AbstractPopupControl<VisaListeForm>
         final Profil profilUser = utilisateurDTO.getProfil();
 
         final Integer idEtablissement = utilisateurDTO.getIdEtablissement();
-        final List<EnseignantDTO> listeEnseignant;
-
+        
         // Le directeur voit touts les enseignants de son etablissement
-        if (Profil.DIRECTION_ETABLISSEMENT == profilUser) {
-            listeEnseignant = inspectionService
-                    .findListeEnseignants(idEtablissement);
-            form.setProfilVisaUser(VisaProfil.ENTDirecteur);
+        if (Profil.DIRECTION_ETABLISSEMENT == profilUser) {            
+            form.setProfilVisaUser(VisaProfil.ENTDirecteur); 
         } else if (Profil.INSPECTION_ACADEMIQUE.equals(profilUser)) {
-            form.setProfilVisaUser(VisaProfil.ENTInspecteur);
-            listeEnseignant = new ArrayList<EnseignantDTO>();
-            final RechercheDroitInspecteurQO rechercheDroitInspecteurQO = new RechercheDroitInspecteurQO();
-            rechercheDroitInspecteurQO.setIdEtablissement(idEtablissement);
-            rechercheDroitInspecteurQO.setIdInspecteur(utilisateurDTO
-                    .getUserDTO().getIdentifiant());
-            rechercheDroitInspecteurQO
-                    .setVraiOuFauxRechercheFromDirecteur(false);
-
-            final ResultatDTO<List<DroitInspecteurDTO>> droitsInspecteurs = inspectionService
-                    .findDroitsInspection(rechercheDroitInspecteurQO);
-            final List<DroitInspecteurDTO> listeDroit = droitsInspecteurs
-                    .getValeurDTO();
-            for (final DroitInspecteurDTO droit : listeDroit) {
-                listeEnseignant.add(droit.getEnseignant());
-            }
-        } else {
-            listeEnseignant = new ArrayList<EnseignantDTO>();
-        }
+            form.setProfilVisaUser(VisaProfil.ENTInspecteur);             
+        } 
+        
+        final List<EnseignantDTO> listeEnseignant =
+                visaService.findListeEnseignant(utilisateurDTO).getValeurDTO();
 
         // Charge pour chaque enseignant la liste des visa / cahiers de texte
         form.setListeEnseignant(listeEnseignant);
         final ResultatDTO<List<VisaEnseignantDTO>> resultat = visaService
-                .findListeVisaEnseignant(listeEnseignant);
+                .findListeVisaEnseignant(profilUser, idEtablissement,listeEnseignant);
         final List<VisaEnseignantDTO> listeVisaEnseignant = resultat
                 .getValeurDTO();
         form.setListeVisaEnseignant(ObjectUtils.clone(listeVisaEnseignant));
@@ -314,7 +298,7 @@ public class VisaListeControl extends AbstractPopupControl<VisaListeForm>
         try {
         consulterEnseignantAgenda();
         } catch (MetierException ex) {
-            log.error(ex, "ex");
+            log.error( "ex", ex);
         }
     }
 
@@ -420,9 +404,15 @@ public class VisaListeControl extends AbstractPopupControl<VisaListeForm>
             
             }
 
+            final UtilisateurDTO utilisateurDTO = ContexteUtils
+                    .getContexteUtilisateur().getUtilisateurDTO();
+            final Profil profilUser = utilisateurDTO.getProfil();
+
+            final Integer idEtablissement = utilisateurDTO.getIdEtablissement();
+            
             // Recharge la liste des visaEnseignant.
             final ResultatDTO<List<VisaEnseignantDTO>> resultat = visaService
-                    .findListeVisaEnseignant(form.getListeEnseignant());
+                    .findListeVisaEnseignant(profilUser, idEtablissement, form.getListeEnseignant());
             final List<VisaEnseignantDTO> listeVisaEnseignant = resultat
                     .getValeurDTO();
 
@@ -438,7 +428,7 @@ public class VisaListeControl extends AbstractPopupControl<VisaListeForm>
                     .clone(listeVisaEnseignant));
         
         } catch (MetierException ex) {
-            log.debug(ex, "ex");
+            log.debug( "ex", ex);
         }
     
     }

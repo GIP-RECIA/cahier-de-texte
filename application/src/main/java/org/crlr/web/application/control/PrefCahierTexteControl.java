@@ -63,14 +63,14 @@ public class PrefCahierTexteControl extends
             ConfidentialiteService confidentialiteService) {
         this.confidentialiteService = confidentialiteService;
     }
-    
+
     /**
      * Constructeur.
      */
     public PrefCahierTexteControl() {
         super(new PrefCahierTexteForm());
     }
-    
+
     /**
      * Sélectionne un enfant parmis la liste.
      */
@@ -80,7 +80,7 @@ public class PrefCahierTexteControl extends
         contexteUtilisateur.getUtilisateurDTO().getUserDTO().setIdentifiant(
                 form.getEnfantSelectionne().getId());
     }
-    
+
     /**
      * Mise à jour et Sélection.
      * 
@@ -113,7 +113,7 @@ public class PrefCahierTexteControl extends
             selectionnerEtablissement();
         }
     }
-    
+
     /**
      * Sélectionne un etablissement parmis la liste.
      */
@@ -198,12 +198,12 @@ public class PrefCahierTexteControl extends
         utilisateurDTO.setCodeEtablissementSelectionneInspecteur(form
                 .getEtablissementSelectionne().getCode());
         this.form.setFiltreEtablissement("");
-        
+
         final MenuControl menuControl = ContexteUtils.getMenuControl();
 
         // réinitialise le menu
         menuControl.init();
-        
+
         return "PREFERENCE_CAHIER@menu@arbre";
     }
 

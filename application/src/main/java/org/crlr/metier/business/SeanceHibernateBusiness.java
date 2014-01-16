@@ -55,6 +55,7 @@ import org.crlr.message.Message.Nature;
 import org.crlr.metier.entity.ClasseBean;
 import org.crlr.metier.entity.ElevesClassesBean;
 import org.crlr.metier.entity.ElevesGroupesBean;
+import org.crlr.metier.entity.EnseignantBean;
 import org.crlr.metier.entity.EnseignantsClassesBean;
 import org.crlr.metier.entity.EnseignantsGroupesBean;
 import org.crlr.metier.entity.EnseignementLibelleBean;
@@ -78,6 +79,8 @@ import org.crlr.web.utils.FacesUtils;
 import org.crlr.web.utils.FileUploadUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
+import com.google.common.base.Preconditions;
 
 /**
  * SeanceHibernateBusiness.
@@ -178,13 +181,16 @@ public class SeanceHibernateBusiness extends AbstractBusiness
             " SEA.heureDebut as heureDebut, " + " SEA.minuteDebut as minuteDebut, " +
             " SEA.heureFin as heureFin," + " SEA.minuteFin as minuteFin, " +
             " SEA.description as description, " + " SEA.annotations as annotations, " +
-            " SEA.idSequence as idSequence, " +
+            " SEA.idEnseignant as idEnseignantSea, " +
+            " SEQ.idEnseignant as idEnseignantSeq, " +
+            " SEQ.idEtablissement as idEtablissement, " +
+            " SEA.idSequence as idSequence, " +            
             " SEQ.idEnseignement as idEnseignement) " + " FROM " +
             SequenceBean.class.getName() + " SEQ, " +
             SeanceBean.class.getName() + " SEA " +
             " WHERE SEQ.id = SEA.idSequence AND " +
             " SEQ.idEnseignement = :idEnseignement AND " + queryClasseOuGroupe +
-            " AND " + " SEA.idEnseignant = :idEnseignant AND " +
+            " AND SEQ.idEnseignant = :idEnseignant AND " +
             " ((SEA.date < :date) OR (SEA.date = :date AND SEA.heureDebut < :heureDebut) "+
             " OR (SEA.date = :date AND SEA.heureDebut = :heureDebut AND SEA.minuteDebut < :minuteDebut))" +
             requeteIdSeance +
@@ -223,7 +229,9 @@ public class SeanceHibernateBusiness extends AbstractBusiness
                 seance.getSequenceDTO().setId((Integer) result.get("idSequence"));
                 seance.getSequenceDTO().setIdEnseignement((Integer) result.get("idEnseignement"));
                 seance.setAnnotations((String) result.get("annotations"));
-
+                seance.setIdEnseignant((Integer) result.get("idEnseignantSea"));
+                seance.getSequenceDTO().setIdEnseignant((Integer) result.get("idEnseignantSeq"));
+                seance.getSequenceDTO().setIdEtablissement((Integer) result.get("idEtablissement"));
                 seance.getSequenceDTO().getGroupesClassesDTO().setId(rechercheSeanceQO.getIdClasseGroupe());
                 seance.getSequenceDTO().getGroupesClassesDTO().setTypeGroupe(typeGroupe);
                 
@@ -256,7 +264,7 @@ public class SeanceHibernateBusiness extends AbstractBusiness
         final Integer idSequence = rechercheSeanceQO.getIdSequence();
         final Date dateDebut = rechercheSeanceQO.getDateDebut();
         final Date dateFin = rechercheSeanceQO.getDateFin();
-        final TypeGroupe typeGroupe = rechercheSeanceQO.getTypeGroupe();
+        TypeGroupe typeGroupe = rechercheSeanceQO.getTypeGroupe();
 
         //Règles de gestion SEANCE_00
         if (!this.checkSEANCE00(dateDebut, dateFin)) {
@@ -314,6 +322,14 @@ public class SeanceHibernateBusiness extends AbstractBusiness
             requeteWHERE = requeteWHERE.concat(" AND SEA.date <= :dateFin ");
         }
 
+        final String champsCommons = 
+              "ENS.designation as designationEnseignement, " +
+              "ENS.id as idEnseignement," +
+              "SEQ.idEnseignant as idEnseignantSeq, " +
+              "SEQ.idEtablissement as idEtablissement, " +
+              "SEA.idEnseignant as idEnseignantSea, " +
+              "SEQ.description as designationSequence";
+        
         String requete = "";
 
         if ((idClasseGroupe == null) && (typeGroupe != null)) {
@@ -321,8 +337,8 @@ public class SeanceHibernateBusiness extends AbstractBusiness
                 requete = "SELECT " + " new map(" + "SEA as seance, " +
                           "GRP.code as codeGroupe, GRP.id as idGroupe, " +
                           "GRP.designation as designationGroupe, " +
-                          "ENS.designation as designationEnseignement, ENS.id as idEnseignement," +
-                          "SEQ.description as designationSequence) " +
+                          champsCommons +
+                          ") " +
                           " FROM " + SequenceBean.class.getName() + " SEQ " +
                           " INNER JOIN SEQ.enseignement ENS " +
                           " INNER JOIN SEQ.groupe GRP, " +
@@ -334,8 +350,8 @@ public class SeanceHibernateBusiness extends AbstractBusiness
                 requete = "SELECT " + " new map(" + "SEA as seance, " +
                            "CLA.code as codeClasse, CLA.id as idClasse, " +
                           "CLA.designation as designationClasse, " +
-                           "ENS.designation as designationEnseignement, ENS.id as idEnseignement, " +
-                          "SEQ.description as designationSequence )" +
+                          champsCommons +
+                          ") " +
                           " FROM " + SequenceBean.class.getName() + " SEQ " +
                           " INNER JOIN SEQ.enseignement ENS " +
                           " INNER JOIN SEQ.classe CLA, " +
@@ -350,8 +366,8 @@ public class SeanceHibernateBusiness extends AbstractBusiness
                       "GRP.designation as designationGroupe, " +
                       "CLA.code as codeClasse, CLA.id as idClasse, " +
                       "CLA.designation as designationClasse, " +
-                      "ENS.designation as designationEnseignement, ENS.id as idEnseignement, " +
-                      "SEQ.description as designationSequence )" +
+                      champsCommons +
+                      ") " +
                       " FROM " + SequenceBean.class.getName() + " SEQ " +
                       " INNER JOIN SEQ.enseignement ENS " +
                       " LEFT JOIN SEQ.classe CLA " +
@@ -409,37 +425,35 @@ public class SeanceHibernateBusiness extends AbstractBusiness
             SeanceBean seance = (SeanceBean) result.get("seance");
             
             ObjectUtils.copyProperties(resultatRechercheSeanceDTO, seance);
-            
            
-            if (idClasseGroupe != null) {
-                resultatRechercheSeanceDTO.getSequenceDTO().getGroupesClassesDTO().setTypeGroupe(typeGroupe);
-                
-                if (typeGroupe  == (TypeGroupe.GROUPE)) {
-                    resultatRechercheSeanceDTO.getSequenceDTO().getGroupesClassesDTO().setCode((String) result.get("codeGroupe"));
-                    resultatRechercheSeanceDTO.getSequenceDTO().getGroupesClassesDTO().setDesignation((String) result.get("designationGroupe"));
-                    resultatRechercheSeanceDTO.getSequenceDTO().getGroupesClassesDTO().setId((Integer) result.get("idGroupe"));
-                    
-                } else if (typeGroupe  == (TypeGroupe.CLASSE)) {
-                    resultatRechercheSeanceDTO.getSequenceDTO().getGroupesClassesDTO().setCode((String) result.get("codeClasse"));
-                    resultatRechercheSeanceDTO.getSequenceDTO().getGroupesClassesDTO().setDesignation((String) result.get("designationClasse"));
-                    resultatRechercheSeanceDTO.getSequenceDTO().getGroupesClassesDTO().setId((Integer) result.get("idClasse"));
-                }
-            } else {
+            if (idClasseGroupe == null) {
                 if (result.get("codeClasse") != null) {
-                    resultatRechercheSeanceDTO.getSequenceDTO().getGroupesClassesDTO().setCode((String) result.get("codeClasse"));
-                    resultatRechercheSeanceDTO.getSequenceDTO().getGroupesClassesDTO().setDesignation((String) result.get("designationClasse"));
-                    resultatRechercheSeanceDTO.getSequenceDTO().getGroupesClassesDTO().setId((Integer) result.get("idClasse"));
-                    resultatRechercheSeanceDTO.getSequenceDTO().getGroupesClassesDTO().setTypeGroupe(TypeGroupe.CLASSE);
+                    typeGroupe = TypeGroupe.CLASSE;
                 } else {
-                    resultatRechercheSeanceDTO.getSequenceDTO().getGroupesClassesDTO().setCode((String) result.get("codeGroupe"));
-                    resultatRechercheSeanceDTO.getSequenceDTO().getGroupesClassesDTO().setDesignation((String) result.get("designationGroupe"));
-                    resultatRechercheSeanceDTO.getSequenceDTO().getGroupesClassesDTO().setId((Integer) result.get("idGroupe"));
-                    resultatRechercheSeanceDTO.getSequenceDTO().getGroupesClassesDTO().setTypeGroupe(TypeGroupe.GROUPE);
+                    typeGroupe = TypeGroupe.GROUPE;
                 }
             }
+           
+            
+            resultatRechercheSeanceDTO.getSequenceDTO().getGroupesClassesDTO().setTypeGroupe(typeGroupe);
+            
+            if (typeGroupe  == (TypeGroupe.GROUPE)) {
+                resultatRechercheSeanceDTO.getSequenceDTO().getGroupesClassesDTO().setCode((String) result.get("codeGroupe"));
+                resultatRechercheSeanceDTO.getSequenceDTO().getGroupesClassesDTO().setDesignation((String) result.get("designationGroupe"));
+                resultatRechercheSeanceDTO.getSequenceDTO().getGroupesClassesDTO().setId((Integer) result.get("idGroupe"));
+                
+            } else if (typeGroupe  == (TypeGroupe.CLASSE)) {
+                resultatRechercheSeanceDTO.getSequenceDTO().getGroupesClassesDTO().setCode((String) result.get("codeClasse"));
+                resultatRechercheSeanceDTO.getSequenceDTO().getGroupesClassesDTO().setDesignation((String) result.get("designationClasse"));
+                resultatRechercheSeanceDTO.getSequenceDTO().getGroupesClassesDTO().setId((Integer) result.get("idClasse"));
+            }
+            
             resultatRechercheSeanceDTO.setDesignationEnseignement((String) result.get("designationEnseignement"));
             resultatRechercheSeanceDTO.getSequenceDTO().setDescription((String) result.get("designationSequence"));
             resultatRechercheSeanceDTO.getSequence().setIdEnseignement((Integer) result.get("idEnseignement"));
+            resultatRechercheSeanceDTO.getSequenceDTO().setIdEtablissement((Integer) result.get("idEtablissement"));
+            resultatRechercheSeanceDTO.getSequenceDTO().setIdEnseignant((Integer) result.get("idEnseignantSeq"));
+            resultatRechercheSeanceDTO.setIdEnseignant((Integer) result.get("idEnseignantSea"));
             
             listeSeanceDTO.add(resultatRechercheSeanceDTO);
         }
@@ -515,7 +529,7 @@ public class SeanceHibernateBusiness extends AbstractBusiness
             
             sql = org.apache.commons.io.IOUtils.toString(reader);
         } catch (Exception ex) {
-            log.warning(ex, "ex");
+            log.warn("ex", ex);
             throw new MetierException("Erreur interne");
         }
         
@@ -536,6 +550,9 @@ public class SeanceHibernateBusiness extends AbstractBusiness
             seanceDTO.setHeureFin((Integer) result.get("heureFin"));
             seanceDTO.setMinuteFin((Integer) result.get("minuteFin"));
             seanceDTO.setDescription((String) result.get("descriptionSeance"));
+            seanceDTO.setIdEnseignant((Integer) result.get("idEnseignantSea"));
+            seanceDTO.getSequenceDTO().setIdEnseignant((Integer) result.get("idEnseignantSeq"));
+            seanceDTO.getSequenceDTO().setIdEtablissement((Integer) result.get("idEtablissement"));
             
             seanceDTO.getSequence().setCode((String) result.get("codeSequence"));
             
@@ -693,14 +710,27 @@ public class SeanceHibernateBusiness extends AbstractBusiness
      */
     private static String debutRequeteFindSeanceForPlanning = 
             "SELECT " + " new map(" + 
-            "SEA.id as idSeance, SEA.idEnseignant as idEnseignant, SEA.code as codeSeance, " + 
-            "SEA.heureDebut as heureDebut, SEA.minuteDebut as minuteDebut, " +
-            "SEA.heureFin as heureFin, SEA.minuteFin as minuteFin, " +
-            "SEA.intitule as intituleSeance, " + "SEA.date as dateSeance, SEA.description as descriptionSeance, " +
+            "SEA.id as idSeance, SEA.idEnseignant as idEnseignant, " +
+            "SEA.code as codeSeance, " + 
+            "SEA.heureDebut as heureDebut, " +
+            "SEA.minuteDebut as minuteDebut, " +
+            "SEA.heureFin as heureFin, " +
+            "SEA.minuteFin as minuteFin, " +
+            "SEA.intitule as intituleSeance, " + 
+            "SEA.date as dateSeance, " +
+            "SEA.description as descriptionSeance, " +
+            " SEA.idEnseignant as idEnseignantSea, " +
+            " SEQ.idEnseignant as idEnseignantSeq, " +
+            " SEQ.idEtablissement as idEtablissement, " +
             "SEQ.code as codeSequence, " +
-            "GRP.code as codeGroupe, " + "GRP.id as idGroupe, " + "GRP.designation as designationGroupe, " + 
-            "CLA.code as codeClasse, " + "CLA.id as idClasse, " + "CLA.designation as designationClasse, " + 
-            "ENS.id as idEnseignement, " + "ENS.designation as designationEnseignement " 
+            "GRP.code as codeGroupe, " + 
+            "GRP.id as idGroupe, " + 
+            "GRP.designation as designationGroupe, " + 
+            "CLA.code as codeClasse, " +
+            "CLA.id as idClasse, " + 
+            "CLA.designation as designationClasse, " + 
+            "ENS.id as idEnseignement, " +
+            "ENS.designation as designationEnseignement " 
             ;
         
     
@@ -1307,7 +1337,7 @@ public class SeanceHibernateBusiness extends AbstractBusiness
             SeanceBean.class.getName() + " SEA " +
             " WHERE SEQ.id = :idSequence AND SEQ.id = SEA.idSequence AND" +
             " SEQ.idEnseignement = :idEnseignement AND " +
-            " SEA.idEnseignant = :idEnseignant AND " + // " SEA.intitule = :intitule AND " + 
+            " SEQ.idEnseignant = :idEnseignant AND " + // " SEA.intitule = :intitule AND " + 
             " SEA.date = :date ";
 
         final List<Map<String, ?>> resultatQuery =
@@ -1419,22 +1449,16 @@ public class SeanceHibernateBusiness extends AbstractBusiness
         
         String requete1 = "";
         String requete2 = "";
-        final String listeSelect =
-            " SEA.id as idSeance, " + " SEA.code as codeSeance, " +
-            " SEA.date as dateSeance, " + " SEA.intitule as intituleSeance, " +
-            " SEA.heureDebut as heureDebutSeance, " +
-            " SEA.minuteDebut as minuteDebutSeance, " + 
-            " SEA.heureFin as heureFinSeance, " +
-            " SEA.minuteFin as minuteFinSeance, " + 
-            " SEQ.id as idSequence, " +
-            " SEQ.intitule as intituleSequence, " + " SEQ.code as codeSequence, " +
-            " SEQ.idGroupe as rattachement, " +
-            " SEQ.idEnseignement as idEnseignement," +
-            " ENS.designation as designationEnseignement," +
-            " ENSEI.nom as nomEnseignant ," + " ENSEI.prenom as prenomEnseignant ," +
-            " ENSEI.civilite as civiliteEnseignant ," +
-            " SEA.idEnseignant as idEnseignant ";
-
+        
+        final String requeteWhereCommun =
+                " INS.id = :idInspecteur AND " +
+                " OUV.enseignant.id = ENSEI.id AND " +
+                " ENSEI.id = SEA.idEnseignant AND " + clauseEnseignement +
+                " SEQ.id = SEA.idSequence AND " +
+                " SEA.date <= :jourCourant AND " +
+                " SEA.date >= :premierJourSemaine AND " +
+                " SEA.date <= :dernierJourSemaine ";
+                
         final List<Map<String, ?>> resultatQuery = new ArrayList<Map<String, ?>>();
 
         if (typeGroupeClasse.equals(TypeGroupe.CLASSE)) {
@@ -1449,9 +1473,10 @@ public class SeanceHibernateBusiness extends AbstractBusiness
             listeGroupe += ")";
 
             idClasse = rechercheSeanceQO.getGroupeClasseSelectionne().getId();
-
+            
             requete1 = "SELECT " + " distinct new map(" + " CLA.code as codeClasse, " +
-                       " CLA.designation as designationClasse, " + listeSelect +
+                       " CLA.designation as designationClasse, " +
+                       LISTE_SEANCE_AFFICHAGE_CHAMPS_SELECT_COMMON +
                        ") FROM " + EnseignantsClassesBean.class.getName() + " EC " +
                        " INNER JOIN EC.classe CLA " +
                        " INNER JOIN EC.enseignant ENSEI, " +
@@ -1459,17 +1484,13 @@ public class SeanceHibernateBusiness extends AbstractBusiness
                        " INNER JOIN SEQ.enseignement ENS, " + SeanceBean.class.getName() +
                        " SEA, " + OuvertureInspecteurBean.class.getName() +
                        " OUV INNER JOIN OUV.inspecteur INS " + " WHERE " +
-                       " INS.id = :idInspecteur AND " +
-                       " OUV.enseignant.id = ENSEI.id AND " +
-                       " CLA.id = SEQ.idClasse AND " + " CLA.id = :idClasse AND " +
-                       " ENSEI.id = SEQ.idEnseignant AND " + clauseEnseignement +
-                       " SEQ.id = SEA.idSequence AND " +
-                       " SEA.date <= :jourCourant AND " +
-                       " SEA.date >= :premierJourSemaine AND " +
-                       " SEA.date <= :dernierJourSemaine ";
+                       " CLA.id = SEQ.idClasse AND " + 
+                       " CLA.id = :idClasse AND " +
+                       requeteWhereCommun;
 
             requete2 = "SELECT " + " distinct new map(" + " GRP.code as codeGroupe, " +
-                       " GRP.designation as designationGroupe, " + listeSelect +
+                       " GRP.designation as designationGroupe, " + 
+                       LISTE_SEANCE_AFFICHAGE_CHAMPS_SELECT_COMMON +
                        ") FROM " + EnseignantsGroupesBean.class.getName() + " EG " +
                        " INNER JOIN EG.groupe GRP " +
                        " INNER JOIN EG.enseignant ENSEI, " +
@@ -1477,14 +1498,9 @@ public class SeanceHibernateBusiness extends AbstractBusiness
                        " INNER JOIN SEQ.enseignement ENS, " + SeanceBean.class.getName() +
                        " SEA, " + OuvertureInspecteurBean.class.getName() +
                        " OUV INNER JOIN OUV.inspecteur INS " + " WHERE " +
-                       " INS.id = :idInspecteur AND " +
-                       " OUV.enseignant.id = ENSEI.id AND " +
-                       " GRP.id = SEQ.idGroupe AND " + " GRP.id IN " + listeGroupe +
-                       " AND " + " ENSEI.id = SEQ.idEnseignant AND " + clauseEnseignement + 
-                       " SEQ.id = SEA.idSequence AND " +
-                       " SEA.date <= :jourCourant AND " +
-                       " SEA.date >= :premierJourSemaine AND " +
-                       " SEA.date <= :dernierJourSemaine ";
+                       " GRP.id = SEQ.idGroupe AND " + 
+                       " GRP.id IN " + listeGroupe + " AND " + 
+                       requeteWhereCommun;
 
             final Query query1 = getEntityManager().createQuery(requete1);
             final Query query2 = getEntityManager().createQuery(requete2);
@@ -1511,7 +1527,8 @@ public class SeanceHibernateBusiness extends AbstractBusiness
             idGroupe = rechercheSeanceQO.getGroupeClasseSelectionne().getId();
 
             requete1 = "SELECT " + " distinct new map(" + " GRP.code as codeGroupe, " +
-                       " GRP.designation as designationGroupe, " + listeSelect +
+                       " GRP.designation as designationGroupe, " + 
+                       LISTE_SEANCE_AFFICHAGE_CHAMPS_SELECT_COMMON +
                        ") FROM " + EnseignantsGroupesBean.class.getName() + " EG " +
                        " INNER JOIN EG.groupe GRP " +
                        " INNER JOIN EG.enseignant ENSEI, " +
@@ -1519,14 +1536,9 @@ public class SeanceHibernateBusiness extends AbstractBusiness
                        " INNER JOIN SEQ.enseignement ENS, " + SeanceBean.class.getName() +
                        " SEA, " + OuvertureInspecteurBean.class.getName() +
                        " OUV INNER JOIN OUV.inspecteur INS " + " WHERE " +
-                       " INS.id = :idInspecteur AND " +
-                       " OUV.enseignant.id = ENSEI.id AND " +
-                       " GRP.id = SEQ.idGroupe AND " + " GRP.id = :idGroupe AND " +
-                       " ENSEI.id = SEQ.idEnseignant AND " +
-                       " SEQ.id = SEA.idSequence AND " + clauseEnseignement +
-                       " SEA.date <= :jourCourant AND " +
-                       " SEA.date >= :premierJourSemaine AND " +
-                       " SEA.date <= :dernierJourSemaine ";
+                       " GRP.id = SEQ.idGroupe AND " +
+                       " GRP.id = :idGroupe AND " +
+                       requeteWhereCommun ;
 
             final Query query1 = getEntityManager().createQuery(requete1);
 
@@ -1586,50 +1598,38 @@ public class SeanceHibernateBusiness extends AbstractBusiness
         }
         
         final String requete1 =
-            "SELECT " + " distinct new map( " + " CLA.code as codeClasse, " +
-            " CLA.designation as designationClasse, " + " SEA.code as codeSeance, " +
-            " SEA.id as idSeance, " + " SEA.date as dateSeance, " +
-            " SEA.intitule as intituleSeance, " +
-            " SEA.heureDebut as heureDebutSeance, " +
-            " SEA.minuteDebut as minuteDebutSeance, " + 
-            " SEA.heureFin as heureFinSeance, " +
-            " SEA.minuteFin as minuteFinSeance, " + 
-            " E.nom as nomEnseignant ," +
-            " E.prenom as prenomEnseignant ," + " E.civilite as civiliteEnseignant ," +
-            " SEQ.id as idSequence, " + " SEQ.intitule as intituleSequence, " +
-            " ENS.designation as designationEnseignement, " +
-            " SEQ.idEnseignement as idEnseignement," +
-            " SEA.idEnseignant as idEnseignant) " + " FROM " +
+            "SELECT " + " distinct new map( " + 
+                    " CLA.code as codeClasse, " +
+            " CLA.designation as designationClasse, " +
+            LISTE_SEANCE_AFFICHAGE_CHAMPS_SELECT_COMMON +
+            " ) FROM " +
             SequenceBean.class.getName() + " SEQ " +
             " INNER JOIN SEQ.enseignement ENS " + 
             " INNER JOIN SEQ.classe CLA, " + SeanceBean.class.getName() + " SEA " +
-            "INNER JOIN SEA.enseignant E, " + ElevesClassesBean.class.getName() + " EC " +
-            " WHERE " + " CLA.id = EC.pk.idClasse AND " +
-            " EC.pk.idEleve = :idEleve AND " + " SEQ.id = SEA.idSequence AND " +
-            " SEQ.idClasse IN " + listeClasse + " AND " + clauseEnseignement + 
+            "INNER JOIN SEA.enseignant ENSEI, " + ElevesClassesBean.class.getName() + " EC " +
+            " WHERE " +
+            " CLA.id = EC.pk.idClasse AND " +
+            " EC.pk.idEleve = :idEleve AND " + 
+            " SEQ.id = SEA.idSequence AND " +
+            " SEQ.idClasse IN " + listeClasse + " AND " 
+            + clauseEnseignement + 
             " SEA.date >= :premierJourSemaine AND " +
-            " SEA.date <= :dernierJourSemaine AND " + " SEA.date <= :jourCourant ";
+            " SEA.date <= :dernierJourSemaine AND " + 
+            " SEA.date <= :jourCourant ";
 
         final String requete2 =
             "SELECT " + " distinct new map( " + " GRP.code as codeGroupe, " +
-            " GRP.designation as designationGroupe, " + " SEA.code as codeSeance, " +
-            " SEA.id as idSeance, " + " SEA.date as dateSeance, " +
-            " SEA.intitule as intituleSeance, " +
-            " SEA.heureDebut as heureDebutSeance, " +
-            " SEA.minuteDebut as minuteDebutSeance, " + 
-            " SEA.heureFin as heureFinSeance, " +
-            " SEA.minuteFin as minuteFinSeance, " + 
-            " E.nom as nomEnseignant ," +
-            " E.prenom as prenomEnseignant ," + " E.civilite as civiliteEnseignant ," +
-            " SEQ.id as idSequence, " + " SEQ.intitule as intituleSequence, " +
-            " ENS.designation as designationEnseignement, " +
-            " SEQ.idEnseignement as idEnseignement," +
-            " SEA.idEnseignant as idEnseignant) " + " FROM " +
+            " GRP.designation as designationGroupe, " + 
+            LISTE_SEANCE_AFFICHAGE_CHAMPS_SELECT_COMMON +
+            " ) FROM " +
             SequenceBean.class.getName() + " SEQ " +
             " INNER JOIN SEQ.enseignement ENS " + 
-            " INNER JOIN SEQ.groupe GRP, " + SeanceBean.class.getName() + " SEA " +
-            " INNER JOIN SEA.enseignant E, " + ElevesGroupesBean.class.getName() + " EG " +
-            " WHERE " + " GRP.id = EG.pk.idGroupe AND " + clauseEnseignement + 
+            " INNER JOIN SEQ.groupe GRP, " + 
+            SeanceBean.class.getName() + " SEA " +
+            " INNER JOIN SEA.enseignant ENSEI, " +
+            ElevesGroupesBean.class.getName() + " EG " +
+            " WHERE " +
+            " GRP.id = EG.pk.idGroupe AND " + clauseEnseignement + 
             " EG.pk.idEleve = :idEleve AND " + " SEQ.id = SEA.idSequence AND " +
             " SEQ.idGroupe IN " + listeGroupe + " AND " +
             " SEA.date >= :premierJourSemaine AND " +
@@ -1690,40 +1690,22 @@ public class SeanceHibernateBusiness extends AbstractBusiness
         
         requete2 = "SELECT " + " distinct new map(" + " GRP.code as codeGroupe, " +
                    " GRP.designation as designationGroupe, " +
-                   " SEA.id as idSeance, " + " SEA.code as codeSeance, " +
-                   " SEA.date as dateSeance, " + " SEA.intitule as intituleSeance, " +
-                   " SEA.heureDebut as heureDebutSeance, " +
-                   " SEA.minuteDebut as minuteDebutSeance, " +
-                   " SEA.heureFin as heureFinSeance, " +
-                   " SEA.minuteFin as minuteFinSeance, " +
-                   " SEQ.id as idSequence, " + " SEQ.intitule as intituleSequence, " +
-                   " SEQ.code as codeSequence, " +
-                   " SEQ.idGroupe as rattachement, " +
-                   " SEQ.idEnseignement as idEnseignement," +
-                   " ENS.designation as designationEnseignement," +
-                   " ENSEI.nom as nomEnseignant ," +
-                   " ENSEI.prenom as prenomEnseignant ," +
-                   " ENSEI.civilite as civiliteEnseignant ," +
-                   " SEA.idEnseignant as idEnseignant) " + " FROM " +
+                   LISTE_SEANCE_AFFICHAGE_CHAMPS_SELECT_COMMON +
+                   " ) FROM " +
                    EnseignantsGroupesBean.class.getName() + " EG " +
-                   " INNER JOIN EG.groupe GRP " +
-                   " INNER JOIN EG.enseignant ENSEI, " +
+                   " INNER JOIN EG.groupe GRP, " +
+                   EnseignantBean.class.getName() + " ENSEI, " +
                    SequenceBean.class.getName() + " SEQ " +
-                   " INNER JOIN SEQ.enseignement ENS, " + SeanceBean.class.getName() +
-                   " SEA " + " WHERE " + " ( " + " GRP.id = SEQ.idGroupe AND " +
+                   " INNER JOIN SEQ.enseignement ENS, " + 
+                   SeanceBean.class.getName() + " SEA " + 
+                   " WHERE " + 
+                   " GRP.id = SEQ.idGroupe AND " +
                    " GRP.id IN " + listeGroupe + " AND " +
-                   " ENSEI.id = SEQ.idEnseignant AND " + clauseEnseignement +
+                   " ENSEI.id = SEA.idEnseignant AND " +
                    " SEQ.id = SEA.idSequence AND " +
-                   " SEQ.idEnseignant = :idEnseignant AND " +
-                   " SEA.date >= :premierJourSemaine AND " +
-                   " SEA.date <= :dernierJourSemaine " + " ) " + " OR " + " ( " +
-                   " GRP.id = SEQ.idGroupe AND " + " GRP.id IN " + listeGroupe +
-                   " AND " + " ENSEI.id = SEQ.idEnseignant AND " + clauseEnseignement +
-                   " SEQ.id = SEA.idSequence AND " +
-                   " SEQ.idEnseignant != :idEnseignant AND " +
-                   " SEA.date <= :jourCourant AND " +
-                   " SEA.date >= :premierJourSemaine AND " +
-                   " SEA.date <= :dernierJourSemaine " + " ) ";
+                   clauseEnseignement + 
+                   LISTE_SEANCE_AFFICHAGE_WHERE_DATE_SEANCE;
+                   
         
         final Query query2 = getEntityManager().createQuery(requete2);
 
@@ -1739,6 +1721,11 @@ public class SeanceHibernateBusiness extends AbstractBusiness
         return query2;
     }
     
+    /**
+     * 
+     * @param rechercheSeanceQO r
+     * @return Les séances liées au groupe
+     */
     private Query listeSeanceAffichageEnseignantHelperGroupe(RechercheSeanceQO rechercheSeanceQO) {
         final Integer idEnseignant = rechercheSeanceQO.getIdEnseignant();
         
@@ -1751,39 +1738,21 @@ public class SeanceHibernateBusiness extends AbstractBusiness
 
         String requete1 = "SELECT " + " distinct new map(" + " GRP.code as codeGroupe, " +
                    " GRP.designation as designationGroupe, " +
-                   " SEA.id as idSeance, " + " SEA.code as codeSeance, " +
-                   " SEA.date as dateSeance, " + " SEA.intitule as intituleSeance, " +
-                   " SEA.heureDebut as heureDebutSeance, " +
-                   " SEA.minuteDebut as minuteDebutSeance, " +
-                   " SEA.heureFin as heureFinSeance, " +
-                   " SEA.minuteFin as minuteFinSeance, " +
-                   " SEQ.id as idSequence, " + " SEQ.intitule as intituleSequence, " +
-                   " SEQ.code as codeSequence, " +
-                   " SEQ.idGroupe as rattachement, " +
-                   " SEQ.idEnseignement as idEnseignement," +
-                   " ENS.designation as designationEnseignement," +
-                   " ENSEI.nom as nomEnseignant ," +
-                   " ENSEI.prenom as prenomEnseignant ," +
-                   " ENSEI.civilite as civiliteEnseignant ," +
-                   " SEA.idEnseignant as idEnseignant) " + " FROM " +
+                   LISTE_SEANCE_AFFICHAGE_CHAMPS_SELECT_COMMON +
+                   " ) FROM " +
                    EnseignantsGroupesBean.class.getName() + " EG " +
-                   " INNER JOIN EG.groupe GRP " +
-                   " INNER JOIN EG.enseignant ENSEI, " +
+                   " INNER JOIN EG.groupe GRP, " +
+                   EnseignantBean.class.getName() + " ENSEI, " +
                    SequenceBean.class.getName() + " SEQ " +
-                   " INNER JOIN SEQ.enseignement ENS, " + SeanceBean.class.getName() +
-                   " SEA " + " WHERE " + " ( " + " GRP.id = SEQ.idGroupe AND " +
-                   " GRP.id = :idGroupe AND " + " ENSEI.id = SEQ.idEnseignant AND " +
-                   " SEQ.id = SEA.idSequence AND " + clauseEnseignement +
-                   " SEQ.idEnseignant = :idEnseignant AND " +
-                   " SEA.date >= :premierJourSemaine AND " +
-                   " SEA.date <= :dernierJourSemaine " + " ) " + " OR " + " ( " +
-                   " GRP.id = SEQ.idGroupe AND " + " GRP.id = :idGroupe AND " +
-                   " ENSEI.id = SEQ.idEnseignant AND " + clauseEnseignement +
-                   " SEQ.id = SEA.idSequence AND " +
-                   " SEQ.idEnseignant != :idEnseignant AND " +
-                   " SEA.date <= :jourCourant AND " + 
-                   " SEA.date <= :dernierJourSemaine AND " +
-                   " SEA.date >= :premierJourSemaine " + " ) ";
+                   " INNER JOIN SEQ.enseignement ENS, " + 
+                   SeanceBean.class.getName() + " SEA " + 
+                   " WHERE " + 
+                   " GRP.id = SEQ.idGroupe AND " +
+                   " GRP.id = :idGroupe AND " + 
+                   " ENSEI.id = SEA.idEnseignant AND " +
+                   " SEQ.id = SEA.idSequence AND " + 
+                   clauseEnseignement +  
+                   LISTE_SEANCE_AFFICHAGE_WHERE_DATE_SEANCE;
 
         final Query query1 = getEntityManager().createQuery(requete1);
 
@@ -1798,6 +1767,40 @@ public class SeanceHibernateBusiness extends AbstractBusiness
         return query1;
     }
 
+    private static final String LISTE_SEANCE_AFFICHAGE_CHAMPS_SELECT_COMMON =
+            " SEA.id as idSeance, " + 
+            " SEA.code as codeSeance, " +
+            " SEA.date as dateSeance, " + 
+            " SEA.intitule as intituleSeance, " +
+            " SEA.heureDebut as heureDebutSeance, " +
+            " SEA.minuteDebut as minuteDebutSeance, " +
+            " SEA.heureFin as heureFinSeance, " +
+            " SEA.minuteFin as minuteFinSeance, " +
+            " SEA.idEnseignant as idEnseignantSea, " +
+            " SEQ.id as idSequence, " +
+            " SEQ.intitule as intituleSequence, " +
+            " SEQ.code as codeSequence, " +
+            " SEQ.idGroupe as rattachement, " +
+            " SEQ.idEnseignement as idEnseignement, " +
+            " SEQ.idEtablissement as idEtablissement, " +
+            " SEQ.idEnseignant as idEnseignantSeq, " +
+            " ENS.designation as designationEnseignement," +
+            " ENSEI.nom as nomEnseignant ," +
+            " ENSEI.prenom as prenomEnseignant ," +
+            " ENSEI.civilite as civiliteEnseignant";
+    
+    private static final String LISTE_SEANCE_AFFICHAGE_WHERE_DATE_SEANCE =
+            " ( ( " + 
+                    " SEQ.idEnseignant = :idEnseignant AND " +
+                    " SEA.date >= :premierJourSemaine AND " +
+                    " SEA.date <= :dernierJourSemaine " + " ) " + 
+                    " OR " + 
+                    " ( " +                   
+                    " SEQ.idEnseignant != :idEnseignant AND " +
+                    " SEA.date <= :jourCourant AND " + 
+                    " SEA.date <= :dernierJourSemaine AND " +
+                    " SEA.date >= :premierJourSemaine " + " ) ) ";
+    
     /**
      * @param rechercheSeanceQO r
      * @return les séances liées à la classe
@@ -1817,41 +1820,24 @@ public class SeanceHibernateBusiness extends AbstractBusiness
 
         String requete1 = "";
         
-        requete1 = "SELECT " + " distinct new map(" + " CLA.code as codeClasse, " +
+        requete1 = "SELECT " + " distinct new map(" +
+                   " CLA.code as codeClasse, " +
                    " CLA.designation as designationClasse, " +
-                   " SEA.id as idSeance, " + " SEA.code as codeSeance, " +
-                   " SEA.date as dateSeance, " + " SEA.intitule as intituleSeance, " +
-                   " SEA.heureDebut as heureDebutSeance, " +
-                   " SEA.minuteDebut as minuteDebutSeance, " +
-                   " SEA.heureFin as heureFinSeance, " +
-                   " SEA.minuteFin as minuteFinSeance, " +
-                   " SEQ.id as idSequence, " + " SEQ.intitule as intituleSequence, " +
-                   " SEQ.code as codeSequence, " +
-                   " SEQ.idGroupe as rattachement, " +
-                   " SEQ.idEnseignement as idEnseignement," +
-                   " ENS.designation as designationEnseignement," +
-                   " ENSEI.nom as nomEnseignant ," +
-                   " ENSEI.prenom as prenomEnseignant ," +
-                   " ENSEI.civilite as civiliteEnseignant ," +
-                   " SEA.idEnseignant as idEnseignant) " + " FROM " +
+                    LISTE_SEANCE_AFFICHAGE_CHAMPS_SELECT_COMMON +          
+                   ") " + " FROM " +
                    EnseignantsClassesBean.class.getName() + " EC " +
-                   " INNER JOIN EC.classe CLA " +
-                   " INNER JOIN EC.enseignant ENSEI, " +
+                   " INNER JOIN EC.classe CLA, " +
+                   EnseignantBean.class.getName() + " ENSEI, " +
                    SequenceBean.class.getName() + " SEQ " +
-                   " INNER JOIN SEQ.enseignement ENS, " + SeanceBean.class.getName() +
-                   " SEA " + " WHERE " + " ( " + " CLA.id = SEQ.idClasse AND " +
-                   " CLA.id = :idClasse AND " + " ENSEI.id = SEQ.idEnseignant AND " +
-                   " SEQ.id = SEA.idSequence AND " + 
-                   " SEQ.idEnseignant = :idEnseignant AND " + clauseEnseignement +   
-                   " SEA.date >= :premierJourSemaine AND " +
-                   " SEA.date <= :dernierJourSemaine " + " ) " + " OR " + " ( " +
-                   " CLA.id = SEQ.idClasse AND " + " CLA.id = :idClasse AND " +
-                   " ENSEI.id = SEQ.idEnseignant AND " + clauseEnseignement + 
+                   " INNER JOIN SEQ.enseignement ENS, " + 
+                   SeanceBean.class.getName() + " SEA " + 
+                   " WHERE " + 
+                   " CLA.id = SEQ.idClasse AND " +
+                   " CLA.id = :idClasse AND " +
+                   " ENSEI.id = SEA.idEnseignant AND " +
                    " SEQ.id = SEA.idSequence AND " +
-                   " SEQ.idEnseignant != :idEnseignant AND " +
-                   " SEA.date <= :jourCourant AND " +
-                   " SEA.date >= :premierJourSemaine AND " +
-                   " SEA.date <= :dernierJourSemaine " + " ) ";
+                   clauseEnseignement + 
+                   LISTE_SEANCE_AFFICHAGE_WHERE_DATE_SEANCE;
         
         final Query query1 = getEntityManager().createQuery(requete1);
         
@@ -1933,6 +1919,9 @@ public class SeanceHibernateBusiness extends AbstractBusiness
         resultatRechercheSeanceDTO.setId((Integer) result.get("idSeance"));
         resultatRechercheSeanceDTO.getSequence().setId((Integer) result.get("idSequence"));
         resultatRechercheSeanceDTO.getSequence().setIntitule((String) result.get("intituleSequence"));
+        resultatRechercheSeanceDTO.getSequence().getEnseignantDTO().setId((Integer) result.get("idEnseignantSeq"));
+        resultatRechercheSeanceDTO.getSequence().setIdEtablissement((Integer) result.get("idEtablissement"));
+        resultatRechercheSeanceDTO.getSequence().setIdEnseignement((Integer) result.get("idEnseignement"));
         
         resultatRechercheSeanceDTO.setCode((String) result.get("codeSeance"));
         resultatRechercheSeanceDTO.setDate((Date) result.get("dateSeance"));
@@ -1942,13 +1931,12 @@ public class SeanceHibernateBusiness extends AbstractBusiness
         resultatRechercheSeanceDTO.setMinuteDebut((Integer) result.get("minuteDebutSeance"));
         resultatRechercheSeanceDTO.setHeureFin((Integer) result.get("heureFinSeance"));
         resultatRechercheSeanceDTO.setMinuteFin((Integer) result.get("minuteFinSeance"));
-        resultatRechercheSeanceDTO.getSequence().setIdEnseignement((Integer) result.get("idEnseignement"));
-        
+                
         resultatRechercheSeanceDTO.setDesignationEnseignement((String) result.get("designationEnseignement"));
         resultatRechercheSeanceDTO.getEnseignantDTO().setNom((String) result.get("nomEnseignant"));
         resultatRechercheSeanceDTO.getEnseignantDTO().setPrenom((String) result.get("prenomEnseignant"));
         resultatRechercheSeanceDTO.getEnseignantDTO().setCivilite((String) result.get("civiliteEnseignant"));
-        resultatRechercheSeanceDTO.getEnseignantDTO().setId((Integer) result.get("idEnseignant"));
+        resultatRechercheSeanceDTO.getEnseignantDTO().setId((Integer) result.get("idEnseignantSea"));
         
         return resultatRechercheSeanceDTO;
     }
@@ -1963,6 +1951,9 @@ public class SeanceHibernateBusiness extends AbstractBusiness
      */
     @SuppressWarnings("unchecked")
     private ResultatDTO<List<ResultatRechercheSeanceDTO>> listeSeanceAffichageDirection(RechercheSeanceQO rechercheSeanceQO){
+        
+        Preconditions.checkArgument(rechercheSeanceQO.getTypeGroupe() != null);
+        
         final ResultatDTO<List<ResultatRechercheSeanceDTO>> resultat =
             new ResultatDTO<List<ResultatRechercheSeanceDTO>>();
         final List<ResultatRechercheSeanceDTO> listeResultatRechercheSeanceDTO =
@@ -1989,6 +1980,26 @@ public class SeanceHibernateBusiness extends AbstractBusiness
             clauseEnseignement = " SEQ.id_enseignement=" + rechercheSeanceQO.getIdEnseignement() + " AND ";
         }
         
+        final String CHAMPS_SELECT_COMMUNS
+        = 
+                "SEA.id as idSea, " +
+                "SEA.code as codeSea, " +
+                "SEA.date as dateSea, " +
+                "SEA.intitule as intSea, " +
+                "SEA.heure_debut as hSea, " +
+                "SEA.minute_debut as mSea, " +
+                "SEA.heure_fin as hSeaFin, " +
+                "SEA.minute_fin as mSeaFin, " +
+                "SEQ.id as idSeq, " +
+                "SEQ.intitule as intSeq, " +
+                "SEQ.id_groupe as idGrp, " +
+                "SEQ.id_enseignement as idEns," +
+                "ENS.designation as desEns, " +
+                "ENSEI.nom as nomEnsei, " +
+                "ENSEI.prenom as preEnsei," +
+                "ENSEI.civilite as civEnsei, " +
+                "SEA.id_enseignant as idEnseign ";
+        
         String nativeRequete1 = "";
         String nativeRequete2 = "";
 
@@ -2010,65 +2021,55 @@ public class SeanceHibernateBusiness extends AbstractBusiness
 
             nativeRequete1 = "SELECT " + " distinct " +
                              " CLA.code as codeClasse, '' as codeGrp, CLA.designation as desCla, " +
-                             " '' as desGrp, SEA.id as idSea, SEA.code as codeSea, " +
-                             " SEA.date as dateSea, SEA.intitule as intSea, " +
-                             " SEA.heure_debut as hSea, " +
-                             " SEA.minute_debut as mSea, " +
-                             " SEA.heure_fin as hSeaFin, " +
-                             " SEA.minute_fin as mSeaFin, " +
-                             " SEQ.id as idSeq, " +
-                             " SEQ.intitule as intSeq, " +
-                             " SEQ.id_groupe as idGrp, SEQ.id_enseignement as idEns," +
-                             " ENS.designation as desEns, ENSEI.nom as nomEnsei," +
-                             " ENSEI.prenom as preEnsei, ENSEI.civilite as civEnsei," +
-                             " SEA.id_enseignant as idEnseign" + " FROM " +
+                             " '' as desGrp, " 
+                             + CHAMPS_SELECT_COMMUNS + " FROM " +
                              SchemaUtils.getTableAvecSchema(schema,
                                                             "cahier_enseignant_classe") +
-                             " EC " + " INNER JOIN " +
+                             " EC INNER JOIN " +
                              SchemaUtils.getTableAvecSchema(schema, "cahier_classe") +
-                             " CLA ON (CLA.id = EC.id_classe) " + " INNER JOIN " +
-                             SchemaUtils.getTableAvecSchema(schema, "cahier_enseignant") +
-                             " ENSEI ON (ENSEI.id = EC.id_enseignant) , " +
+                             " CLA ON (CLA.id = EC.id_classe) " +
+                             " INNER JOIN " + 
                              SchemaUtils.getTableAvecSchema(schema, "cahier_sequence") +
-                             " SEQ INNER JOIN " +
+                             " SEQ ON (CLA.id = SEQ.id_classe) " +
+                             " INNER JOIN " +
                              SchemaUtils.getTableAvecSchema(schema, "cahier_enseignement") +
-                             " ENS ON (SEQ.id_enseignement = ENS.id), " +
+                             " ENS ON (SEQ.id_enseignement = ENS.id) " +
+                             " INNER JOIN " +
                              SchemaUtils.getTableAvecSchema(schema, "cahier_seance") +
-                             " SEA " + " WHERE " + " CLA.id = SEQ.id_classe AND " + clauseEnseignement +
-                             " CLA.id =? AND " + " CLA.id_etablissement =? AND " +
-                             " ENSEI.id = SEQ.id_enseignant AND " +
-                             " SEQ.id = SEA.id_sequence AND " + " SEA.date >=? AND " +
+                             " SEA ON (SEQ.id = SEA.id_sequence) " +
+                             " INNER JOIN " +
+                             SchemaUtils.getTableAvecSchema(schema, "cahier_enseignant") +
+                             " ENSEI ON (ENSEI.id = SEA.id_enseignant) " + 
+                             " WHERE " + clauseEnseignement +
+                             " CLA.id =? AND " + 
+                             " CLA.id_etablissement =? AND " +
+                             " SEA.date >=? AND " +
                              " SEA.date <=? ";
 
             nativeRequete2 = "SELECT " + " distinct " +
                              " '' as codeClasse, GRP.code as codeGrp, '' as desCla, GRP.designation as desGrp, " +
-                             " SEA.id as idSea, SEA.code as codeSea, SEA.date as dateSea, " +
-                             " SEA.intitule as intSea, " +
-                             " SEA.heure_debut as hSea, " +
-                             " SEA.minute_debut as mSea, " +
-                             " SEA.heure_fin as hSeaFin, " +
-                             " SEA.minute_fin as mSeaFin, " +
-                             " SEQ.id as idSeq, SEQ.intitule as intSeq, " +
-                             " SEQ.id_groupe as idGrp, SEQ.id_enseignement as idEns," +
-                             " ENS.designation as desEns, ENSEI.nom as nomEnsei, ENSEI.prenom as preEnsei," +
-                             " ENSEI.civilite as civEnsei, SEA.id_enseignant as idEnseign" +
+                             CHAMPS_SELECT_COMMUNS +
                              " FROM " +
                              SchemaUtils.getTableAvecSchema(schema, "cahier_enseignant_groupe") +
                              " EG " + " INNER JOIN " +
                              SchemaUtils.getTableAvecSchema(schema, "cahier_groupe") +
-                             " GRP ON (GRP.id = EG.id_groupe) " + " INNER JOIN " +
-                             SchemaUtils.getTableAvecSchema(schema, "cahier_enseignant") +
-                             " ENSEI ON (ENSEI.id = EG.id_enseignant), " +
+                             " GRP ON (GRP.id = EG.id_groupe) " + 
+                             " INNER JOIN " + 
                              SchemaUtils.getTableAvecSchema(schema, "cahier_sequence") +
-                             " SEQ INNER JOIN " +
+                             " SEQ ON (GRP.id = SEQ.id_groupe) " +
+                             " INNER JOIN " +
                              SchemaUtils.getTableAvecSchema(schema, "cahier_enseignement") +
-                             " ENS ON (SEQ.id_enseignement = ENS.id), " +
-                             SchemaUtils.getTableAvecSchema(schema, "cahier_seance") + 
-                             " SEA " + " WHERE " + " GRP.id = SEQ.id_groupe AND " + clauseEnseignement +
+                             " ENS ON (SEQ.id_enseignement = ENS.id) " +
+                             " INNER JOIN " +
+                             SchemaUtils.getTableAvecSchema(schema, "cahier_seance") +
+                             " SEA ON (SEQ.id = SEA.id_sequence) " +
+                             " INNER JOIN " +
+                             SchemaUtils.getTableAvecSchema(schema, "cahier_enseignant") +
+                             " ENSEI ON (ENSEI.id = SEA.id_enseignant) " +  
+                             " WHERE " + clauseEnseignement +
                              " GRP.id IN " + listeGroupe + " AND " +
                              " GRP.id_etablissement =? AND " +
-                             " ENSEI.id = SEQ.id_enseignant AND " +
-                             " SEQ.id = SEA.id_sequence AND " + " SEA.date >=? AND " +
+                             " SEA.date >=? AND " +
                              " SEA.date <=? ";
 
             final Query query1 = getEntityManager().createNativeQuery(nativeRequete1);
@@ -2091,32 +2092,28 @@ public class SeanceHibernateBusiness extends AbstractBusiness
 
             nativeRequete1 = "SELECT " + " distinct " +
                              " '' as codeCla, GRP.code as codeGrp, '' as desCla, GRP.designation as desGrp, " +
-                             " SEA.id as idSea, SEA.code as codeSea, SEA.date as dateSea, " +
-                             " SEA.intitule as intSea, " +
-                             " SEA.heure_debut as hSea, " +
-                             " SEA.minute_debut as mSea, " +
-                             " SEA.heure_fin as hSeaFin, " +
-                             " SEA.minute_fin as mSeaFin, " +
-                             " SEQ.id as idSeq, SEQ.intitule as intSeq, " +
-                             " SEQ.id_groupe as idGrp, SEQ.id_enseignement as idEnsei," +
-                             " ENS.designation as desEns, ENSEI.nom as nomEnsei, " +
-                             " ENSEI.prenom as preEnsei, ENSEI.civilite as civEnsei," +
-                             " SEA.id_enseignant as idEnseign" + " FROM " +
+                             CHAMPS_SELECT_COMMUNS + " FROM " +
                              SchemaUtils.getTableAvecSchema(schema, "cahier_enseignant_groupe") +
                              " EG " + " INNER JOIN " +
                              SchemaUtils.getTableAvecSchema(schema, "cahier_groupe") +
-                             " GRP ON (GRP.id = EG.id_groupe) " + " INNER JOIN " +
-                             SchemaUtils.getTableAvecSchema(schema, "cahier_enseignant") +
-                             " ENSEI ON (ENSEI.id = EG.id_enseignant), " +
+                             " GRP ON (GRP.id = EG.id_groupe) " + 
+                             " INNER JOIN " + 
                              SchemaUtils.getTableAvecSchema(schema, "cahier_sequence") +
-                             " SEQ INNER JOIN " +
+                             " SEQ ON (GRP.id = SEQ.id_groupe) " +
+                             " INNER JOIN " +
                              SchemaUtils.getTableAvecSchema(schema, "cahier_enseignement") +
-                             " ENS ON (SEQ.id_enseignement = ENS.id), " +
+                             " ENS ON (SEQ.id_enseignement = ENS.id) " +
+                             " INNER JOIN " +
                              SchemaUtils.getTableAvecSchema(schema, "cahier_seance") +
-                             " SEA " + " WHERE " + " GRP.id = SEQ.id_groupe AND " + clauseEnseignement +
-                             " GRP.id =? AND " + " GRP.id_etablissement =? AND " +
-                             " ENSEI.id = SEQ.id_enseignant AND " +
-                             " SEQ.id = SEA.id_sequence AND " + " SEA.date >=? AND " +
+                             " SEA ON (SEQ.id = SEA.id_sequence) " +
+                             " INNER JOIN " +
+                             SchemaUtils.getTableAvecSchema(schema, "cahier_enseignant") +
+                             " ENSEI ON (ENSEI.id = SEA.id_enseignant) " +  
+                             " WHERE " + 
+                             clauseEnseignement +
+                             " GRP.id =? AND " + 
+                             " GRP.id_etablissement =? AND " +
+                             " SEA.date >=? AND " +
                              " SEA.date <=? ";
 
             final Query query1 = getEntityManager().createNativeQuery(nativeRequete1);
@@ -2199,29 +2196,26 @@ public class SeanceHibernateBusiness extends AbstractBusiness
     public Map<String, Integer> findSeanceSemaine(final Date dateDebut,
                                                   final Date dateFin,
                                                   final Integer idEnseignant,
-                                                  final Set<Integer> idSequence) {
+                                                  final Integer idEtablissement) {
         Assert.isNotNull("dateDebut", dateDebut);
         Assert.isNotNull("dateFin", dateFin);
         Assert.isNotNull("idEnseignant", idEnseignant);
-        Assert.isNotNull("idSequence", idSequence);
-
-        if (org.apache.commons.collections.CollectionUtils.isEmpty(idSequence)) {
-            idSequence.add(0);
-        }
+        Assert.isNotNull("idEtablissement", idEtablissement);
 
         final String query =
             "SELECT new Map(s.id as id, s.date as date, s.heureDebut as heureDebutSeance, " +
             " s.minuteDebut as minuteDebutSeance, s.heureFin as heureFinSeance, s.minuteFin as minuteFinSeance, " +
-            " sequ.idEnseignement as idEnseignement, coalesce(sequ.idClasse,0) as idClasse, coalesce(sequ.idGroupe,0) as idGroupe) FROM " +
+            " sequ.idEnseignement as idEnseignement, coalesce(sequ.idClasse,0) as idClasse, coalesce(sequ.idGroupe,0) as idGroupe) " +
+            " FROM " +
             SeanceBean.class.getName() + " s INNER JOIN s.sequence as sequ " +
-            "WHERE s.idEnseignant =:idEnseignant AND s.idSequence IN (:idSequence) AND " +
+            "WHERE s.idEnseignant =:idEnseignant AND s.idEtablissement = :idEtablissement AND " +
             " s.date >= :dateDebut AND s.date <= :dateFin ";
 
         final List<Map<String, ?>> result =
             getEntityManager().createQuery(query)
                 .setParameter("idEnseignant", idEnseignant)
                 .setParameter("dateDebut", dateDebut).setParameter("dateFin", dateFin)
-                .setParameter("idSequence", idSequence).getResultList();
+                .setParameter("idEtablissement", idEtablissement).getResultList();
 
         //constitution de la map de code de sequence id de seance
         final Map<String, Integer> mapSequPuisDateSeaPuisHo =
@@ -2450,8 +2444,8 @@ public class SeanceHibernateBusiness extends AbstractBusiness
         final String query =
             "SELECT new Map(s.id as id, s.idSequence as idSequenceSeance, s.date as date, s.heureDebut as heureDebutSeance, " +
             " s.minuteDebut as minuteDebutSeance, s.heureFin as heureFinSeance, s.minuteFin as minuteFinSeance) FROM " +
-            SeanceBean.class.getName() +
-            " s WHERE s.idEnseignant =:idEnseignant AND s.idSequence IN (:idSequence)" +
+            SeanceBean.class.getName() + " s " + 
+            " WHERE s.idEnseignant =:idEnseignant AND s.idSequence IN (:idSequence)" +
             " AND s.date >= :dateDebut AND s.date <= :dateFin " + " ORDER BY s.date";
 
         final List<Map<String, ?>> result =
@@ -2665,6 +2659,7 @@ public class SeanceHibernateBusiness extends AbstractBusiness
         final String listeGroupe = constuireListeGroupeChaine(rechercheSeancePrintQO
                 .getListeGroupeDTO());
         
+        // TODO : CDU : revoir cette requete pour gerer le cas d'un enseignant remplacant : different sur seance et sequence mais droit d'inspection sur le remplacant (et pas le remplace qui est positionne sur la sequence)
         String requete1 = "SELECT " + " distinct new map("  
                 + " GRP.code as codeGroupe, " 
                 + " GRP.designation as designationGroupe, "
@@ -2750,6 +2745,8 @@ public class SeanceHibernateBusiness extends AbstractBusiness
             final Date dateCourante, String strWhereRequete) { 
         final Integer idGroupe =
                 rechercheSeancePrintQO.getGroupeClasseSelectionne().getId();
+           
+           // TODO : CDU : revoir cette requete pour gerer le cas d'un enseignant remplacant : different sur seance et sequence mais droit d'inspection sur le remplacant (et pas le remplace qui est positionne sur la sequence)
         
             String requete1 =
                 "SELECT " + " distinct new map(" + " GRP.code as codeGroupe, " +
@@ -2866,7 +2863,7 @@ public class SeanceHibernateBusiness extends AbstractBusiness
     
     final private static String FIND_LISTE_SEANCE_EDITION_ORDER_BY = "ORDER BY SEA.date DESC, SEA.id DESC"; 
     
-    final private static String FIND_LISTE_SEQUENCE_EDITION_ORDER_BY = "ORDER BY SEA.date DESC, SEA.id DESC";
+    final private static String FIND_LISTE_SEQUENCE_EDITION_ORDER_BY = "ORDER BY SEQ.intitule ASC, SEA.date DESC, SEA.id DESC";
     
     /**
      * {@inheritDoc}

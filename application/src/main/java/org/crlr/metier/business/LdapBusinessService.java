@@ -70,4 +70,5 @@ public interface LdapBusinessService {
      * @return les uids des enfants qui sont sous la responsabilité du parent, choisit au sein des uidsEnfant.
      */
     public Set<String> getAutoriteParentale(String uidParent, Set<String> uidsEnfant);
+    
 }

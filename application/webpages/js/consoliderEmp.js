@@ -102,6 +102,8 @@ function chargerAgendaImpl(jsonElemNom, calElemNom) {
         console.log('Coordinates: ' + jsEvent.pageX + ',' + jsEvent.pageY);
         console.log('View: ' + view.name);
 
+      //Lancer le popup modal pour empecher que l'utilisateur clique d'autre éléments                 
+        RichFaces.$('statuspop_wait').show();
 
         afficherEventPopup(calEvent.index);
 

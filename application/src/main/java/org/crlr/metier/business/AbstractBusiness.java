@@ -11,8 +11,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
 
-import org.crlr.log.Log;
-import org.crlr.log.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Classe abstraite définissant l'entityManager de la couche métier.
@@ -24,7 +24,7 @@ public abstract class AbstractBusiness {
     @PersistenceContext(type = PersistenceContextType.TRANSACTION)
     private EntityManager entityManager;
 
-    protected final Log log = LogFactory.getLog(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 /**
      * Constructeur de l'objet GenericEntityManagerDao.java.
      */
@@ -58,4 +58,7 @@ public abstract class AbstractBusiness {
     public void setEntityManager(final EntityManager entityManager) {
         this.entityManager = entityManager;
     }
+    
+
+ 
 }

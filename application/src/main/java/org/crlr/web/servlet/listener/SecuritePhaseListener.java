@@ -18,17 +18,17 @@ import javax.faces.event.PhaseEvent;
 import javax.faces.event.PhaseId;
 import javax.faces.event.PhaseListener;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.crlr.dto.Outil;
 import org.crlr.dto.securite.TypeReglesSecurite;
-import org.crlr.log.Log;
-import org.crlr.log.LogFactory;
 import org.crlr.message.Message;
-import org.apache.commons.collections.CollectionUtils;
 import org.crlr.web.application.MenuNodeAction;
 import org.crlr.web.contexte.ContexteApplication;
 import org.crlr.web.contexte.ContexteUtilisateur;
 import org.crlr.web.contexte.utils.ContexteUtils;
 import org.crlr.web.utils.FacesUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Gestion de l'authentification dans le cycle de vie JSF.
@@ -44,7 +44,7 @@ public class SecuritePhaseListener implements PhaseListener {
     /**
      * Les logs.
      */
-    private final transient Log log = LogFactory.getLog(getClass());
+    private final transient Logger log = LoggerFactory.getLogger(getClass());
 
     /**
      * LogonURL.
@@ -80,7 +80,7 @@ public class SecuritePhaseListener implements PhaseListener {
             (contexteUtilisateur != null) && contexteUtilisateur.isAuthentifie();
 
         if (logged) {
-            log.debug("Utilisateur authentifié : {0}",
+            log.debug("Utilisateur authentifié : {}",
                       contexteUtilisateur.getUtilisateurDTO().getUserDTO().getUid());
 
             // Vérification que l'url saisie correspond bien à un outil autorisé
@@ -118,7 +118,7 @@ public class SecuritePhaseListener implements PhaseListener {
                         }
                     }
                     // Pas d'outil autorisé --> page de connexion.
-                    log.debug("Outil non autorisé. {0}", outilsDemandes);
+                    log.debug("Outil non autorisé. {}", outilsDemandes);
                     FacesUtils.deconnexionApplication(FacesContext.getCurrentInstance());
                     FacesUtils.redirect(LOGONURL);
                 }
@@ -127,7 +127,7 @@ public class SecuritePhaseListener implements PhaseListener {
             //Eclusion de la page public
             if (!url.contains("connexion.xhtml")) {
                 log.debug("Pas d'utilisateur authentifié");
-                log.debug("Redirection vers la page d'authentification : {0}", LOGONURL);                
+                log.debug("Redirection vers la page d'authentification : {}", LOGONURL);                
                 FacesUtils.redirectWithMessage(LOGONURL, new Message(TypeReglesSecurite.SECU_00.name()));             
             }
         }

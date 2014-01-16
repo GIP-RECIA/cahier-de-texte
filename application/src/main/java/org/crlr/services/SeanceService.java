@@ -56,6 +56,18 @@ public interface SeanceService {
                        throws MetierException;
 
     /**
+     * Sauvegarder (ajout) d'une liste de séances.
+     *
+     * @param listeSeanceQO La liste des séances
+     *
+     * @return le nombre de seance ajoutée ou modifiée
+     *
+     * @throws MetierException Exception
+     */
+    public ResultatDTO<Integer> saveListeSeance(List<SaveSeanceQO> listeSeanceQO)
+                       throws MetierException;
+    
+    /**
      * Suppression d'une séance.
      *
      * @param resultatRechercheSeanceDTO resultatSelectionne

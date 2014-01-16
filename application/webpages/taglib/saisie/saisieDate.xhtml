@@ -27,7 +27,9 @@
 		inputClass="${not empty rendered and not rendered ? 'cachee' : empty styleClass ? (modifiable ? '' : 'inactif') : styleClass} ${styleClassError}"
         required="#{required}" requiredMessage="#{requiredMessage}"
 		showApplyButton="false" cellWidth="24px" cellHeight="22px" jointPoint="bottomRight" direction="bottomLeft">
-		<a4j:ajax event="change" oncomplete="#{oncomplete}" />
+		<a4j:ajax event="change" oncomplete="#{oncomplete}" >
+		</a4j:ajax>
+		<ui:insert />
 	</rich:calendar>
 </ui:composition>
 </html>

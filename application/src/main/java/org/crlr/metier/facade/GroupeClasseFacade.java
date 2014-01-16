@@ -252,5 +252,11 @@ public class GroupeClasseFacade implements GroupeClasseFacadeService {
     public List<UserDTO> findListeEleve(RechercheGroupeQO rechercheGroupeQO) {
         return eleveHibernateBusinessService.findListeEleve(rechercheGroupeQO);
     }
-    
+
+    /**
+     * {@inheritDoc}
+     */
+    public List<GroupeDTO> findGroupesCollaboratifEnseignant(Integer idEnseignant) {
+        return groupeHibernateBusinessService.findGroupesCollaboratifEnseignant(idEnseignant);
+    }
 }

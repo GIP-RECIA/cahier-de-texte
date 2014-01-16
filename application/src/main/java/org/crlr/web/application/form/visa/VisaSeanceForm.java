@@ -10,12 +10,13 @@ package org.crlr.web.application.form.visa;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.crlr.alimentation.DTO.EnseignantDTO;
 import org.crlr.dto.application.seance.ResultatRechercheSeanceDTO;
 import org.crlr.dto.application.visa.DateListeVisaSeanceDTO;
 import org.crlr.dto.application.visa.ResultatRechercheVisaSeanceDTO;
 import org.crlr.dto.application.visa.VisaDTO;
-import org.crlr.dto.application.visa.VisaEnseignantDTO;
 import org.crlr.dto.application.visa.VisaDTO.VisaProfil;
+import org.crlr.dto.application.visa.VisaEnseignantDTO;
 import org.crlr.web.application.form.AbstractPopupForm;
 
 /**
@@ -37,6 +38,16 @@ public class VisaSeanceForm extends AbstractPopupForm {
     private Boolean afficheVisualiserArchiveSeance;
     
     private Boolean afficheSequenceTitre;
+    
+    /**
+     * Quand on sélectionne un enseignant, soit
+     * on regarde les séances propres à lui (id ens dans la séquence == id de l'enseignant)
+     * 
+     * soit on regard les séances saisies en tant que remplaçant
+     */
+    private Boolean modeRemplacant;
+    
+    private EnseignantDTO enseignantRemplace;
     
     /** liste des séances recherchées. */
     private List<DateListeVisaSeanceDTO> listeSeance;
@@ -379,6 +390,34 @@ public class VisaSeanceForm extends AbstractPopupForm {
      */
     public void setVisaEnseignantOrigine(VisaEnseignantDTO visaEnseignantOrigine) {
         this.visaEnseignantOrigine = visaEnseignantOrigine;
+    }
+
+    /**
+     * @return the modeRemplacant
+     */
+    public Boolean getModeRemplacant() {
+        return modeRemplacant;
+    }
+
+    /**
+     * @param modeRemplacant the modeRemplacant to set
+     */
+    public void setModeRemplacant(Boolean modeRemplacant) {
+        this.modeRemplacant = modeRemplacant;
+    }
+
+    /**
+     * @return the enseignantRemplace
+     */
+    public EnseignantDTO getEnseignantRemplace() {
+        return enseignantRemplace;
+    }
+
+    /**
+     * @param enseignantRemplace the enseignantRemplace to set
+     */
+    public void setEnseignantRemplace(EnseignantDTO enseignantRemplace) {
+        this.enseignantRemplace = enseignantRemplace;
     }
 
  

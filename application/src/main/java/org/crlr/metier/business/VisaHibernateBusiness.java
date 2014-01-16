@@ -31,13 +31,15 @@ import org.crlr.dto.application.visa.RechercheVisaQO;
 import org.crlr.dto.application.visa.ResultatRechercheVisaSeanceDTO;
 import org.crlr.dto.application.visa.TypeVisa;
 import org.crlr.dto.application.visa.VisaDTO;
-import org.crlr.dto.application.visa.VisaEnseignantDTO;
 import org.crlr.dto.application.visa.VisaDTO.VisaProfil;
+import org.crlr.dto.application.visa.VisaEnseignantDTO;
 import org.crlr.exception.metier.MetierException;
 import org.crlr.message.ConteneurMessage;
 import org.crlr.message.Message;
 import org.crlr.message.Message.Nature;
 import org.crlr.metier.entity.ArchiveDevoirBean;
+import org.crlr.metier.entity.ArchivePiecesJointesDevoirsBean;
+import org.crlr.metier.entity.ArchivePiecesJointesSeancesBean;
 import org.crlr.metier.entity.ArchiveSeanceBean;
 import org.crlr.metier.entity.ClasseBean;
 import org.crlr.metier.entity.DevoirBean;
@@ -52,6 +54,10 @@ import org.crlr.metier.utils.SchemaUtils;
 import org.crlr.utils.Assert;
 import org.crlr.utils.ObjectUtils;
 import org.springframework.stereotype.Repository;
+
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 
 /**
  * DOCUMENTATION INCOMPLETE!
@@ -81,114 +87,95 @@ public class VisaHibernateBusiness extends AbstractBusiness
         
         final String schema = SchemaUtils.getDefaultSchema();
         
-        if (!CollectionUtils.isEmpty(listeEnseignant)) {
+        if (CollectionUtils.isEmpty(listeEnseignant)) {
+            return resultat;
+        }
+        
+        Function<EnseignantDTO, Integer> funcDTOtoIds = 
+                new Function<EnseignantDTO,Integer>() { 
+                    public Integer apply(EnseignantDTO i) { return i.getId(); }
+                };
 
-            // construit la clause de liste des id enseignant
-            String clauseIdEnseignant = "";
-            for (final EnseignantDTO enseignant : listeEnseignant) {
-                final String idEnseignant = enseignant.getId().toString();
-                if (clauseIdEnseignant.isEmpty()) {
-                    clauseIdEnseignant = "(";
-                } else {
-                    clauseIdEnseignant += ",";
-                }
-                clauseIdEnseignant += idEnseignant;
-            }
-            if (!clauseIdEnseignant.isEmpty()) {
-                clauseIdEnseignant += ")";
-            }
-             
-            // Requete de recherche entete enseignant (enseignant + dernier maj)
-            final String requete = 
-            "select " +
-                "enseignant.id," + 
-                "enseignant.nom, " +
-                "enseignant.prenom, " +
-                "visaDernierMaj.date_dernier_maj, " +
-                "visaDernierMaj.id, " +
-                "dernierVisa.profil, " +
-                "dernierVisa.type_visa, " +
-                "dernierVisa.date_visa, " +
-                "coalesce(" +
-                    "(select 1 where exists (" +
-                        "select 1 from " + SchemaUtils.getTableAvecSchema(schema,"cahier_visa") + " visaRouge " +
-                        "where visaRouge.id_enseignant = enseignant.id " +
-                        "and visaRouge.date_dernier_maj is not null " +
-                        "and visaRouge.date_visa is not null " +
-                        "and visaRouge.date_dernier_maj > visaRouge.date_visa )), 0)" +
-            "from " + 
-                SchemaUtils.getTableAvecSchema(schema,"cahier_enseignant") + " enseignant, " +
-                SchemaUtils.getTableAvecSchema(schema,"cahier_visa") + " visaDernierMaj, " +
-                SchemaUtils.getTableAvecSchema(schema,"cahier_visa") + " dernierVisa " +
-            "where " +
-                "enseignant.id in " + clauseIdEnseignant + " and " +
-                "visaDernierMaj.id_enseignant = enseignant.id  and " + 
-                "(visaDernierMaj.id in ( " +
-                    "select visa2.id " + 
-                    "from " + SchemaUtils.getTableAvecSchema(schema,"cahier_visa") + " visa2 " +
-                    "where  visa2.id_enseignant = visaDernierMaj.id_enseignant and visa2.date_dernier_maj is not null " +
-                    "order by visa2.date_dernier_maj desc " +
-                    "limit 1) or " +
-                    "visaDernierMaj.id in ( " +
-                    "select visa2.id " + 
-                    "from " + SchemaUtils.getTableAvecSchema(schema,"cahier_visa") + " visa2 " +
-                    "where  visa2.id_enseignant = visaDernierMaj.id_enseignant and visa2.date_dernier_maj is null " +
-                    "and not exists (select 1 from " + SchemaUtils.getTableAvecSchema(schema,"cahier_visa") + " visanull " +
-                                    "where visanull.id_enseignant = visa2.id_enseignant " +
-                                    "and visanull.date_dernier_maj is not null)" +
-                    "order by visa2.date_dernier_maj desc " +
-                    "limit 1)" +
-                ")  and " + 
-                "dernierVisa.id_enseignant = enseignant.id  and " + 
-                "(dernierVisa.id in ( " +
-                    "select visa3.id " +
-                    "from " + SchemaUtils.getTableAvecSchema(schema,"cahier_visa") + " visa3 " +
-                    "where visa3.id_enseignant = dernierVisa.id_enseignant and visa3.date_visa is not null " +
-                    "order by visa3.date_visa desc " +
-                    "limit 1) or " +
-                    "dernierVisa.id in ( " +
-                    "select visa3.id " +
-                    "from " + SchemaUtils.getTableAvecSchema(schema,"cahier_visa") + " visa3 " +
-                    "where visa3.id_enseignant = dernierVisa.id_enseignant and visa3.date_visa is null " +
-                    "and not exists (select 1 from " + SchemaUtils.getTableAvecSchema(schema,"cahier_visa") + " visanull " +
-                                    "where visanull.id_enseignant = visa3.id_enseignant " +
-                                    "and visanull.date_visa is not null)" +
-                    "order by visa3.date_visa desc " +
-                    "limit 1)" +
-                    ")" + 
-            "order by nom, prenom";
-            final List<Object[]> liste = getEntityManager().createNativeQuery(requete).getResultList();
 
-            // Construit la liste de resultat
-            if (liste != null && !CollectionUtils.isEmpty(liste)) {
-                for (final Object[] row : liste) {
-                    final VisaEnseignantDTO visaEnseignant = new VisaEnseignantDTO();
-                    final EnseignantDTO enseignant = new EnseignantDTO();
-                    enseignant.setId((Integer) row[0]);
-                    enseignant.setNom((String) row[1]);
-                    enseignant.setPrenom((String) row[2]);
-                    visaEnseignant.setEnseignant(enseignant);
-                    visaEnseignant.setVraiOuFauxCollapse(true);
-                    visaEnseignant.setDateDernierMaj((Date) row[3]);
-                    visaEnseignant.setIdDernierMaj((Integer) row[4]);
-                    final String typeVisaStr =  (String) row[6];
-                    if (typeVisaStr != null) {
-                        visaEnseignant.setDateDernierVisa((Date) row[7]);
-                        visaEnseignant.setProfilDernierVisa(VisaProfil.valueOf((String) row[5]));
-                        if (typeVisaStr.equals(TypeVisa.MEMO.name())) {
-                            visaEnseignant.setTypeDernierVisa(TypeVisa.MEMO);
-                        } else {
-                            visaEnseignant.setTypeDernierVisa(TypeVisa.SIMPLE);
-                        }
+        List<Integer> listIds = Lists.transform(listeEnseignant, funcDTOtoIds);
+        
+        // construit la clause de liste des id enseignant
+        String clauseIdEnseignant = "(" + Joiner.on(",").skipNulls().join(listIds) + ")";
+                
+        // Requete de recherche entete enseignant (enseignant + dernier maj)
+        final String requete = 
+        "select " +
+            "enseignant.id," + 
+            "enseignant.nom, " +
+            "enseignant.prenom, " +
+            "visaDernierMaj.date_dernier_maj, " +
+            "visaDernierMaj.id, " +
+            "dernierVisa.profil, " +
+            "dernierVisa.type_visa, " +
+            "dernierVisa.date_visa, " +
+            "coalesce(" +
+                "(select 1 where exists (" +
+                    "select 1 from " + SchemaUtils.getTableAvecSchema(schema,"cahier_visa") + " visaRouge " +
+                    "where visaRouge.id_enseignant = enseignant.id " +
+                    "and visaRouge.date_dernier_maj is not null " +
+                    "and visaRouge.date_visa is not null " +
+                    "and visaRouge.date_dernier_maj > visaRouge.date_visa )), 0)" +
+        "from " + 
+            SchemaUtils.getTableAvecSchema(schema,"cahier_enseignant") + " enseignant, " +
+            SchemaUtils.getTableAvecSchema(schema,"cahier_visa") + " visaDernierMaj, " +
+            SchemaUtils.getTableAvecSchema(schema,"cahier_visa") + " dernierVisa " +
+        "where " +
+            "enseignant.id in " + clauseIdEnseignant + " and " +
+            "visaDernierMaj.id_enseignant = enseignant.id  and " + 
+            "(visaDernierMaj.id = ( " +
+                "select visa2.id " + 
+                "from " + SchemaUtils.getTableAvecSchema(schema,"cahier_visa") + " visa2 " +
+                "where  visa2.id_enseignant = visaDernierMaj.id_enseignant " +
+                "order by visa2.date_dernier_maj desc nulls last " +
+                "limit 1)  " +                    
+            ")  and " + 
+            "dernierVisa.id_enseignant = enseignant.id  and " + 
+            "(dernierVisa.id = ( " +
+                "select visa3.id " +
+                "from " + SchemaUtils.getTableAvecSchema(schema,"cahier_visa") + " visa3 " +
+                "where visa3.id_enseignant = dernierVisa.id_enseignant " +
+                "order by visa3.date_visa desc nulls last " +
+                "limit 1) " +
+                ")" + 
+        "order by nom, prenom";
+        final List<Object[]> liste = getEntityManager().createNativeQuery(requete).getResultList();
+
+
+        // Construit la liste de resultat
+        if (liste != null && !CollectionUtils.isEmpty(liste)) {
+            for (final Object[] row : liste) {
+                final VisaEnseignantDTO visaEnseignant = new VisaEnseignantDTO();
+                final EnseignantDTO enseignant = new EnseignantDTO();
+                enseignant.setId((Integer) row[0]);
+                enseignant.setNom((String) row[1]);
+                enseignant.setPrenom((String) row[2]);
+                visaEnseignant.setEnseignant(enseignant);
+                visaEnseignant.setVraiOuFauxCollapse(true);
+                visaEnseignant.setDateDernierMaj((Date) row[3]);
+                visaEnseignant.setIdDernierMaj((Integer) row[4]);
+                final String typeVisaStr =  (String) row[6];
+                if (typeVisaStr != null) {
+                    visaEnseignant.setDateDernierVisa((Date) row[7]);
+                    visaEnseignant.setProfilDernierVisa(VisaProfil.valueOf((String) row[5]));
+                    if (typeVisaStr.equals(TypeVisa.MEMO.name())) {
+                        visaEnseignant.setTypeDernierVisa(TypeVisa.MEMO);
+                    } else {
+                        visaEnseignant.setTypeDernierVisa(TypeVisa.SIMPLE);
                     }
-                    visaEnseignant.setVraiOuFauxExisteVisaPerime((Integer) row[8] == 1);
-                    final List<VisaDTO> listeVisa = new ArrayList<VisaDTO>(); 
-                    visaEnseignant.setListeVisa(listeVisa);
-                    
-                    listeVisaEnseignant.add(visaEnseignant);
                 }
+                visaEnseignant.setVraiOuFauxExisteVisaPerime((Integer) row[8] == 1);
+                final List<VisaDTO> listeVisa = new ArrayList<VisaDTO>(); 
+                visaEnseignant.setListeVisa(listeVisa);
+                
+                listeVisaEnseignant.add(visaEnseignant);
             }
         }
+    
         
         return resultat;
     }
@@ -267,6 +254,20 @@ public class VisaHibernateBusiness extends AbstractBusiness
     }
        
     public ResultatDTO<Integer> updateVisaDateMaj(Integer idSeance, Date dateMaj) {
+        /*
+Pour voir les visa impact�s
+        String visaListIdQuery = "select visaInner.id from " + VisaBean.class.getName() + " visaInner " +
+                ", " + SeanceBean.class.getName() + " sea inner join sea.sequence seq where " +
+                " sea.id = :idSeance and " +
+                "seq.idEnseignant = visaInner.idEnseignant and " +
+                "(seq.idClasse = visaInner.idClasse or (seq.idClasse is null and visaInner.idClasse is null)) and " + 
+                "(seq.idGroupe = visaInner.idGroupe or (seq.idGroupe is null and visaInner.idGroupe is null)) and " +
+                "seq.idEnseignement = visaInner.idEnseignement";
+        
+        List list = getEntityManager().createQuery(visaListIdQuery).setParameter( "idSeance", idSeance ).getResultList();
+        
+        log.debug("updateVisaDateMaj seance {} dateMaj {} {} list {} {}", idSeance, dateMaj, dateMaj.getTime(), list.size(), list);
+        */
         String hqlUpdate = "update " + VisaBean.class.getName() +
                 " visa set visa.dateMaj = :dateMaj " + 
                 " where visa.id in (select visaInner.id from " + VisaBean.class.getName() + " visaInner " +
@@ -414,7 +415,21 @@ public class VisaHibernateBusiness extends AbstractBusiness
         final String schema = SchemaUtils.getDefaultSchema();
         final Integer idVisa = visa.getIdVisa();
         
+        // Ajoute la restriction sur l'enseignant createur de la seance :
+        // Pour une seance cree par un remplacant:
+        //    idEnseignant de la seance correspond au remplacant
+        //    et idEnseignant de la sequence correspond au remplace
+        // Pour une seance "normale", les 2 idEnseignant sont identique
+        final Integer idEnseignantCreateur;
+        if (visa.getIdEnseignantVisa() != null) {
+            idEnseignantCreateur = visa.getIdEnseignantVisa();
+        } else {
+            idEnseignantCreateur = visa.getIdEnseignant();
+        }
+        
         VisaBean visaBean = getEntityManager().find(VisaBean.class, idVisa);
+        
+        log.debug("Saving visa {} bean {} ", visaBean.toString(), visa.toString());
         
         if (null == visa.getTypeVisa()) {
             visaBean.setTypeVisa(null);
@@ -426,37 +441,33 @@ public class VisaHibernateBusiness extends AbstractBusiness
             Assert.isTrue("profil ne peut pas être changé", StringUtils.equals(
                     visaBean.getProfil(), visa.getProfil().name()));
                 
-            
-            
             visaBean.setProfil(visa.getProfil().name());
             visaBean.setTypeVisa(visa.getTypeVisa().name());
         }
         
+        log.debug("saveVisa flush");
         getEntityManager().flush();
         
-        // Requete de maj
-        /*
-        String query = 
-            "UPDATE " + SchemaUtils.getTableAvecSchema(schema,"cahier_visa") + " " +
-            "SET " +
-                "date_visa = " + setDateVisa + ", " +
-                "profil = '" + visa.getProfil() + "', " + 
-                "type_visa = " + setTypeVisa + " " +
-            "WHERE id = ?";
-        getEntityManager().createNativeQuery(query).setParameter(1, idVisa).executeUpdate();
-*/
+   
         String query = null;
         
         // On supprime le visa
         if (visa.getTypeVisa() == null) {
             
-            //TODO et les archives ?
+            // Les archives sont supprimees puis sauvees dans le delegate 
             
             // Supprime la partie association visa / seance
-            query = 
+            /*query = 
                 "DELETE FROM " + SchemaUtils.getTableAvecSchema(schema,"cahier_visa_seance") + " vs " +
-                "WHERE vs.id_visa = ?";
-            getEntityManager().createNativeQuery(query).setParameter(1, idVisa).executeUpdate();
+                "USING " + SchemaUtils.getTableAvecSchema(schema,"cahier_seance") + " sea " +
+                "WHERE vs.id_visa = ? and vs.id_seance = sea.id and sea.id_enseignant = ? ";*/
+            log.debug("saveVisa vsb");
+            query = "DELETE " + VisaSeanceBean.class.getName() + " vsb WHERE vsb.pk.idVisa = :idVisa AND vsb.pk.idSeance IN (SELECT " +
+                    " sea.id FROM " + SeanceBean.class.getName() + " sea WHERE sea.idEnseignant = :idEnseignant)"; 
+            getEntityManager().createQuery(query)
+                .setParameter("idVisa", idVisa)
+                .setParameter("idEnseignant", idEnseignantCreateur)
+                .executeUpdate();
             
         // On cree / maj le visa 
         } else {
@@ -489,6 +500,8 @@ public class VisaHibernateBusiness extends AbstractBusiness
             } else {
                 clauseWhere += "seq.id_groupe = ? ";
             }
+            // Ajoute la clause sur le createur de la seance
+            clauseWhere += " and sea.id_enseignant = ? ";
             
             // Update les liens visa / seance existant qui sont perimes
             /*
@@ -522,12 +535,15 @@ public class VisaHibernateBusiness extends AbstractBusiness
                         "where vs.id_seance = sea.id " +
                         "and vs.id_visa = " + idVisa + ")";
             
+            log.debug("saveVisa créer visaSeance");
+            
             getEntityManager().createNativeQuery(query)
             .setParameter(1, idVisa)
             .setParameter(2, idEnseignant)
             .setParameter(3, idEnseignement)
             .setParameter(4, idEtablissement)
             .setParameter(5, idClasseGroupe)
+            .setParameter(6, idEnseignantCreateur)
             .executeUpdate();     
         }
     }
@@ -574,29 +590,73 @@ public class VisaHibernateBusiness extends AbstractBusiness
      * {@inheritDoc}
      */
     public void supprimerArchiveVisa(final VisaDTO visa) {
+        
+        log.debug("supprimerArchiveVisa {}", visa);
+        
         final Integer idVisa = visa.getIdVisa();
         
+        // Ajoute la restriction sur l'enseignant createur de la seance :
+        // Pour une seance cree par un remplacant:
+        //    idEnseignant de la seance correspond au remplacant
+        //    et idEnseignant de la sequence correspond au remplace
+        // Pour une seance "normale", les 2 idEnseignant sont identique
+        final Integer idEnseignantCreateur;
+        if (visa.getIdEnseignantVisa() != null) {
+            idEnseignantCreateur = visa.getIdEnseignantVisa();
+        } else {
+            idEnseignantCreateur = visa.getIdEnseignant();
+        }
+        
         // Supprime les association PJ / ArchiveDevoir
-        String whereClause = "aSea.id_visa = ?";
+        String whereClause = "aSea.id_visa = ? and aSea.id_enseignant = ? ";
         
         String query = SUPPRIMER_ARCHIVE_PJ_DEVOIR_QUERY.replace(WHERE_CLAUSE_TOKEN, whereClause);
-                       
-        getEntityManager().createNativeQuery(query).setParameter(1, idVisa).executeUpdate();
+                    
+        getEntityManager().createNativeQuery(query)
+            .setParameter(1, idVisa)
+            .setParameter(2, idEnseignantCreateur)
+            .executeUpdate();
         
         // Supprime la partie devoir
-        query = SUPPRIMER_ARCHIVE_DEVOIR_QUERY.replace(WHERE_CLAUSE_TOKEN, whereClause);
            
-        getEntityManager().createNativeQuery(query).setParameter(1, idVisa).executeUpdate();
+        query = "Delete " + ArchiveDevoirBean.class.getName()
+                + " ad WHERE ad.idArchiveSeance IN (Select asb.idArchiveSeance FROM " + ArchiveSeanceBean.class.getName()
+                +  " asb WHERE asb.visa.id = :visaId AND asb.idEnseignant = :idEnseignant)";
+        
+        log.debug("Original query {}{}{}",
+        "DELETE FROM cahier_courant.cahier_archive_devoir ad ",   
+        "USING cahier_courant.cahier_archive_seance aSea WHERE ad.id_archive_seance = aSea.id_archive_seance", 
+        "AND aSea.id_visa = ? and aSea.id_enseignant = ?"); 
+        
+        int res = getEntityManager().createQuery(query)
+            .setParameter("visaId", idVisa)
+            .setParameter("idEnseignant", idEnseignantCreateur).executeUpdate();
+        log.debug("Resultat {}", res);
 
         // Supprime les association PJ / ArchiveSeance
-        query = SUPPRIMER_ARCHIVE_PJ_SEANCE_QUERY.replace(WHERE_CLAUSE_TOKEN, whereClause);
         
-       getEntityManager().createNativeQuery(query).setParameter(1, idVisa).executeUpdate();
+        log.debug("Original query {}",
+        "DELETE FROM cahier_courant.cahier_archive_piece_jointe_seance pj USING " +
+        "cahier_courant.cahier_archive_seance aSea WHERE pj.id_archive_seance = " +
+        "aSea.id_archive_seance AND aSea.id_visa = ? and aSea.id_enseignant = ?"); 
+        
+        query = "DELETE " + ArchivePiecesJointesSeancesBean.class.getName() + " apjs " +
+        "WHERE apjs.pk.idArchiveSeance in (Select asb.idArchiveSeance FROM " + ArchiveSeanceBean.class.getName() + 
+         " asb WHERE " + 
+        " asb.visa.id = :visaId AND asb.idEnseignant = :idEnseignant)";
+                
+        
+        getEntityManager().createQuery(query)
+            .setParameter("visaId", idVisa)
+            .setParameter("idEnseignant", idEnseignantCreateur).executeUpdate();
        
        // Supprime les archives séances
        query = SUPRRIMER_ARCHIVE_SEANCES_QUERY.replace(WHERE_CLAUSE_TOKEN, whereClause);
                
-       getEntityManager().createNativeQuery(query).setParameter(1, idVisa).executeUpdate();
+       getEntityManager().createNativeQuery(query)
+           .setParameter(1, idVisa)
+           .setParameter(2, idEnseignantCreateur)
+           .executeUpdate();
 
         
     }
@@ -616,14 +676,23 @@ public class VisaHibernateBusiness extends AbstractBusiness
         getEntityManager().createNativeQuery(query).setParameter(1, idSeance).executeUpdate();
         
         // Supprime la partie devoir
-        query = SUPPRIMER_ARCHIVE_DEVOIR_QUERY.replace(WHERE_CLAUSE_TOKEN, whereClause);
-           
-        getEntityManager().createNativeQuery(query).setParameter(1, idSeance).executeUpdate();
+        
+        query = "Delete " + ArchiveDevoirBean.class.getName()
+                + " ad WHERE ad.idArchiveSeance IN (Select asb.idArchiveSeance FROM " + ArchiveSeanceBean.class.getName()
+                +  " asb WHERE asb.idSeance = :idSeance)";
+        
+        getEntityManager().createQuery(query).setParameter("idSeance", idSeance).executeUpdate();
 
         // Supprime les association PJ / ArchiveSeance
         query = SUPPRIMER_ARCHIVE_PJ_SEANCE_QUERY.replace(WHERE_CLAUSE_TOKEN, whereClause);
         
-       getEntityManager().createNativeQuery(query).setParameter(1, idSeance).executeUpdate();
+        query = "DELETE " + ArchivePiecesJointesSeancesBean.class.getName() + " apjs " +
+                "WHERE apjs.pk.idArchiveSeance in (Select asb.idArchiveSeance FROM " + ArchiveSeanceBean.class.getName() + 
+                 " asb WHERE " + 
+                " asb.idSeance = :idSeance)";
+                 
+        
+       getEntityManager().createQuery(query).setParameter("idSeance", idSeance).executeUpdate();
        
        // Supprime les archives séances
        query = SUPRRIMER_ARCHIVE_SEANCES_QUERY.replace(WHERE_CLAUSE_TOKEN, whereClause);
@@ -676,7 +745,18 @@ public class VisaHibernateBusiness extends AbstractBusiness
         } else {
             clauseWhere += "seq.id_groupe = ? ";
         }
-        
+        // Ajoute la restriction sur l'enseignant createur de la seance :
+        // Pour une seance cree par un remplacant:
+        //    idEnseignant de la seance correspond au remplacant
+        //    et idEnseignant de la sequence correspond au remplace
+        // Pour une seance "normale", les 2 idEnseignant sont identique
+        final Integer idEnseignantCreateur;
+        if (visa.getIdEnseignantVisa() != null) {
+            idEnseignantCreateur = visa.getIdEnseignantVisa();
+        } else {
+            idEnseignantCreateur = visa.getIdEnseignant();
+        }
+        clauseWhere += " and sea.id_enseignant = ? ";
         
         // Archive les objets SEANCE
         String query = 
@@ -697,6 +777,7 @@ public class VisaHibernateBusiness extends AbstractBusiness
             .setParameter(2, idEnseignement)
             .setParameter(3, idEtablissement)
             .setParameter(4, idClasseGroupe)
+            .setParameter(5, idEnseignantCreateur)
             .executeUpdate();
         
         
@@ -710,10 +791,12 @@ public class VisaHibernateBusiness extends AbstractBusiness
         "inner join dev.seance sea, " +
         " " + ArchiveSeanceBean.class.getName()  +
         " archSea " +                
-    "where sea.id = archSea.idSeance and archSea.visa.id  = :idVisa " ; 
+    "where sea.id = archSea.idSeance and archSea.visa.id  = :idVisa and sea.idEnseignant = :idEnseignantCreateur " ; 
         
         List<Object[]> listeD = getEntityManager().createQuery(query)
-                .setParameter("idVisa", visa.getIdVisa()).getResultList();
+                .setParameter("idVisa", visa.getIdVisa())
+                .setParameter("idEnseignantCreateur", idEnseignantCreateur)
+                .getResultList();
     
         final BaseHibernateBusiness baseHibernateBusiness =
                 new BaseHibernateBusiness(this.getEntityManager());
@@ -744,7 +827,7 @@ public class VisaHibernateBusiness extends AbstractBusiness
             r = nativeQuery.executeUpdate();*/
             
             devoirVerArchiveDevoirId.put(devoirBean.getId(), idArchiveDevoir);
-            log.info("devoir id {0} archive devoir id {1}", devoirBean.getId(), idArchiveDevoir);
+            log.debug("devoir id {} archive devoir id {}", devoirBean.getId(), idArchiveDevoir);
         }
         
         getEntityManager().flush();
@@ -783,13 +866,11 @@ public class VisaHibernateBusiness extends AbstractBusiness
                 "inner join " + SchemaUtils.getTableAvecSchema(schema,"cahier_archive_seance") + 
                 " archSea on (sea.id = archSea.id_seance) " +               
                 
-            "where archSea.id_visa = ? "; 
+            "where archSea.id_visa = ? and sea.id_enseignant = ?"; 
         getEntityManager().createNativeQuery(query)
         .setParameter(1, visa.getIdVisa())
+        .setParameter(2, idEnseignantCreateur)
         .executeUpdate();
-        
-       
-    
        
     }
     
@@ -929,7 +1010,7 @@ public class VisaHibernateBusiness extends AbstractBusiness
             final ResultatRechercheVisaSeanceDTO resultatRechercheVisaSeanceDTO =
                 new ResultatRechercheVisaSeanceDTO();
             
-            resultatRechercheVisaSeanceDTO.setProfil(rechercheSeanceQO.getProfil());
+            resultatRechercheVisaSeanceDTO.setProfil(rechercheSeanceQO.getUtilisateurConnecte().getProfil());
             
             final SeanceBean seance = (SeanceBean) result.get("seance");
             //final VisaSeanceBean visaSeanceDirecteur = (VisaSeanceBean) result.get("visaSeanceDirecteur");
@@ -943,7 +1024,7 @@ public class VisaHibernateBusiness extends AbstractBusiness
             resultatRechercheVisaSeanceDTO.getSequence().setId(seance.getIdSequence());
             resultatRechercheVisaSeanceDTO.getEnseignantDTO().setId(seance.getIdEnseignant());
                         
-            resultatRechercheVisaSeanceDTO.setProfil(rechercheSeanceQO.getProfil());
+            resultatRechercheVisaSeanceDTO.setProfil(rechercheSeanceQO.getUtilisateurConnecte().getProfil());
             
             ObjectUtils.copyProperties(resultatRechercheVisaSeanceDTO.getVisaDirecteur(), visaDirecteur);
             ObjectUtils.copyProperties(resultatRechercheVisaSeanceDTO.getVisaInspecteur(), visaInspecteur);

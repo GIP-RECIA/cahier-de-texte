@@ -29,7 +29,7 @@
 	          rendered="#{not readonly}"
 		      desc="#{devoirDTO.intitule}" 
 		      oncomplete="#{rich:component('idPopupDevoir')}.show();"
-		      bean="#{bean}" render="idPopupDevoir_panel"
+		      bean="#{bean}" render=":idPopupDevoir_form:idPopupDevoir_panel"
 		      cible="chargerDevoir"
 		      style="white-space: normal; color: #000000; text-decoration: none;">
 		        <f:setPropertyActionListener value="#{devoirDTO}"

@@ -13,6 +13,7 @@ import java.util.Properties;
 import org.apache.commons.lang.StringUtils;
 import org.crlr.alimentation.DTO.EnseignantDTO;
 import org.crlr.dto.ResultatDTO;
+import org.crlr.dto.application.base.Profil;
 import org.crlr.dto.application.seance.RechercheVisaSeanceQO;
 import org.crlr.dto.application.visa.DateListeVisaSeanceDTO;
 import org.crlr.dto.application.visa.RechercheVisaQO;
@@ -45,12 +46,7 @@ public class VisaDelegate implements VisaService {
         this.visaFacadeService = visaFacadeService;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public ResultatDTO<List<VisaEnseignantDTO>> findListeVisaEnseignant(final List<EnseignantDTO> listeEnseignant) {
-        return visaFacadeService.findListeVisaEnseignant(listeEnseignant);
-    }
+  
     
     /**
      * {@inheritDoc}
@@ -81,36 +77,5 @@ public class VisaDelegate implements VisaService {
         return visaFacadeService.saveListeVisaSeance(listeVisaSeance);
     }
     
-    /** Texte d'aide HTML affiche dans la popup d'aide de l'écran visaListe .*/
-    private String aideContextuelleListe;
-    
-    /** Texte d'aide HTML affiche dans la popup d'aide de l'écran visaSeance .*/
-    private String aideContextuelleSeance;
-
-    
-    
-    
-    /**
-     * Accesseur de aideContextuelleListe {@link #aideContextuelleListe}.
-     * @return retourne aideContextuelleListe
-     */
-    public String getAideContextuelleListe() {
-        if (StringUtils.isEmpty(aideContextuelleListe)){
-            final Properties properties= PropertiesUtils.load("/aideContextuelle.properties");
-            aideContextuelleListe =properties.getProperty("visaListe.aide"); 
-        }
-        return aideContextuelleListe;
-    }
-
-    /**
-     * Accesseur de aideContextuelleSeance {@link #aideContextuelleSeance}.
-     * @return retourne aideContextuelleSeance
-     */
-    public String getAideContextuelleSeance() {
-        if (StringUtils.isEmpty(aideContextuelleSeance)){
-            final Properties properties= PropertiesUtils.load("/aideContextuelle.properties");
-            aideContextuelleSeance =properties.getProperty("visaSeance.aide"); 
-        }
-        return aideContextuelleSeance;
-    }
+  
 }

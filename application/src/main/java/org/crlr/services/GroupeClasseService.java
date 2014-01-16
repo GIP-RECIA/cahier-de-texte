@@ -103,6 +103,8 @@ public interface GroupeClasseService {
      */
     public List<EnseignantDTO> findEnseignantsGroupe(final EnseignantsClasseGroupeQO enseignantsClasseGroupeQO);
 
+    
+    
     /**
      * Recherche la classe d'un élève.
      * @param idEleve l'identifiant de l'élève
@@ -116,6 +118,13 @@ public interface GroupeClasseService {
      * @return Les groupes de l'élève.
      */
     public List<GroupeDTO> findGroupesEleve(Integer idEleve);
+
+    /**
+     * Recherche les groupes collaboratif dans lesquels intervient un enseignant.
+     * @param idEnseignant l'identifiant de l'enseignant
+     * @return Les groupes collaboratifs.
+     */
+    public List<GroupeDTO> findGroupesCollaboratifEnseignant(Integer idEnseignant);
     
     /**
      * Recherche les eleves qui font partie d'une classe ou d'un groupe.

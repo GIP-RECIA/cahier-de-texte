@@ -21,6 +21,8 @@ import org.crlr.message.Message.Nature;
 import org.crlr.metier.entity.ArchivePiecesJointesDevoirsBean;
 import org.crlr.metier.entity.ArchivePiecesJointesSeancesBean;
 import org.crlr.metier.entity.PieceJointeBean;
+import org.crlr.metier.entity.PiecesJointesCycleDevoirsBean;
+import org.crlr.metier.entity.PiecesJointesCycleSeancesBean;
 import org.crlr.metier.entity.PiecesJointesDevoirsBean;
 import org.crlr.metier.entity.PiecesJointesSeancesBean;
 import org.crlr.web.dto.FileUploadDTO;
@@ -174,7 +176,52 @@ public class PieceJointeHibernateBusiness extends AbstractBusiness implements
         return sizeListe1 > 0;
 
     }
+    /**
+     * @param idPieceJointe .
+     * @param idCycleSeance .
+     * @return true si le lien existe
+     */
+    public boolean existsPJCycleSeance(Integer idPieceJointe, Integer idCycleSeance) {
 
+        final String query = " SELECT 1 FROM "
+                + PiecesJointesCycleSeancesBean.class.getName() + " PJS WHERE "
+                + " PJS.pk.idPieceJointe = :idPieceJointe AND "
+                + " PJS.pk.idCycleSeance = :idCycleSeance";
+
+        @SuppressWarnings("unchecked")
+        final List<Integer> liste1 = getEntityManager().createQuery(query)
+                .setParameter("idPieceJointe", idPieceJointe)
+                .setParameter("idCycleSeance", idCycleSeance).getResultList();
+
+        final Integer sizeListe1 = liste1.size();
+
+        return sizeListe1 > 0;
+
+    }
+
+    /**
+     * @param idPieceJointe .
+     * @param idCycleDevoir .
+     * @return true si le lien existe
+     */
+    public boolean existsPJCycleDevoir(Integer idPieceJointe, Integer idCycleDevoir) {
+
+        final String query = " SELECT 1 FROM "
+                + PiecesJointesCycleDevoirsBean.class.getName() + " PJS WHERE "
+                + " PJS.pk.idPieceJointe = :idPieceJointe AND "
+                + " PJS.pk.idCycleDevoir = :idCycleDevoir";
+
+        @SuppressWarnings("unchecked")
+        final List<Integer> liste1 = getEntityManager().createQuery(query)
+                .setParameter("idPieceJointe", idPieceJointe)
+                .setParameter("idCycleDevoir", idCycleDevoir).getResultList();
+
+        final Integer sizeListe1 = liste1.size();
+
+        return sizeListe1 > 0;
+
+    }
+    
     /**
      * {@inheritDoc}
      */
@@ -204,6 +251,42 @@ public class PieceJointeHibernateBusiness extends AbstractBusiness implements
         getEntityManager().flush();
     }
 
+    /**
+     * @param pieceJointeCycleSeanceBean .
+     * @throws MetierException ex
+     */
+    private void savePieceJointeCycleSeance(
+            PiecesJointesCycleSeancesBean pieceJointeCycleSeanceBean)
+            throws MetierException {
+        if (existsPJCycleSeance(pieceJointeCycleSeanceBean.getIdPieceJointe(), pieceJointeCycleSeanceBean.getIdCycleSeance())) { 
+            final ConteneurMessage conteneurMessage = new ConteneurMessage();
+            conteneurMessage.add(new Message(TypeReglesPieceJointe.PIECEJOINTE_07.name(),
+                                                 Nature.BLOQUANT));
+            throw new MetierException(conteneurMessage,"Avertissement");
+           
+        }
+        getEntityManager().persist(pieceJointeCycleSeanceBean);
+        getEntityManager().flush();
+    }
+
+    /**
+     * @param pieceJointeCycleDevoirBean .
+     * @throws MetierException ex
+     */
+    private void savePieceJointeCycleDevoir(
+            PiecesJointesCycleDevoirsBean pieceJointeCycleDevoirBean)
+            throws MetierException {
+        if (existsPJCycleDevoir(pieceJointeCycleDevoirBean.getIdPieceJointe(), pieceJointeCycleDevoirBean.getIdCycleDevoir())) { 
+            final ConteneurMessage conteneurMessage = new ConteneurMessage();
+            conteneurMessage.add(new Message(TypeReglesPieceJointe.PIECEJOINTE_07.name(),
+                                                 Nature.BLOQUANT));
+            throw new MetierException(conteneurMessage,"Avertissement");
+           
+        }
+        getEntityManager().persist(pieceJointeCycleDevoirBean);
+        getEntityManager().flush();
+    }
+    
     /**
      * {@inheritDoc}
      */
@@ -238,6 +321,37 @@ public class PieceJointeHibernateBusiness extends AbstractBusiness implements
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public Integer savePieceJointeCycleSeance(FileUploadDTO fileUploadDTO) throws MetierException {
+        Integer idPieceJointe = savePieceJointe(fileUploadDTO);
+
+        final PiecesJointesCycleSeancesBean piecesJointesCycleSeancesBean = new PiecesJointesCycleSeancesBean();
+        piecesJointesCycleSeancesBean.setIdPieceJointe(idPieceJointe);
+        piecesJointesCycleSeancesBean.setIdCycleSeance(fileUploadDTO.getIdSeance());
+        
+        this.savePieceJointeCycleSeance(piecesJointesCycleSeancesBean);
+
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Integer savePieceJointeCycleDevoir(FileUploadDTO fileUploadDTO) throws MetierException {
+        Integer idPieceJointe = savePieceJointe(fileUploadDTO);
+
+        final PiecesJointesCycleDevoirsBean piecesJointesCycleDevoirsBean = new PiecesJointesCycleDevoirsBean();
+        piecesJointesCycleDevoirsBean.setIdPieceJointe(idPieceJointe);
+        piecesJointesCycleDevoirsBean.setIdCycleDevoir(fileUploadDTO.getIdDevoir());
+        
+        this.savePieceJointeCycleDevoir(piecesJointesCycleDevoirsBean);
+
+        return null;
+    }
+    
+    
     /**
      * Méthode utilitaire pour PJ séance et devoir.
      * @param fileUploadDTO 

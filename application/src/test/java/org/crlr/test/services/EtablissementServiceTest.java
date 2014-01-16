@@ -19,6 +19,7 @@ import org.crlr.services.EtablissementService;
 import org.crlr.test.AbstractMetierTest;
 import org.crlr.utils.AssertionException;
 
+import static org.junit.Assert.*;
 /**
  * DOCUMENT ME!
  *

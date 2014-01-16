@@ -9,7 +9,9 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:rich="http://richfaces.org/rich"
       xmlns:t="http://myfaces.apache.org/tomahawk"
-      xmlns:ui="http://java.sun.com/jsf/facelets">
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:enseignant="http://java.sun.com/jsf/composite/enseignant"
+      >
   <cr:page titrePage="Recherche/Modification séance">
     <h:outputStylesheet library="css"
                         name="visaSeance.css"
@@ -43,7 +45,7 @@
         <span
             id="idRetour" 
             style="#{visaSeance.form.afficheRetour ? 'cursor: pointer;' : 'display:none; '}"
-            onclick="console.log('hey'); idActionEnCours='idMenuActionRetour'; handleNavigationPage();"
+            onclick="idActionEnCours='idMenuActionRetour'; handleNavigationPage();"
             title="Retour" >
             <h:graphicImage library="images/icones" name="back.png" />     
             <a4j:jsFunction 
@@ -169,23 +171,73 @@
         <table class="corps">
           <tr>
             <td class="data">
-              <cr:selectEnseignant choixTousOuUn="false"
-                                   labelControlEnseignant="Cahier de texte de"
+         
+        <enseignant:selectEnseignant choixTousOuUn="false"
+                                    labelControlEnseignant="Cahier de texte de"
                                    render="outilRecherche visaSeanceContenu idPopupSequence paneauResultat"
                                    readOnly="#{visaSeance.form.afficheSauvegarde}"
-                                   toujoursVisible="true" />
+                                   toujoursVisible="true"
+                                   enseignant="#{enseignant}"
+                                   classeGroupe = "#{classeGroup}"
+                                    >                       
+                                   </enseignant:selectEnseignant>
+                  
             </td>
+            
             <td class="data">
+            <t:div rendered="#{not visaSeance.form.modeRemplacant}">
               <cr:selectEnseignement 
-                render="outilRecherche visaSeanceContenu idPopupSequence paneauResultat"
+                render="outilRecherche visaSeanceContenu idPopupSequence paneauResultat selectionEnseignantRemplaceId"
                 toujoursVisible="true" 
                 readOnly="#{visaSeance.form.afficheSauvegarde}"
                 />
+                </t:div>
+            </td>
+          </tr>
+          <tr>
+            <td class="data">
+            <t:div rendered="#{not empty enseignant2.form.listeEnseignant}">
+            <h:outputLabel styleClass="libelle"
+                     value="Voir séances saisies en tant que remplaçant" />
+      <h:selectOneRadio id="selectionVoirRemplacantId"
+                        style="padding-left:5px;"
+                        rendered="true"
+                        disabled="false"
+                        value="#{visaSeance.form.modeRemplacant}">
+        <a4j:ajax event="click"
+                  listener="#{visaSeance.modeRemplacantChange}"
+                  oncomplete=""
+                  render="outilRecherche visaSeanceContenu paneauResultat" />
+        <f:selectItem itemLabel="Oui"
+                      itemValue="true" />
+        <f:selectItem itemLabel="Non"
+                      itemValue="false" />
+      </h:selectOneRadio>
+      </t:div>
+      
+      <t:div id="selectionEnseignantRemplacantConteneur" >
+            <t:div id="selectionEnseignantRemplaceId" 
+            rendered="#{not empty enseignant2.form.listeEnseignant and visaSeance.form.modeRemplacant}">
+                <enseignant:selectEnseignant choixTousOuUn="false"
+                                    labelControlEnseignant="Enseignant remplacé"
+                                   render="outilRecherche visaSeanceContenu idPopupSequence paneauResultat"
+                                   readOnly="#{visaSeance.form.afficheSauvegarde}"
+                                   toujoursVisible="true"
+                                   enseignant="#{enseignant2}"
+                                   classeGroupe = "#{classeGroup}"
+                                   idPopupEnseignant="idPopupEnseignant2"
+                                   intituleEnseignantId="intituleEnseignantId2"
+                                    >                       
+                                   </enseignant:selectEnseignant>
+                   </t:div>
+                   
+                   </t:div>
             </td>
           </tr>
           <tr>
             <td class="data"
                >
+               <t:div rendered="#{not visaSeance.form.modeRemplacant}">
               <cr:selectClasseGroupe 
                     choixGroupesDeClass="false"
                     showClasseGroupeLibelle="true"
@@ -193,16 +245,19 @@
                     readOnly="#{visaSeance.form.afficheSauvegarde}"
                     render="outilRecherche visaSeanceContenu idPopupSequence paneauResultat"
                     tousClasseGroupe="true" />
+                </t:div>
             </td>
           </tr>
           <tr>
           <td class="data"
                >
+               <t:div rendered="#{not visaSeance.form.modeRemplacant}">
                <cr:selectSequence 
                     render="paneauResultat"
                     readOnly="#{visaSeance.form.afficheSauvegarde}" />
+            </t:div>
                </td>
-          
+            
           </tr>
           <tr>
             <td class="data">
@@ -499,7 +554,19 @@
   </cr:popupModifiable>
   <cr:popupStatus idStatus="status" />
   
-  <cr:popupEnseignant render=":formulaire_principal:outilRecherche :formulaire_principal:idPopupSequence visaSeanceContenu :formulaire_principal:paneauResultat" />
+  <enseignant:enseignantPopup render=":formulaire_principal:outilRecherche :formulaire_principal:idPopupSequence visaSeanceContenu :formulaire_principal:paneauResultat"
+         enseignant = "#{enseignant}"
+         enseignantForm = "#{enseignant.form}"
+                                    titreClasseGroupe="false"
+   /> 
+   
+   <enseignant:enseignantPopup render=":formulaire_principal:outilRecherche :formulaire_principal:idPopupSequence visaSeanceContenu :formulaire_principal:paneauResultat"
+         enseignant = "#{enseignant2}"
+         enseignantForm = "#{enseignant2.form}"
+         idPopup = "idPopupEnseignant2"
+         titreClasseGroupe="false"
+                                    
+   /> 
   <cr:popupGroupeClasse render=":formulaire_principal:outilRecherche :formulaire_principal:idPopupSequence :formulaire_principal:visaSeanceContenu :formulaire_principal:paneauResultat" />
   <cr:popupEnseignement render=":formulaire_principal:outilRecherche :formulaire_principal:idPopupSequence visaSeanceContenu :formulaire_principal:paneauResultat" />
   <cr:popupModifiable idPopup="idPopupDevoir"

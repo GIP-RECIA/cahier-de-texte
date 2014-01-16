@@ -8,11 +8,14 @@
 package org.crlr.metier.business;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
 import javax.persistence.Query;
 
+import org.apache.commons.lang.StringUtils;
 import org.crlr.alimentation.DTO.EnseignantDTO;
 import org.crlr.dto.ResultatDTO;
 import org.crlr.dto.application.base.EnseignantsClasseGroupeQO;
@@ -29,10 +32,10 @@ import org.crlr.metier.entity.EnseignantsEnseignementsBean;
 import org.crlr.metier.entity.OuvertureInspecteurBean;
 import org.crlr.metier.utils.SchemaUtils;
 import org.crlr.utils.Assert;
-import org.crlr.utils.ComparateurUtils;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
+
+import com.google.common.collect.ComparisonChain;
 
 /**
  * ClasseHibernateBusiness.
@@ -156,7 +159,15 @@ public class ClasseHibernateBusiness extends AbstractBusiness
             classeDTO.setTypeGroupe(TypeGroupe.CLASSE);
             resultat.add(classeDTO);
         }
-        classePopup.setValeurDTO(ComparateurUtils.sort(resultat, "intitule"));
+        Collections.sort(resultat, new Comparator<GroupesClassesDTO>(){
+
+            @Override
+            public int compare(GroupesClassesDTO o1, GroupesClassesDTO o2) {
+                return ComparisonChain.start().compare(o1.getIntitule(), o2.getIntitule()).result();
+            }
+            
+        });
+        classePopup.setValeurDTO(resultat);
 
         return classePopup;
     }

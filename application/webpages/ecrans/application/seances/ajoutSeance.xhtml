@@ -25,13 +25,14 @@
               image="save.png" 
               title="Sauvegarder"
               render="idPanelSaisirSeance" 
+              rendered="#{ajoutSeance.form.seance.accesEcriture}"
               status="statuspop"
-              oncomplete="setModificationFormulaire(false);" />
+              oncomplete="setModificationFormulaire(false);onchangeOnglet();" />
         <cr:elemMenuAction idaction="idSupprimer" bean="#{ajoutSeance}"
               cible="supprimer"
               image="delete.png" 
               title="Supprimer la séance"
-              rendered="#{not empty ajoutSeance.form.seance.id}"
+              rendered="#{not empty ajoutSeance.form.seance.id and ajoutSeance.form.seance.accesEcriture}"
               render="idPanelSaisirSeance,idMenuAction"
               status="statuspop"  
               confirm="Voulez-vous vraiement supprimer cette séance ?" />
@@ -52,17 +53,19 @@
     <a4j:outputPanel id="idPanelSaisirSeance">
         <cr:lien id="idLienChangeDate" 
               bean="#{ajoutSeance}" cible="changeDateSeance" 
-              render="idDivTabSeance,idListeDesDevoirs"
+              render="idDivTabSeance,idListeDesDevoirs"              
               titre="">
+              
         </cr:lien>        
+        
         <rich:tabPanel selectedTab="tabSeance" switchType="ajax"
             id="idtabPanelDetailJour" onitemchange="onchangeOnglet();">
             <rich:tab id="TAB_SEANCE"
                 header="#{ajoutSeance.form.seanceTitre}" rendered="true">
                 <t:div id="idDivTabSeance" style="vertical-align:top; overflow:auto; border-style:solid; border-width:1px; border-color:#c0c0c0;">
                     <cr:saisieSeance
-                        seance="#{ajoutSeance.form.seance}"
-                        readOnly="false"
+                        seance="#{ajoutSeance.form.seance}"                        
+                        readOnly="#{not ajoutSeance.form.seance.accesEcriture}"
                         idPopupPiecesJointes="idPopupPiecesJointes"
                         id_saisieSeance="idSaisieSeance"
                         affichageSequence="true"
@@ -91,7 +94,7 @@
                         <cr:saisieDevoir
                            id_saisieDevoir="idSaisieDevoir${status.index}"
                            devoirDTO="#{devoir}"
-                           readOnly="false"
+                           readOnly="#{not ajoutSeance.form.seance.accesEcriture}"
                            listeTypeDevoir="#{ajoutSeance.form.listeTypeDevoir}"
                            controleur="#{ajoutSeance}"
                            id_devoirConteneur="idListeDesDevoirs"

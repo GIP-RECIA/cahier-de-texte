@@ -54,6 +54,9 @@ public class RechercheSeanceQO implements Serializable {
     /** Id de l'enseignement. */
     private Integer idEnseignement;
     
+    /** Id de l'enseignant réelement connecté. */
+    private Integer idEnseignantConnecte;
+    
     /** Code de l'enseignement. */
     private String codeEnseignement;
 
@@ -640,6 +643,20 @@ public class RechercheSeanceQO implements Serializable {
             groupeClasseSelectionne = new GroupesClassesDTO();
         }
         groupeClasseSelectionne.setTypeGroupe(typeGroupeSelectionne);
+    }
+
+    /**
+     * @return the idEnseignantConnecte
+     */
+    public Integer getIdEnseignantConnecte() {
+        return idEnseignantConnecte;
+    }
+
+    /**
+     * @param idEnseignantConnecte the idEnseignantConnecte to set
+     */
+    public void setIdEnseignantConnecte(Integer idEnseignantConnecte) {
+        this.idEnseignantConnecte = idEnseignantConnecte;
     }
     
     

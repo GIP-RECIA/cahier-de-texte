@@ -42,6 +42,7 @@ import org.crlr.web.dto.TypeSemaine;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
+import static org.junit.Assert.*;
 
 public class TestEmploiDeTempsReportTest extends AbstractMetierTest {
 

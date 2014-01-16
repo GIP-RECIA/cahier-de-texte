@@ -8,7 +8,7 @@
 		<!-- gestion de l'authentification des utilisateurs -->
 		<phase-listener>org.crlr.web.servlet.listener.SecuritePhaseListener</phase-listener>
 	</lifecycle>
-
+<!-- 
 	<managed-bean>
 		<managed-bean-name>skin</managed-bean-name>
 		<managed-bean-class>org.crlr.web.application.control.SkinControl</managed-bean-class>
@@ -44,7 +44,7 @@
 			<value>#{skin}</value>
 		</managed-property>
 	</managed-bean>
-	
+	 -->
 	<managed-bean>
         <managed-bean-name>deconnexion</managed-bean-name>
         <managed-bean-class>org.crlr.web.application.control.DeconnexionControl</managed-bean-class>

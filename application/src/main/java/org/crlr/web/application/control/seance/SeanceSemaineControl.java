@@ -39,7 +39,6 @@ import org.crlr.web.application.control.ClasseGroupeControl;
 import org.crlr.web.application.control.ClasseGroupeControl.ClasseGroupeListener;
 import org.crlr.web.application.control.EnseignementControl;
 import org.crlr.web.application.control.EnseignementControl.EnseignementListener;
-import org.crlr.web.application.form.AbstractForm;
 import org.crlr.web.application.form.seance.SeanceSemaineForm;
 import org.crlr.web.contexte.ContexteUtilisateur;
 import org.crlr.web.contexte.utils.ContexteUtils;
@@ -151,7 +150,7 @@ implements ClasseGroupeListener, EnseignementListener {
                 rechercher();
             }
         } catch (Exception e) {
-            log.error(e, "Exception");
+            log.error( "Exception", e);
         }
         
     }
@@ -207,7 +206,7 @@ implements ClasseGroupeListener, EnseignementListener {
         
         //Ajoute des jours si il y a une séance qui tombe sur un jour non ouvré
         for (final DetailJourDTO detail : form.getListeSeance()) {
-            final TypeJour jourSeance = TypeJour.getTypeJourFromDate(detail.getDate());
+            final TypeJour jourSeance = TypeJour.getTypeJourFromDate(detail.getDateSeance());
             if (!listeJoursOuvre.contains(jourSeance)) {
                 listeJoursOuvre.add(jourSeance);
             }
@@ -292,30 +291,19 @@ implements ClasseGroupeListener, EnseignementListener {
             if(resultat != null) {
                 for (final ResultatRechercheSeanceDTO resultatRechercheSeanceDTO : resultat.getValeurDTO()) {
                     final DetailJourDTO dev = new DetailJourDTO();
-                    dev.setIdSeance(resultatRechercheSeanceDTO.getId());
-                    dev.setIdSequence(resultatRechercheSeanceDTO.getSequence().getId());
-                    dev.setIdSeance(resultatRechercheSeanceDTO.getId());
-                    dev.setCodeSeance(resultatRechercheSeanceDTO.getCode());
-                    dev.setClasse(resultatRechercheSeanceDTO.getDesignationClasse());
+                    dev.setSeance(resultatRechercheSeanceDTO);
                     dev.setHeureSeance(String.format("%dh%02d - %dh%02d",
                             resultatRechercheSeanceDTO.getHeureDebut(), resultatRechercheSeanceDTO.getMinuteDebut(),
                             resultatRechercheSeanceDTO.getHeureFin(), resultatRechercheSeanceDTO.getMinuteFin()
                     ));
-                    if (AbstractForm.ZERO.equals(resultatRechercheSeanceDTO.getIdGroupe())) {
-                        dev.setGroupe("");
-                    } else {
-                        dev.setGroupe(resultatRechercheSeanceDTO.getDesignationGroupe());
-                    }
                     dev.setMatiere(resultatRechercheSeanceDTO.getDesignationEnseignement());
                     dev.setDenomination(resultatRechercheSeanceDTO.getEnseignantDTO().getCivilite());
                     dev.setNom(resultatRechercheSeanceDTO.getEnseignantDTO().getNom());
-                    dev.setIntituleSeance(resultatRechercheSeanceDTO.getIntitule());
-                    dev.setDate(resultatRechercheSeanceDTO.getDate());
                     generateDescriptionAbrege(dev);
                     liste.add(dev);
                 }
             }
-            form.setListe(ConverteurDTOUtils.convertWeekCalendar(liste));
+            form.setListe(ConverteurDTOUtils.convertWeekCalendar(liste, true));
             form.setListeSeance(liste);
         } catch (final MetierException e) {
             log.debug("{0}", e.getMessage());
@@ -373,10 +361,17 @@ implements ClasseGroupeListener, EnseignementListener {
         if (enseignementControl.getForm().getEnseignementSelectionne() != null ) {
             rechercheSeanceQO.setIdEnseignement(enseignementControl.getForm().getEnseignementSelectionne().getId());
         }
+        
+        final ContexteUtilisateur contextUtilisateur = ContexteUtils.getContexteUtilisateur();
+        
+        rechercheSeanceQO.setIdEnseignantConnecte(
+                contextUtilisateur.getUtilisateurDTOConnecte().getUserDTO().getIdentifiant());
+        
 
         ResultatDTO<List<ResultatRechercheSeanceDTO>> resultat =
             new ResultatDTO<List<ResultatRechercheSeanceDTO>>();
         try {
+            
             resultat = seanceService.listeSeanceAffichage(rechercheSeanceQO);
 
             final List<DetailJourDTO> liste = new ArrayList<DetailJourDTO>();
@@ -388,31 +383,18 @@ implements ClasseGroupeListener, EnseignementListener {
                             resultatRechercheSeanceDTO.getHeureDebut(), resultatRechercheSeanceDTO.getMinuteDebut(),
                             resultatRechercheSeanceDTO.getHeureFin(), resultatRechercheSeanceDTO.getMinuteFin()
                     ));
-                    dev.setIdSeance(resultatRechercheSeanceDTO.getId());
-                    dev.setIdSeance(resultatRechercheSeanceDTO.getId());
-                    dev.setCodeSeance(resultatRechercheSeanceDTO.getCode());
-                    dev.setIdSequence(resultatRechercheSeanceDTO.getSequence().getId());
-                    dev.setClasse(resultatRechercheSeanceDTO.getDesignationClasse());
-                    if (AbstractForm.ZERO.equals(resultatRechercheSeanceDTO.getIdGroupe())) {
-                        dev.setGroupe("");
-                    } else {
-                        dev.setGroupe(resultatRechercheSeanceDTO.getDesignationGroupe());
-                    }
+                    dev.setSeance(resultatRechercheSeanceDTO);
+                    
                     dev.setMatiere(resultatRechercheSeanceDTO.getDesignationEnseignement());
                     dev.setDenomination(resultatRechercheSeanceDTO.getEnseignantDTO().getCivilite());
                     dev.setNom(resultatRechercheSeanceDTO.getEnseignantDTO().getNom());
-                    dev.setIntituleSeance(resultatRechercheSeanceDTO.getIntitule());
-                    dev.setDate(resultatRechercheSeanceDTO.getDate());
                     
-                    if (vraiOuFauxEnseignant) {
-                        //si on est enseignant et qu'on est l'enseignant qui a crÃ©e le devoir alors on peut le modifier
-                        dev.setVraiOuFauxModifiable(idUtilisateur.equals(resultatRechercheSeanceDTO.getEnseignantDTO().getId()));
-                    }
+                    
                     liste.add(dev);
                 }
             }
             form.setListeSeance(liste);
-            form.setListe(ConverteurDTOUtils.convertWeekCalendar(liste));
+            form.setListe(ConverteurDTOUtils.convertWeekCalendar(liste, true));
         } catch (final MetierException e) {
             log.debug("{0}", e.getMessage());
             form.setVraiOuFauxRechercheActive(false);
@@ -429,11 +411,11 @@ implements ClasseGroupeListener, EnseignementListener {
         
         final String descriptionFinale = org.crlr.utils.StringUtils
                 .truncateHTMLString(org.crlr.utils.StringUtils
-                        .removeBalise(devoirDTO.getDescriptionDevoir()), 25);
+                        .removeBalise(devoirDTO.getDescription()), 25);
 
         final String descriptionInfoBulle = StringEscapeUtils
                 .unescapeHtml(org.crlr.utils.StringUtils.truncate(org.crlr.utils.StringUtils
-                        .removeBalise(devoirDTO.getDescriptionDevoir()), 200,
+                        .removeBalise(devoirDTO.getDescription()), 200,
                         ".."));
 
         devoirDTO.setDescriptionSansBaliseAbrege(descriptionFinale);

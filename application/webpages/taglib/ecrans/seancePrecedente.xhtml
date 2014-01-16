@@ -20,7 +20,7 @@
 	idPopupSaisieSeance="#{idPopupSaisieSeance}"
 	idPopupDevoir=""
 	affichePopupDevoir="false"
-	modifiable="#{empty readOnly or not readOnly}"
+	modifiable="#{seance.accesEcriture and (not empty cibleModifierSeancePrecedente)}"
     	
 />
 

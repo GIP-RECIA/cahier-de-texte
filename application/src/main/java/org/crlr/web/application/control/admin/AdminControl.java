@@ -137,7 +137,7 @@ public class AdminControl extends AbstractControl<AdminForm> {
         gestionnaireChargementOnglet();
         log.debug("une fois test onload !!");
     
-        log.debug("ONGLET selectionné {0}", form.getOngletSelectionne());
+        log.debug("ONGLET selectionné {}", form.getOngletSelectionne());
     }
     
     /**
@@ -207,7 +207,7 @@ public class AdminControl extends AbstractControl<AdminForm> {
      * Sélectionne le mois depuis la barre de mois et génére le calendrier des jours chomés.
      */
     public void selectionneBarreMois() {
-        log.debug("selection barre mois {0}", form.getDateMoisSelectionne());
+        log.debug("selection barre mois {}", form.getDateMoisSelectionne());
 
         final AnneeScolaireDTO anneeScolaireDTO = obtenirSessionAnneeScolaireDTO();  
         
@@ -238,7 +238,7 @@ public class AdminControl extends AbstractControl<AdminForm> {
             form.setDateMoisSelectionne(DateUtils.formatDateAuPremierJourDuMois(dateAnneeScolaireQO.getDateRentree()));           
             selectionneBarreMois();
         } catch (MetierException e) {
-            log.debug("Erreur de sauvegarde de l'année scolaire : {0}.", e.getMessage()); 
+            log.debug("Erreur de sauvegarde de l'année scolaire : {}.", e.getMessage()); 
         }
     }
     
@@ -279,7 +279,7 @@ public class AdminControl extends AbstractControl<AdminForm> {
             form.setDateMoisSelectionne(DateUtils.formatDateAuPremierJourDuMois(dateDebutMoisSel));
             selectionneBarreMois();
         } catch (MetierException e) {
-            log.debug("Erreur de sauvegarde des périodes de vacances : {0}", e.getMessage()); 
+            log.debug("Erreur de sauvegarde des périodes de vacances ", e); 
         }
     }
     
@@ -295,7 +295,7 @@ public class AdminControl extends AbstractControl<AdminForm> {
             form.setDateMoisSelectionne(DateUtils.formatDateAuPremierJourDuMois(form.getPlageJourFerieSelectionne().getValeur1()));
             selectionneBarreMois();
         } catch (MetierException e) {
-            log.debug("Erreur de sauvegarde des périodes de vacances : {0}", e.getMessage()); 
+            log.debug("Erreur de sauvegarde des périodes de vacances ", e); 
         }
     }
     

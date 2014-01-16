@@ -31,12 +31,17 @@ import org.crlr.dto.application.base.TypeReglesAcquittement;
 import org.crlr.dto.application.base.TypeReglesClasse;
 import org.crlr.dto.application.base.TypeReglesEnseignement;
 import org.crlr.dto.application.base.TypeReglesGroupe;
+import org.crlr.dto.application.cycle.TypeReglesCycle;
 import org.crlr.dto.application.devoir.DevoirDTO;
+import org.crlr.dto.application.remplacement.RechercheRemplacementQO;
+import org.crlr.dto.application.remplacement.RemplacementDTO;
+import org.crlr.dto.application.remplacement.TypeReglesRemplacement;
 import org.crlr.dto.application.seance.ConsulterSeanceDTO;
 import org.crlr.dto.application.seance.ConsulterSeanceQO;
 import org.crlr.dto.application.seance.PrintSeanceDTO;
 import org.crlr.dto.application.seance.RechercheSeanceQO;
 import org.crlr.dto.application.seance.ResultatRechercheSeanceDTO;
+import org.crlr.dto.application.seance.SaveSeanceQO;
 import org.crlr.dto.application.seance.TypeReglesSeance;
 import org.crlr.dto.application.sequence.PrintSeanceOuSequenceQO;
 import org.crlr.dto.application.sequence.PrintSequenceDTO;
@@ -49,6 +54,7 @@ import org.crlr.message.Message.Nature;
 import org.crlr.metier.business.AnneeScolaireHibernateBusinessService;
 import org.crlr.metier.business.ClasseHibernateBusinessService;
 import org.crlr.metier.business.DevoirHibernateBusinessService;
+import org.crlr.metier.business.EnseignantHibernateBusinessService;
 import org.crlr.metier.business.EnseignementHibernateBusinessService;
 import org.crlr.metier.business.GroupeHibernateBusinessService;
 import org.crlr.metier.business.PieceJointeHibernateBusinessService;
@@ -69,10 +75,15 @@ import org.crlr.utils.DateUtils;
 import org.crlr.web.application.form.AbstractForm;
 import org.crlr.web.dto.FileUploadDTO;
 import org.crlr.web.utils.FileUploadUtils;
+import org.joda.time.LocalDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.google.common.base.Preconditions;
 
 /**
  * Façade concernant les fonctionnalités du module séance.
@@ -85,6 +96,9 @@ import org.springframework.transaction.annotation.Transactional;
         readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Throwable.class
     )
 public class SeanceFacade implements SeanceFacadeService {
+    
+    protected final Logger log = LoggerFactory.getLogger(SeanceFacade.class);
+    
     /** DOCUMENTATION INCOMPLETE! */
     @Autowired
     private SeanceHibernateBusinessService seanceHibernateBusinessService;
@@ -127,6 +141,12 @@ public class SeanceFacade implements SeanceFacadeService {
 
     @Autowired
     private VisaHibernateBusinessService visaHibernateBusinessService;
+    
+    @Autowired
+    private RemplacementFacadeService remplacementFacadeService;
+    
+    @Autowired
+    private EnseignantHibernateBusinessService enseignantHibernateBusinessService;
 
     /**
      * Mutateur anneeScolaireHibernateBusinessService.
@@ -291,20 +311,15 @@ public class SeanceFacade implements SeanceFacadeService {
         final Integer idSequence = this.existSequence(codeSequence);
         rechercheSeanceQO.setIdSequence(idSequence);
 
-        if (!StringUtils.isEmpty(codeSequence)) {
-            final boolean droitSequence =
-                sequenceHibernateBusinessService.checkDroitSequence(rechercheSeanceQO.getIdEnseignant(),
-                                                                    idSequence);
-            if (!droitSequence) {
-                conteneurMessage.add(new Message(TypeReglesSequence.SEQUENCE_17.name(),
-                                                 Nature.BLOQUANT));
-                throw new MetierException(conteneurMessage,
-                                          "La séquence existe mais vous n'avez pas les droits dessus.");
-            }
-        }
-
         //S'il n'y a pas de sequence ni de classe on filtrera sur l'etablissement
-        return seanceHibernateBusinessService.findSeance(rechercheSeanceQO);
+        ResultatDTO<List<ResultatRechercheSeanceDTO>> resultat =
+                seanceHibernateBusinessService.findSeance(rechercheSeanceQO);
+        
+        for(ResultatRechercheSeanceDTO seance : resultat.getValeurDTO()) {
+            mettreDroitsAccess(rechercheSeanceQO.getIdEnseignantConnecte(), seance);
+        }
+        
+        return resultat;
     }
 
     /**
@@ -319,7 +334,15 @@ public class SeanceFacade implements SeanceFacadeService {
             final List<GroupeBean> groupes = groupeHibernateBusinessService.findGroupesEleve(rechercheSeanceQO.getIdEleve());
             rechercheSeanceQO.setListeGroupeBean(groupes);
         }
-        return seanceHibernateBusinessService.findSeanceForPlanning(rechercheSeanceQO);
+        
+        ResultatDTO<List<SeanceDTO>>  res = seanceHibernateBusinessService.findSeanceForPlanning(rechercheSeanceQO);
+        
+        for(SeanceDTO seance : res.getValeurDTO()) {
+            
+            mettreDroitsAccess(rechercheSeanceQO.getIdEnseignantConnecte(), seance);
+        }
+        
+        return res;
     }
    
     /**
@@ -461,8 +484,11 @@ public class SeanceFacade implements SeanceFacadeService {
                 throw new MetierException(conteneurMessage,
                         "Cette séance n'existe pas.");
             }
+            
             // Complete les informations de la seance
             completerInfoSeanceArchive(seanceDTO, false, consulterSeanceQO.getArchive(), consulterSeanceQO.getExercice());
+            
+            mettreDroitsAccess(consulterSeanceQO.getIdEnseignantConnecte(), seanceDTO);
             return seanceDTO;
 
         } catch (final MetierException e) {
@@ -539,6 +565,9 @@ public class SeanceFacade implements SeanceFacadeService {
         final List<SeanceDTO> listeSeanceDTO = seanceHibernateBusinessService.findListeSeancePrecedente(chercherSeanceQO,nbrSeance);
         for (final SeanceDTO seance : listeSeanceDTO) {
             completerInfoSeance(seance, false);
+            
+            mettreDroitsAccess(chercherSeanceQO.getIdEnseignantConnecte(), seance);
+            
         }
         return listeSeanceDTO;
     }
@@ -593,7 +622,6 @@ public class SeanceFacade implements SeanceFacadeService {
                                     throws MetierException {
         Assert.isNotNull("saveSeanceQO", saveSeanceQO);
 
-        
         //Ne traite pas les devoirs vides
         saveSeanceQO.setListeDevoirDTO(retirerDevoirVide(saveSeanceQO.getListeDevoirDTO()));
                 
@@ -611,8 +639,10 @@ public class SeanceFacade implements SeanceFacadeService {
         Date dateMaj = new Date();
         saveSeanceQO.setDateMaj(dateMaj);
 
+        log.debug("Save séance");
         final Integer idSeance = seanceHibernateBusinessService.saveSeance(saveSeanceQO);
 
+        log.debug("updateVisaDateMaj");
         visaHibernateBusinessService.updateVisaDateMaj(idSeance,  dateMaj);
         
         //Supprime avant pour que les devoir / pj actuellement rattachés sont exactement ce qui est sauvegardés.
@@ -644,6 +674,32 @@ public class SeanceFacade implements SeanceFacadeService {
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public ResultatDTO<Integer> saveListeSeance(List<SaveSeanceQO> listeSeanceQO)
+                       throws MetierException {
+        Integer nbrSaved = 0;
+        ResultatDTO<Integer> result;
+        for (final SaveSeanceQO saveSeanceQO : listeSeanceQO) {
+            result = this.saveSeance(saveSeanceQO, saveSeanceQO.getMode());
+            nbrSaved++;
+        }
+        result = new ResultatDTO<Integer>();
+        result.setValeurDTO(nbrSaved);
+        
+        final ConteneurMessage conteneurMessage = new ConteneurMessage();
+        if (nbrSaved>0) {
+            conteneurMessage.add(new Message(TypeReglesAcquittement.ACQUITTEMENT_01.name(),
+                    Nature.INFORMATIF, nbrSaved.toString() + " séance(s)", "ajoutée(s)"));
+        } else {
+            conteneurMessage.add(new Message(TypeReglesCycle.CYCLE_04.name(),
+                    Nature.AVERTISSANT));
+        }
+        result.setConteneurMessage(conteneurMessage);
+        return result;
+    }
+    
+    /**
      * Controle des RG d'ajout de séance.
      *
      * @param saveSeanceQO saveSeanceQO.
@@ -657,7 +713,7 @@ public class SeanceFacade implements SeanceFacadeService {
         //Pas du code ni id
         if (StringUtils.isEmpty(codeSequence) && null == saveSeanceQO.getSequenceDTO().getId()) {
             conteneurMessage.add(new Message(TypeReglesSequence.SEQUENCE_00.name(),
-                                             Nature.BLOQUANT));
+                                             Nature.BLOQUANT, DateUtils.format(saveSeanceQO.getDate())));
             throw new MetierException(conteneurMessage,
                                       "La sélection de la séquence est obligatoire.");
         }
@@ -668,19 +724,6 @@ public class SeanceFacade implements SeanceFacadeService {
             final Integer idSequence = this.existSequence(codeSequence);
             saveSeanceQO.getSequenceDTO().setId(idSequence);
         }
-        
-        //Verifier id
-        final boolean droitSequence =
-            sequenceHibernateBusinessService.checkDroitSequence(saveSeanceQO.getIdEnseignant(),
-                    saveSeanceQO.getSequenceDTO().getId());
-        
-        if (!droitSequence) {
-            conteneurMessage.add(new Message(TypeReglesSequence.SEQUENCE_17.name(),
-                                             Nature.BLOQUANT));
-            throw new MetierException(conteneurMessage,
-                                      "La séquence existe mais vous n'avez pas les droits dessus.");
-        }
-    
 
         //On recherche l'enseignement associé à la séquence
         final Integer idEnseignement =
@@ -785,7 +828,10 @@ public class SeanceFacade implements SeanceFacadeService {
         //On controle l'unicité de la séance
         if (!checkUnicite(saveSeanceQO)) {
             conteneurMessage.add(new Message(TypeReglesSeance.SEANCE_11.name(),
-                                             Nature.BLOQUANT));
+                                             Nature.BLOQUANT, DateUtils.format(saveSeanceQO.getDate()), 
+                                             saveSeanceQO.getHeureDebut().toString() + ":" + saveSeanceQO.getMinuteDebut().toString(),
+                                             saveSeanceQO.getHeureFin().toString() + ":" + saveSeanceQO.getMinuteFin().toString()
+                                             ));
             throw new MetierException(conteneurMessage,
                                       "Il existe déjà une séance rattachée à cet enseignement, ce groupe ou cette classe, " +
                                       "cet intitulé et cette date.");
@@ -796,6 +842,121 @@ public class SeanceFacade implements SeanceFacadeService {
                     Nature.BLOQUANT));
 throw new MetierException(conteneurMessage,
              "L'intitulé est limité à 50 caractères.");
+        }
+        
+        
+        //Remplacemant si l'id de la séquence n'est pas le même que celui dans la séance        
+        if (!saveSeanceQO.getIdEnseignant().equals(saveSeanceQO.getSequenceDTO().getIdEnseignant())) {
+            RechercheRemplacementQO rechercheRemplacementQO = new RechercheRemplacementQO();
+            
+            //L'id de séquence est l'enseignant absent
+            rechercheRemplacementQO.setIdEnseignantAbsent(saveSeanceQO.getSequenceDTO().getIdEnseignant());
+            
+           // EnseignantBean ensBean = 
+                //    enseignantHibernateBusinessService.find(saveSeanceQO.getUidEnseignantRemplacant());
+            rechercheRemplacementQO.setIdEnseignantRemplacant(saveSeanceQO.getIdEnseignant());
+            
+            rechercheRemplacementQO.setIdEtablissement(saveSeanceQO.getSequenceDTO().getIdEtablissement());
+            
+            rechercheRemplacementQO.setDate(new LocalDate(saveSeanceQO.getDate()));
+            
+            List<RemplacementDTO> listeRemplacementsDTO = 
+                    remplacementFacadeService.findListeRemplacement(rechercheRemplacementQO).getValeurDTO();
+            
+            if (CollectionUtils.isEmpty(listeRemplacementsDTO)) {
+                conteneurMessage.add(new Message(TypeReglesRemplacement.REMPLACEMENT_14.name(),
+                        Nature.BLOQUANT));
+                throw new MetierException(conteneurMessage,
+                        "Le date de cette séance n'est pas dans une période de remplacement.");
+            }
+        }
+    }
+    
+    
+    private boolean existPeriodDeRemplacement(Integer idEnseignantRemplacant, SeanceDTO seance) {
+        RechercheRemplacementQO rechercheRemplacementQO = new RechercheRemplacementQO();
+        
+        //L'id de séquence est l'enseignant absent
+        rechercheRemplacementQO.setIdEnseignantAbsent(seance.getSequenceDTO().getIdEnseignant());
+        
+       // EnseignantBean ensBean = 
+            //    enseignantHibernateBusinessService.find(saveSeanceQO.getUidEnseignantRemplacant());
+        rechercheRemplacementQO.setIdEnseignantRemplacant(idEnseignantRemplacant);
+        
+        rechercheRemplacementQO.setIdEtablissement(seance.getSequenceDTO().getIdEtablissement());
+        
+        rechercheRemplacementQO.setDate(new LocalDate(seance.getDate()));
+        
+        List<RemplacementDTO> listeRemplacementsDTO = 
+                remplacementFacadeService.findListeRemplacement(rechercheRemplacementQO).getValeurDTO();
+        
+        if (CollectionUtils.isEmpty(listeRemplacementsDTO)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    /**
+     * 
+     * @param idEnseignantConnecte soit l'id connecté, soit dans le cas de remplaçant, l'id de remplaçant
+     * @param seance s
+     */
+    public void mettreDroitsAccess(Integer idEnseignantConnecte, SeanceDTO seance) {
+        
+        
+        
+        Preconditions.checkNotNull(seance.getIdEnseignant());
+        Preconditions.checkNotNull(seance.getSequenceDTO().getIdEnseignant());        
+        Preconditions.checkNotNull(seance.getSequenceDTO().getIdEtablissement());
+        
+        log.debug("mettreDroitsAccess id enseignant {} seance id {}", idEnseignantConnecte, seance.getId());
+        
+        if (idEnseignantConnecte == null) {
+            log.debug("Identifiant de l'enseignant pas renseigné, pas d'accès d'écriture sur la séance");
+            seance.setAccesEcriture(false);
+            return;
+        }
+        
+      //Remplacemant si l'id de la séquence n'est pas le même que celui dans la séance        
+        if (!seance.getIdEnseignant().equals(seance.getSequenceDTO().getIdEnseignant())) {
+            
+            if (idEnseignantConnecte.equals(seance.getSequenceDTO().getIdEnseignant())) {
+                log.debug("Id enseignant connecté est celui de l'enseignant absent, pas d'acces");
+                seance.setAccesEcriture(false);
+                return;
+            }
+            
+            if (!idEnseignantConnecte.equals(seance.getIdEnseignant())) {
+                log.debug("id de l'enseignant connecté n'est pas égal au id de la séance (remplaçant), pas d'acces");
+                seance.setAccesEcriture(false);
+                return;
+            }
+            
+            if (!existPeriodDeRemplacement(seance.getIdEnseignant(), seance)) {
+                log.debug("Il n'y a pas de période de remplaçement valide pour l'enseignant remplaçant");
+                seance.setAccesEcriture(false);
+                return;
+            } else {
+                log.debug("Il y a une période de remplaçement valide pour l'enseignant remplaçant");
+                seance.setAccesEcriture(true);
+                return;
+            }
+        } else {
+            log.debug("Séance était créer par l'enseignant de la séquence (il s'agit pas de remplaçement)");
+            //id sequence == id seance
+            if (seance.getIdEnseignant().equals(idEnseignantConnecte)) {
+                log.debug("Id de l'utilisateur connecté == id de la séance, accès écriture");
+                seance.setAccesEcriture(true);
+            } else {
+                
+                if (existPeriodDeRemplacement(idEnseignantConnecte, seance)) {
+                    log.debug("Il y a une période de remplaçement valide pour la séance saisie en anticipation");
+                    seance.setAccesEcriture(true);
+                    return;
+                }
+                log.debug("L'id de l'utilisateur connecté != id de la séance, pas d'accès écriture");
+                seance.setAccesEcriture(false);
+            }
         }
     }
 
@@ -972,6 +1133,8 @@ throw new MetierException(conteneurMessage,
      */
     public ResultatDTO<Integer> deleteSeance(SeanceDTO resultatRechercheSeanceDTO)
                                       throws MetierException {
+        
+        log.debug("deleteSeance {}", resultatRechercheSeanceDTO);
         final ConteneurMessage conteneurMessage = new ConteneurMessage();
 
         final ResultatDTO<Integer> resultatDTO = new ResultatDTO<Integer>();
@@ -983,8 +1146,16 @@ throw new MetierException(conteneurMessage,
         resultatDTO.setConteneurMessage(conteneurMessage);
         resultatDTO.setValeurDTO(resultatRechercheSeanceDTO.getId());
 
+        log.debug("deleteSeance supprimerArchiveVisa {}", resultatRechercheSeanceDTO.getId());
+        
         visaHibernateBusinessService.supprimerArchiveVisa(resultatRechercheSeanceDTO);
+        
+        log.debug("deleteSeance supprimerVisaSeance {}", resultatRechercheSeanceDTO.getId());
+        
         visaHibernateBusinessService.supprimerVisaSeance(resultatRechercheSeanceDTO);
+        
+        log.debug("deleteSeance updateVisaDateMaj {}", resultatRechercheSeanceDTO.getId());
+        
         visaHibernateBusinessService.updateVisaDateMaj(resultatRechercheSeanceDTO.getId(), new Date());
         seanceHibernateBusinessService.deleteSeance(resultatRechercheSeanceDTO);
         
@@ -1200,60 +1371,69 @@ throw new MetierException(conteneurMessage,
 
         final TypeGroupe typeClasseGroupe = rechercheSeanceQO.getTypeGroupeSelectionne();
        
+        ResultatDTO<List<ResultatRechercheSeanceDTO>> resultat = null;
+        
         if (typeClasseGroupe == null) {
-            return seanceHibernateBusinessService.listeSeanceAffichage(rechercheSeanceQO);
-        } 
+            resultat = seanceHibernateBusinessService.listeSeanceAffichage(rechercheSeanceQO);
+        } else {
         
-        final String codeClasseGroupe =
-                rechercheSeanceQO.getGroupeClasseSelectionne().getCode();
-
-        final Integer idClasseGroupe =
-            sequenceFacadeService.findClasseGroupeId(rechercheSeanceQO.getGroupeClasseSelectionne(),
-                                   rechercheSeanceQO.getArchive(),
-                                   rechercheSeanceQO.getExerciceAnneeScolaire());
-        rechercheSeanceQO.getGroupeClasseSelectionne().setId(idClasseGroupe);
-        
-        if (TypeGroupe.CLASSE == typeClasseGroupe) {
-            // CLASSE
-            if (!StringUtils.isEmpty(codeClasseGroupe)) {
-                final boolean droitClasse = classeHibernateBusinessService
-                        .checkDroitClasse(rechercheSeanceQO.getIdEnseignant(),
-                                idClasseGroupe, rechercheSeanceQO.getArchive(),
-                                rechercheSeanceQO.getExerciceAnneeScolaire());
-                if (!droitClasse) {
-                    conteneurMessage.add(new Message(TypeReglesClasse.CLASSE_01
+            final String codeClasseGroupe =
+                    rechercheSeanceQO.getGroupeClasseSelectionne().getCode();
+    
+            final Integer idClasseGroupe =
+                sequenceFacadeService.findClasseGroupeId(rechercheSeanceQO.getGroupeClasseSelectionne(),
+                                       rechercheSeanceQO.getArchive(),
+                                       rechercheSeanceQO.getExerciceAnneeScolaire());
+            rechercheSeanceQO.getGroupeClasseSelectionne().setId(idClasseGroupe);
+            
+            if (TypeGroupe.CLASSE == typeClasseGroupe) {
+                // CLASSE
+                if (!StringUtils.isEmpty(codeClasseGroupe)) {
+                    final boolean droitClasse = classeHibernateBusinessService
+                            .checkDroitClasse(rechercheSeanceQO.getIdEnseignant(),
+                                    idClasseGroupe, rechercheSeanceQO.getArchive(),
+                                    rechercheSeanceQO.getExerciceAnneeScolaire());
+                    if (!droitClasse) {
+                        conteneurMessage.add(new Message(TypeReglesClasse.CLASSE_01
+                                .name(), Nature.BLOQUANT));
+                        throw new MetierException(conteneurMessage,
+                                "La classe existe mais vous n'avez pas les droits dessus.");
+                    }
+                } else {
+                    conteneurMessage.add(new Message(TypeReglesClasse.CLASSE_02
                             .name(), Nature.BLOQUANT));
                     throw new MetierException(conteneurMessage,
-                            "La classe existe mais vous n'avez pas les droits dessus.");
+                            "Vous devez sélectionner ou saisir une classe.");
                 }
-            } else {
-                conteneurMessage.add(new Message(TypeReglesClasse.CLASSE_02
-                        .name(), Nature.BLOQUANT));
-                throw new MetierException(conteneurMessage,
-                        "Vous devez sélectionner ou saisir une classe.");
-            }
-        } else if (TypeGroupe.GROUPE == typeClasseGroupe) {
-            // GROUPE
-            if (!StringUtils.isEmpty(codeClasseGroupe)) {
-                final boolean droitGroupe = groupeHibernateBusinessService
-                        .checkDroitGroupe(rechercheSeanceQO.getIdEnseignant(),
-                                idClasseGroupe, rechercheSeanceQO.getArchive(),
-                                rechercheSeanceQO.getExerciceAnneeScolaire());
-                if (!droitGroupe) {
-                    conteneurMessage.add(new Message(TypeReglesGroupe.GROUPE_01
+            } else if (TypeGroupe.GROUPE == typeClasseGroupe) {
+                // GROUPE
+                if (!StringUtils.isEmpty(codeClasseGroupe)) {
+                    final boolean droitGroupe = groupeHibernateBusinessService
+                            .checkDroitGroupe(rechercheSeanceQO.getIdEnseignant(),
+                                    idClasseGroupe, rechercheSeanceQO.getArchive(),
+                                    rechercheSeanceQO.getExerciceAnneeScolaire());
+                    if (!droitGroupe) {
+                        conteneurMessage.add(new Message(TypeReglesGroupe.GROUPE_01
+                                .name(), Nature.BLOQUANT));
+                        throw new MetierException(conteneurMessage,
+                                "Le groupe existe mais vous n'avez pas les droits dessus.");
+                    }
+                } else {
+                    conteneurMessage.add(new Message(TypeReglesGroupe.GROUPE_02
                             .name(), Nature.BLOQUANT));
                     throw new MetierException(conteneurMessage,
-                            "Le groupe existe mais vous n'avez pas les droits dessus.");
+                            "Vous devez sélectionner ou saisir un groupe.");
                 }
-            } else {
-                conteneurMessage.add(new Message(TypeReglesGroupe.GROUPE_02
-                        .name(), Nature.BLOQUANT));
-                throw new MetierException(conteneurMessage,
-                        "Vous devez sélectionner ou saisir un groupe.");
             }
+            
+            resultat = seanceHibernateBusinessService.listeSeanceAffichage(rechercheSeanceQO);
         }
         
-        return seanceHibernateBusinessService.listeSeanceAffichage(rechercheSeanceQO);
+        for(SeanceDTO seance : resultat.getValeurDTO()) {
+            mettreDroitsAccess(rechercheSeanceQO.getIdEnseignantConnecte(), seance);
+        }
+        
+        return resultat;
     }
 
     /**
@@ -1268,6 +1448,7 @@ throw new MetierException(conteneurMessage,
     private ResultatDTO<List<ResultatRechercheSeanceDTO>> listeSeanceAffichageDirection(RechercheSeanceQO rechercheSeanceQO)
         throws MetierException {
         Assert.isNotNull("rechercheSeanceQO", rechercheSeanceQO);
+        Preconditions.checkNotNull(rechercheSeanceQO.getIdEtablissement());
 
         final ConteneurMessage conteneurMessage = new ConteneurMessage();
 
@@ -1705,6 +1886,14 @@ throw new MetierException(conteneurMessage,
                                                                                   false,
                                                                                   ""));
         return res;
+    }
+
+    /**
+     * @param remplacementFacadeService the remplacementFacadeService to set
+     */
+    public void setRemplacementFacadeService(
+            RemplacementFacadeService remplacementFacadeService) {
+        this.remplacementFacadeService = remplacementFacadeService;
     }
 
 

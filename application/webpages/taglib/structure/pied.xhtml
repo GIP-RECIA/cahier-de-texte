@@ -64,7 +64,7 @@
                     
                 </a4j:outputPanel>                  
             </td>
-            <td class="applicationSimulation" style="#{empty contexteUtilisateur.utilisateurDTOOrigine ? 'display: none;' : ''}">Simulation : #{contexteUtilisateur.utilisateurDTO.userDTO.nom} #{contexteUtilisateur.utilisateurDTO.userDTO.prenom}</td>
+            <td class="applicationSimulation" style="#{empty contexteUtilisateur.utilisateurDTOOrigine ? 'display: none;' : ''}">#{contexteUtilisateur.utilisateurDTO.profil eq 'ELEVE' ? 'Simulation' : (contexteUtilisateur.utilisateurDTO.profil eq 'ENSEIGNANT' ? 'Remplacement' : 'Rôle' )} : #{contexteUtilisateur.utilisateurDTO.userDTO.nom} #{contexteUtilisateur.utilisateurDTO.userDTO.prenom}</td>
         </tr>
     </table>
 </div>

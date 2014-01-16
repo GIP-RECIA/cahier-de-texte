@@ -172,7 +172,7 @@ public class EnseignementHibernateBusiness extends AbstractBusiness
                 + EnseignantsEnseignementsBean.class.getName()
                 + " EE INNER JOIN EE.enseignement E "
                 + " WHERE EE.pk.idEnseignant = :idEnseignant AND EE.pk.idEtablissement = :idEtablissement"
-                + " ORDER BY E.id ASC";
+                + " ORDER BY E.designation ASC";
 
         final List<Map<String, ?>> resultatQuery = getEntityManager()
                 .createQuery(query).setParameter("idEnseignant", idEnseignant)

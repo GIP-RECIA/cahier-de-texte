@@ -1,0 +1,11 @@
+dist.name.base = CAHIER-DE-TEXTE
+
+vserver.machine.name = ent-java
+vserver.machine.address = FRMP0163.frml.bull.fr
+entarchive.machine.address = FRMP0133.frml.bull.fr
+
+archives.dir = /opt/ArchivesENT/5.0/Relivraison Preprod
+vserver.dir = /opt/APPLIS
+
+tomcat.deploy.dir = /opt/tomcatENT/webapps/cahier-texte
+tomcat.work.dir = /opt/tomcatENT/work

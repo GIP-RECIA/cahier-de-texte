@@ -243,6 +243,9 @@ function chargerAgendaImpl(jsonElemNom, calElemNom) {
 
     var horairesCoursJSON = jQuery.parseJSON($('#calendarData').data("horairesCoursJSON"));
     var etablissementJSON = jQuery.parseJSON(jQuery("#etablissementJSON").val());
+    
+    var vraiOuFauxHabiliteSeanceEnCours = "true" == jQuery("#idVraiOuFauxHabiliteSeanceEnCours").val();
+    
     var minTimeData = etablissementJSON.heureDebut;
     var maxTimeData = etablissementJSON.heureFin + 1;
 
@@ -276,7 +279,18 @@ function chargerAgendaImpl(jsonElemNom, calElemNom) {
         select: function (debut, fin, allDay, jsEvent, view) {
 
             attendrePourDoubleClique(jQuery(calElemNom)[0], function () {
+            	
+            	console.log("select");
+            	
+	            	if (!vraiOuFauxHabiliteSeanceEnCours) {
+	            		 console.log("En mode remplaçant, impossible de créer un emploi de temps");
+	            		 return;
+	            	}
+            		
 
+	            //Lancer le popup modal pour empecher que l'utilisateur clique d'autre éléments                 
+                RichFaces.$('statuspop_wait').show();
+                
                 var fractionnement = etablissementJSON.fractionnement;
                 var evenementDebut = new Time(debut);
                 var evenementFin = new Time(fin);
@@ -313,21 +327,35 @@ function chargerAgendaImpl(jsonElemNom, calElemNom) {
                 console.log('Stop: ' + calEvent.end);
                 console.log('Coordinates: ' + jsEvent.pageX + ',' + jsEvent.pageY);
                 console.log('View: ' + view.name);
-
+                
+                //Lancer le popup modal pour empecher que l'utilisateur clique d'autre éléments                 
+                RichFaces.$('statuspop_wait').show();
+                
                 //EmploiJoursDTO 
                 jQuery.each(horairesCoursJSON, function (index, value) {
                     console.log(index + ': ' + value.heureDebut + ' ' + value.minuteDebut + ' ');
                 });
 
                 afficherEventPopup(calEvent.index);
-
-                setModificationFormulaire(true);
+                
+                if (vraiOuFauxHabiliteSeanceEnCours) {
+	            		 console.log("Pas en mode remplaçant, bascule le drapeau modification forumlaire");
+	            		 setModificationFormulaire(true);
+	            		 return;
+	            	}
+                
 
             });
 
 
         },
         eventResize: function (event, dayDelta, minuteDelta, revertFunc) {
+        	
+	        	if (!vraiOuFauxHabiliteSeanceEnCours) {
+		       		console.log("En mode remplaçant, annule l'action");
+		       		revertFunc();
+		       		return;
+	        	}
 
             console.log("eventResize The end date of " + event.title + "has been moved " + dayDelta + " days and " + minuteDelta + " minutes.");
 
@@ -362,6 +390,12 @@ function chargerAgendaImpl(jsonElemNom, calElemNom) {
         },
         eventDrop: function (event, dayDelta, minuteDelta, allDay, revertFunc) {
 
+	        	if (!vraiOuFauxHabiliteSeanceEnCours) {
+		       		console.log("En mode remplaçant, annule l'action");
+		       		revertFunc();
+		       		return;
+	        	}
+	        	
             console.log(
             event.title + " was moved " + dayDelta + " days and " + minuteDelta + " minutes.");
 

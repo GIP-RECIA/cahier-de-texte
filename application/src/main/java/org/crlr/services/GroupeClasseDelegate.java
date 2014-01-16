@@ -139,4 +139,10 @@ public class GroupeClasseDelegate implements GroupeClasseService {
         return groupeClasseFacadeService.findListeEleve(rechercheGroupeQO);
     }
     
+    /**
+     * {@inheritDoc}
+     */
+    public List<GroupeDTO> findGroupesCollaboratifEnseignant(Integer idEnseignant) {
+        return groupeClasseFacadeService.findGroupesCollaboratifEnseignant(idEnseignant);
+    }
 }

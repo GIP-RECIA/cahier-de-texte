@@ -202,5 +202,12 @@ public interface GroupeHibernateBusinessService {
      * @return la liste des id de groupes de l'établissement.
      */
     public List<Integer> findListeGroupePourEtab(Integer idEtab);
+    
+    /**
+     * Recherche les groupes collaboratif dans lesquels intervient un enseignant.
+     * @param idEnseignant l'identifiant de l'enseignant
+     * @return Les groupes collaboratifs.
+     */
+    public List<GroupeDTO> findGroupesCollaboratifEnseignant(Integer idEnseignant);    
    
 }

@@ -16,19 +16,19 @@
       <h:panelGrid columns="1"
                    styleClass="corpsCalTable#{!category.map[jourColonne].actif ? 'Inactif' : ''}">
 
-        <h:outputText value="#{category.map[jourColonne].heureSeance} #{empty category.map[jourColonne].heureSeance ? '' : '/'} #{category.map[jourColonne].groupe}#{category.map[jourColonne].classe}" />
+        <h:outputText value="#{category.map[jourColonne].heureSeance} #{empty category.map[jourColonne].heureSeance ? '' : '/'} #{category.map[jourColonne].groupesClassesDTO.designation}" />
         <h:outputText value="#{category.map[jourColonne].matiere}" />
         <h:outputText value="#{category.map[jourColonne].denomination} #{category.map[jourColonne].nom}" />
         <cr:lien bean="#{seanceSemaine}"
                  cible="naviguerDetailSeance"
-                 desc="#{category.map[jourColonne].vraiOuFauxModifiable ? 'Modifier la séance' : 'Consulter la séance'}\n #{category.map[jourColonne].intituleSeance}"
+                 desc="#{category.map[jourColonne].seance.accesEcriture ? 'Modifier la séance' : 'Consulter la séance'}\n #{category.map[jourColonne].seance.intitule}"
                  id="seanceSemaine#{jourColonne}"
                  styleClass="seanceSemaineLien"
                  oncomplete="#{rich:component('idPopupConsulterSeance')}.show(); appliqueRotationTampon();"
                  render=":idPopupConsulterSeance_form:idPopupConsulterSeance_panel"
                  titre="">
         <f:setPropertyActionListener target="#{seanceSemaine.form.selectSeance}"
-                                     value="#{category.map[jourColonne]}" />#{cr:truncate(category.map[jourColonne].intituleSeance,
+                                     value="#{category.map[jourColonne]}" />#{cr:truncate(category.map[jourColonne].seance.intitule,
                                      13, '..')}</cr:lien>
       </h:panelGrid>
     </rich:column>

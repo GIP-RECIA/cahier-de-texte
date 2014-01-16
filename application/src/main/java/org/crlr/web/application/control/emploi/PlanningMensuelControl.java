@@ -49,6 +49,7 @@ import org.crlr.web.application.control.AbstractControl;
 import org.crlr.web.application.control.PopupPiecesJointesControl;
 import org.crlr.web.application.control.seance.AjoutSeanceControl;
 import org.crlr.web.application.form.emploi.PlanningMensuelForm;
+import org.crlr.web.contexte.ContexteUtilisateur;
 import org.crlr.web.contexte.utils.ContexteUtils;
 import org.crlr.web.dto.BarreMoisDTO;
 import org.crlr.web.dto.FileUploadDTO;
@@ -79,6 +80,7 @@ public class PlanningMensuelControl extends AbstractControl<PlanningMensuelForm>
     /** Controlleur . */
     @ManagedProperty(value="#{popupPiecesJointes}") 
     private PopupPiecesJointesControl popupPiecesJointes;
+    
     
     
     /**
@@ -333,6 +335,13 @@ public class PlanningMensuelControl extends AbstractControl<PlanningMensuelForm>
             rechercheSeanceQO.setDateDebut(form.getMoisSelectionne().getDebutMois());
             rechercheSeanceQO.setDateFin(form.getMoisSelectionne().getFinMois());
             
+            final ContexteUtilisateur contextUtilisateur = ContexteUtils.getContexteUtilisateur();
+            
+            if (Profil.ENSEIGNANT.equals(contextUtilisateur.getUtilisateurDTO().getProfil())) {
+                                
+                rechercheSeanceQO.setIdEnseignantConnecte(
+                        contextUtilisateur.getUtilisateurDTOConnecte().getUserDTO().getIdentifiant());
+            }
             
             final ResultatDTO<List<SeanceDTO>> listeSeanceDTO =
                 seanceService.findSeanceForPlanning(rechercheSeanceQO);
@@ -382,11 +391,15 @@ public class PlanningMensuelControl extends AbstractControl<PlanningMensuelForm>
      * Suppose ques les semaines ne sont pas vides.
      */
     private void rechercherDevoirs(){
+        final ContexteUtilisateur contextUtilisateur = ContexteUtils.getContexteUtilisateur();
+        
         try {
             final RechercheSeanceQO rechercheSeanceQO = form.getRechercheSeanceQO();
             rechercheSeanceQO.setDateDebut(form.getMoisSelectionne().getDebutMois());
             rechercheSeanceQO.setDateFin(form.getMoisSelectionne().getFinMois());
             
+            rechercheSeanceQO.setIdEnseignantConnecte(
+                    contextUtilisateur.getUtilisateurDTOConnecte().getUserDTO().getIdentifiant());
             
             final ResultatDTO<List<DevoirDTO>> listeDevoirDTO =
                 devoirService.findDevoirForPlanning(rechercheSeanceQO);
@@ -477,6 +490,7 @@ public class PlanningMensuelControl extends AbstractControl<PlanningMensuelForm>
         chercherChargeTravail();
         
         chargerPJDevoir(devoirCopie);
+        
     }
     
     /**
@@ -676,6 +690,7 @@ public class PlanningMensuelControl extends AbstractControl<PlanningMensuelForm>
         final DevoirDTO devoirDTO = form.getDevoirSelected();
         devoirDTO.setDescriptionHTML(ImagesServlet.genererLatexImage(devoirDTO.getDescription()));        
     }
+
     
 }
 

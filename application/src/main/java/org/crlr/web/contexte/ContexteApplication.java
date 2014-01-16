@@ -26,9 +26,8 @@ import org.crlr.log.Log;
 import org.crlr.log.LogFactory;
 import org.crlr.utils.PropertiesUtils;
 
-//import fr.gouv.defense.marine.dpmm.siad.web.servlet.listener.ContexteServiceListener;
 /**
- * ContexteApplication contient un ensemble de propri?t?s sur l'application courante.
+ * ContexteApplication contient un ensemble de propriétés sur l'application courante.
  *
  * @author breytond
  */
@@ -51,7 +50,7 @@ public class ContexteApplication implements Serializable {
         "/sousEcrans.properties";
     
     /** The Constant OUTILS_PROPERTIES_URL. */
-    private static final String CONFIG_PROPERTIES_URL =
+    public static String CONFIG_PROPERTIES_URL =
         "/config.properties";
     
     /** The Constant VERSION_PROPERTIES_URL. */

@@ -79,6 +79,8 @@ public class RechercheDevoirQO implements Serializable {
     /** Enseignement selectionee. */
     private Integer idEnseignement;
     
+    private Integer idEnseignantConnecte;
+    
     /**
      * 
      * Constructeur.
@@ -362,6 +364,20 @@ public class RechercheDevoirQO implements Serializable {
      */
     public void setIdEnseignement(Integer idEnseignement) {
         this.idEnseignement = idEnseignement;
+    }
+
+    /**
+     * @return the idEnseignantConnecte
+     */
+    public Integer getIdEnseignantConnecte() {
+        return idEnseignantConnecte;
+    }
+
+    /**
+     * @param idEnseignantConnecte the idEnseignantConnecte to set
+     */
+    public void setIdEnseignantConnecte(Integer idEnseignantConnecte) {
+        this.idEnseignantConnecte = idEnseignantConnecte;
     }
     
     

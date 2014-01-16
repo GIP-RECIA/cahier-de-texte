@@ -6,6 +6,12 @@
  */
 package org.crlr.test.services;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -14,11 +20,14 @@ import org.apache.commons.lang.time.DateUtils;
 import org.crlr.dto.ResultatDTO;
 import org.crlr.dto.application.base.AnneeScolaireDTO;
 import org.crlr.dto.application.base.ArchiveSeanceDTO;
+import org.crlr.dto.application.base.EtablissementDTO;
 import org.crlr.dto.application.base.GroupesClassesDTO;
 import org.crlr.dto.application.base.Profil;
 import org.crlr.dto.application.base.SeanceDTO;
 import org.crlr.dto.application.base.SequenceDTO;
 import org.crlr.dto.application.base.TypeGroupe;
+import org.crlr.dto.application.base.TypeJour;
+import org.crlr.dto.application.base.UtilisateurDTO;
 import org.crlr.dto.application.devoir.DevoirDTO;
 import org.crlr.dto.application.seance.ConsulterSeanceQO;
 import org.crlr.dto.application.seance.RechercheSeanceQO;
@@ -34,10 +43,18 @@ import org.crlr.dto.application.visa.VisaDTO.VisaProfil;
 import org.crlr.exception.metier.MetierException;
 import org.crlr.metier.facade.VisaFacadeService;
 import org.crlr.services.AnneeScolaireService;
+import org.crlr.services.ConfidentialiteService;
+import org.crlr.services.DevoirService;
+import org.crlr.services.EtablissementService;
 import org.crlr.services.SeanceService;
 import org.crlr.services.SequenceService;
 import org.crlr.services.VisaService;
 import org.crlr.test.AbstractMetierTest;
+import org.crlr.web.application.control.EnseignementControl;
+import org.crlr.web.application.control.devoir.DevoirControl;
+import org.crlr.web.contexte.ContexteApplication;
+import org.crlr.web.contexte.utils.ContexteUtils;
+import org.crlr.web.dto.BarreSemaineDTO;
 import org.crlr.web.dto.FileUploadDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -53,6 +70,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class TestVisa extends AbstractMetierTest {
 
     @Autowired
+    EtablissementService etablissementService;
+    
+    @Autowired
     VisaService visaService;
 
     @Autowired
@@ -66,6 +86,12 @@ public class TestVisa extends AbstractMetierTest {
 
     @Autowired
     AnneeScolaireService anneeScolaireService;
+    
+    @Autowired
+    ConfidentialiteService confidentialiteService;
+    
+    @Autowired
+    DevoirService devoirService;
 
     //Données viennent de CRLR
     
@@ -127,7 +153,21 @@ public class TestVisa extends AbstractMetierTest {
     private static final String SEANCE_TEST_DESC_1 = "Crée 1 déscription" ;
     private static final String SEANCE_TEST_DESC_2 = "Crée 2 déscription";
     
+    static {
+        ContexteApplication.CONFIG_PROPERTIES_URL = "test-config.properties";
+    }
     
+    @org.junit.Test
+    public void test() throws Exception {
+        log.info("Test");
+        
+        List<EtablissementDTO> list = 
+                confidentialiteService.findListeEtablissement().getValeurDTO();
+        
+        log.debug("list {}", list.size());
+        
+        
+    }
     
     public void testCreerSeanceApresVisa() throws MetierException {
         deleteVisas();

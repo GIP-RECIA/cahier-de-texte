@@ -22,12 +22,6 @@
     <!-- 
 #{popupPiecesJointes}
  -->
-    <script type="text/javascript">/** * Fonction declenchée suite
-    à une sélection d'un fichier. * Ferme la popup de sélection de
-    fichier puis * Déclenche le click sur le idlien. */ function
-    lienAfterSelectFile(idpopup, idlien) { var popup =
-    RichFaces.$(idpopup); var lien = jQuery(idlien); popup.hide();
-    lien.click(); }</script>
     <c:set value="#{raffraichirTabAfterUpload}"
            var="raffraichirListe" />
     <cr:popup hauteurPopup="#{hauteurPopup}"
@@ -241,12 +235,17 @@
                                    immediateUpload="#{popupPiecesJointes.autoUpload}"
                                    listHeight="0px"
                                    listWidth="50px"
+                                   onfilesubmit="console.log('onfilesubmit');#{rich:component('statuspop_wait')}.show();"
+                                   onuploadcomplete="console.log('onuploadcomplete');#{rich:component('statuspop_wait')}.hide();"
                                    maxFilesQuantity="#{popupPiecesJointes.form.uploadsAvailable}"
                                    onsizerejected="lancerLienAjax(#{idCheckFileUpload});"
-                                   uploadLabel="Télécharger">
+                                   uploadLabel="Télécharger"
+                                   status="">
                     <a4j:ajax event="uploadcomplete"
                               listener="#{popupPiecesJointes.uploadComplete}"
-                              oncomplete="if (#{facesContext.maximumSeverity==null}) { lienAfterSelectFile('#{idPopup}', '#{raffraichirListe}'); }"
+                              oncomplete="
+                                if (#{facesContext.maximumSeverity==null}) { lienAfterSelectFile('#{idPopup}', '#{raffraichirListe}'); }
+                                "
                               render="#{raffraichirListe},containerRepertoireCahier,containerFichiers" />
                   </rich:fileUpload>
                 </td>
@@ -320,4 +319,6 @@
       </h:form>
     </cr:popup>
   </ui:composition>
+  
+  
 </html>

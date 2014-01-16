@@ -29,15 +29,16 @@
 			  title="Sauvegarder"
 			  render="idPanelSaisirSeance,calendarDataPanel" 
 			  oncomplete="chargerAgenda(); setModificationFormulaire(false); appliqueRotationTampon(); appliquerGestionModification(); " 
-			  rendered="#{saisirSeance.form.vraiFauxSaisieEnCours}" />
+			  rendered="#{saisirSeance.form.vraiFauxSaisieEnCours and ajoutSeance.form.seance.accesEcriture}" />
 		<cr:elemMenuAction idaction="idCopier" bean="#{ajoutSeance}" cible="copier"
 			image="duplicate.png" title="Copier la séance"
+            oncomplete="appliquerGestionModification();"
 			rendered="#{saisirSeance.form.vraiFauxSaisieEnCours}"
 			render="idColler" />
 		<cr:elemMenuAction idaction="idColler" bean="#{ajoutSeance}" cible="coller"
 			image="coller.png" title="Coller la séance copiée précédemment"
-			oncomplete="setModificationFormulaire(true);handleResizeSaisirSeance();"
-			rendered="#{saisirSeance.form.vraiFauxSaisieEnCours and ajoutSeance.form.seanceCopie != null}"
+			oncomplete="setModificationFormulaire(true);handleResizeSaisirSeance();appliquerGestionModification();"
+			rendered="#{saisirSeance.form.vraiFauxSaisieEnCours and ajoutSeance.form.seanceCopie != null and ajoutSeance.form.seance.accesEcriture}"
 			render="TAB_SEANCE,TAB_DEVOIR" >
 	    </cr:elemMenuAction>
 		<cr:elemMenuAction idaction="idSupprimer" bean="#{saisirSeance}"
@@ -46,13 +47,13 @@
               title="Supprimer la séance"
               render="idPanelSaisirSeance,calendarDataPanel,idMenuAction" 
               oncomplete="chargerAgenda(); setModificationFormulaire(false); appliquerGestionModification();"
-              rendered="#{ajoutSeance.form.vraixOuFauxSeanceExiste and saisirSeance.form.vraiFauxSaisieEnCours}" 
+              rendered="#{ajoutSeance.form.vraixOuFauxSeanceExiste and saisirSeance.form.vraiFauxSaisieEnCours and ajoutSeance.form.seance.accesEcriture}" 
               confirm="Voulez-vous vraiement supprimer cette séance ?" />
               
         <span
             id="idRetour" 
             style="#{saisirSeance.form.afficheRetour ? 'cursor: pointer;' : 'display:none; '}"
-            onclick="idActionEnCours='idMenuActionRetour'; "
+            onclick="console.log('retour'); idActionEnCours='idMenuActionRetour';  "
             class="navigationPage"
             title="Retour" >
             <h:graphicImage library="images/icones" name="back.png" />     
@@ -128,7 +129,7 @@
                                     <t:div id="idDivTabSeance" style="vertical-align:top; overflow:auto; border-style:solid; border-width:1px; border-color:#c0c0c0;">
 										<cr:saisieSeance
 											seance="#{ajoutSeance.form.seance}"
-											readOnly="false"
+											readOnly="#{not ajoutSeance.form.seance.accesEcriture}"
 											idPopupPiecesJointes="idPopupPiecesJointes"
 											id_saisieSeance="idSaisieSeance"
 											affichageSequence="#{saisirSeance.form.plageSelected.afficheSelectionSequence}"
@@ -155,7 +156,7 @@
 									        <cr:saisieDevoir
 									           id_saisieDevoir="idSaisieDevoir${status.index}"
 									           devoirDTO="#{devoir}"
-									           readOnly="false"
+									           readOnly="#{not ajoutSeance.form.seance.accesEcriture}"
 									           listeTypeDevoir="#{ajoutSeance.form.listeTypeDevoir}"
 									           id_devoirConteneur="idListeDesDevoirs"
 									           idPopupPiecesJointes="idPopupPiecesJointes"
@@ -176,6 +177,7 @@
 									    <cr:lien id="idAjouterDevoir" bean="#{ajoutSeance}"
 	                                        cible="ajouterDevoir"
 	                                        render="idListeDesDevoirs"
+	                                        rendered="#{ajoutSeance.form.seance.accesEcriture}"
 	                                        image="add.png"
 	                                        desc="Ajouter un travail à faire" />
 									</t:div>
@@ -196,6 +198,7 @@
 	                                               idPopupSaisieSeance="idPopupModifierSeancePrecedente"
 	                                               cibleModifierSeancePrecedente="modifierSeancePrecedente"
 	                                               showAnnotations="true"
+	                                               readOnly="#{not seancePrecedente.accesEcriture}"
 	                                            /> 
 	                                        </c:forEach>
 	                                    </t:div>
@@ -271,7 +274,7 @@
 	<a4j:jsFunction action="#{saisirSeance.ajouterNouvelleSeance}"
 		execute="@this" name="afficherSelectionSequence"
 		status="statuspop"
-		oncomplete="jQuery('.showPopupSelectionSequence').click(); appliquerGestionModification();"
+		oncomplete="if (#{cr:haveMessagesError()} == false) {jQuery('.showPopupSelectionSequence').click();} appliquerGestionModification();"
 		render="idPopupSelectionSequence_form:idPopupSelectionSequenceRegion">
 		<a4j:param assignTo="#{saisirSeance.form.plageSelectedIndex}" name="index" />
 	</a4j:jsFunction>

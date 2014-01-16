@@ -18,6 +18,7 @@ import org.crlr.services.InspectionService;
 import org.crlr.test.AbstractMetierTest;
 import org.crlr.utils.AssertionException;
 
+import static org.junit.Assert.*;
 /**
  * Test JUnit pour InspectionService.
  * @author FMOULIN

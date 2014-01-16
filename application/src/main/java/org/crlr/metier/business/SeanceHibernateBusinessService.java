@@ -204,11 +204,11 @@ public interface SeanceHibernateBusinessService {
      * @param dateDebut date de debut de la semaine.
      * @param dateFin date de fin de la semaine.
      * @param idEnseignant l'id de l'enseignant.
-     * @param idSequence les id de sequence.
+     * @param idEtablissement id de l'etablissement.
      * @return la map.   
      */
     public Map<String, Integer> findSeanceSemaine(final Date dateDebut,  final Date dateFin, 
-            final Integer idEnseignant, final Set<Integer> idSequence);
+            final Integer idEnseignant, final Integer idEtablissement);
 
     /**
      * Recherche toutes les seances de l'enseignant planifiées sur une plage donnée.

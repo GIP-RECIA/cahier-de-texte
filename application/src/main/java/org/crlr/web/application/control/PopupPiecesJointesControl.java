@@ -152,7 +152,7 @@ public class PopupPiecesJointesControl extends
                 + TypeRepertoireStockage.MESDOCUMENTS.getId());
 
         log.info(
-                "Dépôt path cahier: {0}, path répertoire en cours cahier: {1}",
+                "Dépôt path cahier: {}, path répertoire en cours cahier: {}",
                 form.getPathDepotCahier(),
                 form.getPathRepertoireEnCoursCahier());
 
@@ -322,7 +322,7 @@ public class PopupPiecesJointesControl extends
         try {
             FileUtils.copyInputStreamToFile(stream, cahierUploadFileCheminComplet);
         } catch (IOException ex) {
-            log.error(ex, "Ex");
+            log.error( "Ex", ex);
             return false;
         }
         
@@ -341,7 +341,7 @@ public class PopupPiecesJointesControl extends
      * Supprime les accents et remplace les caracteres spéciaux des fichiers
      * pour construire un nom de fichier propre à injecter dans le dépot de
      * cahier de texte. Les caractères spcéicaux suivants sont remplacés par "_"
-     * espace [ ] ( ) ' ^ , \ / " * ? : < > |
+     * espace [ ] ( ) ' ^ , \ / " * ? : < > | °
      * 
      * @param nomFichier
      *            : nom du fichier a traiter (sans le dossier du fichier, juste
@@ -353,7 +353,7 @@ public class PopupPiecesJointesControl extends
         String nomFichierSansCaractereSpeciaux = org.crlr.utils.StringUtils
                 .sansAccent(nomFichier);
         nomFichierSansCaractereSpeciaux = nomFichierSansCaractereSpeciaux
-                .replaceAll("[, \\[\\]()\\^\\'\\/\\:\\*\\?\\\"\\<\\>\\|\\\\]",
+                .replaceAll("[, °\\[\\]()\\^\\'\\/\\:\\*\\?\\\"\\<\\>\\|\\\\]",
                         "_");
         return nomFichierSansCaractereSpeciaux;
     }
@@ -404,7 +404,7 @@ public class PopupPiecesJointesControl extends
                     value.setNom(java.net.URLDecoder.decode(value.getNom(),
                             "UTF-8"));
                 } catch (UnsupportedEncodingException e) {
-                    log.warning("Erreur de convertion de l'url {0}", value
+                    log.warn("Erreur de convertion de l'url {0}", value
                             .getNom());
                 }
                 
@@ -886,12 +886,12 @@ public class PopupPiecesJointesControl extends
     private boolean existeFichierDansDossier(File dir) {
 
         if (!dir.exists()) {
-            log.warning("Dir {0} n'existe pas", dir.getAbsolutePath());
+            log.warn("Dir {} n'existe pas", dir.getAbsolutePath());
             return Boolean.FALSE;
         }
         
         if (!dir.isDirectory()) {
-            log.warning("Dir {0} n'est pas un dossier", dir.getAbsolutePath());
+            log.warn("Dir {} n'est pas un dossier", dir.getAbsolutePath());
             return false;
         }
 
@@ -1065,7 +1065,7 @@ public class PopupPiecesJointesControl extends
         r = FilenameUtils.separatorsToUnix(r);
         return r;
         } catch (IOException ex) {
-            log.error(ex, "ex");
+            log.error( "ex", ex);
             return "";
         }
     }
@@ -1208,12 +1208,12 @@ public class PopupPiecesJointesControl extends
         
         final File dossierASupprimer = getCTNCheminComplet(form.getPathRepertoireEnCoursCahier());
         if (!dossierASupprimer.exists()) {
-            log.warning("Dir à supprimé {0} n'existe pas", dossierASupprimer.getAbsolutePath());
+            log.warn("Dir à supprimé {0} n'existe pas", dossierASupprimer.getAbsolutePath());
             return;
         }
         
         if (existeFichierDansDossier(dossierASupprimer)) {
-            log.warning("Fichiers existe dans le dossier {0}", dossierASupprimer.getAbsolutePath());
+            log.warn("Fichiers existe dans le dossier {0}", dossierASupprimer.getAbsolutePath());
             return;
         }
         
