@@ -349,8 +349,8 @@ implements ClasseGroupeListener, EnseignementListener {
             rechercheSeanceQO.setPremierJourSemaine(form.getSemaineSelectionne().getLundi());
             rechercheSeanceQO.setDernierJourSemaine(form.getSemaineSelectionne().getDimanche());
         } else {
-            rechercheSeanceQO.setPremierJourSemaine(form.getDateDebut());
-            rechercheSeanceQO.setDernierJourSemaine(form.getDateFin());
+            rechercheSeanceQO.setPremierJourSemaine(form.getDateDebut() == null ? form.getSemaineSelectionne().getLundi() : form.getDateDebut());
+            rechercheSeanceQO.setDernierJourSemaine(form.getDateFin() == null ? form.getSemaineSelectionne().getDimanche() : form.getDateFin() );
         }
         rechercheSeanceQO.setJourCourant(DateUtils.getAujourdhui());
         

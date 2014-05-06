@@ -36,6 +36,8 @@ public enum Outil {
     VISA_LISTE, VISA_SEANCE,
     /** Simulation eleve. */
     SIMULATION_ELEVE,
+    /** Changement de profil en cas de multi-profils */
+    CHANGE_PROFIL,
     /** Gestion des remplacements enseignants. */
     REMPLACEMENT_ENSEIGNANT,
 

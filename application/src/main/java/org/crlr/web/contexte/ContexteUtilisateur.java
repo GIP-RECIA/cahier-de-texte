@@ -18,6 +18,7 @@ import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.crlr.dto.Outil;
+import org.crlr.dto.application.base.Profil;
 import org.crlr.dto.application.base.UtilisateurDTO;
 import org.crlr.log.Log;
 import org.crlr.log.LogFactory;
@@ -48,6 +49,9 @@ public class ContexteUtilisateur implements Serializable {
     /** uid Unique provenant de cas ou du LDAP. */
     private String uidLdapCas;
 
+    /** Profil prefere de l'utilisateur */
+       private Profil profilPrefere;
+    
     /**
      * Dto des informations de l'utilisateur.
      * Dans le cas d'un remplaçement, ce champ contient le remplacé. 
@@ -330,6 +334,15 @@ public class ContexteUtilisateur implements Serializable {
     public void setUtilisateurDTOOrigine(UtilisateurDTO utilisateurDTOOrigine) {
         this.utilisateurDTOOrigine = utilisateurDTOOrigine;
     }
+    
+    public Profil getProfilPrefere() {
+    	        return profilPrefere;
+    	    } 
+    	
+    	    public void setProfilPrefere(Profil profilPrefere) {
+    	        this.profilPrefere =  profilPrefere;
+    	    } 
+    
     
     /**
      * Retourne l'UtilisateurDTO qui est reellement connecte. 

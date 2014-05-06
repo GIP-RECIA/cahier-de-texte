@@ -232,6 +232,12 @@ public class SecuriteControl extends AbstractControl<SecuriteForm> {
             log.info("Connexion de l'utilisateur déjà effectuée via CAS : {}", casUser);
             final ContexteUtilisateur contexteUtilisateur = ContexteUtils.getContexteUtilisateur();
             final UtilisateurDTO utilisateurDTO = contexteUtilisateur.getUtilisateurDTO();
+            
+            if(contexteUtilisateur.getProfilPrefere() != null) {
+            	                utilisateurDTO.setProfil(contexteUtilisateur.getProfilPrefere());
+            	                log.debug("TEST : initialiseEtRedirige : profil <= profil prefere");
+            }
+            
             if (!BooleanUtils.isTrue(utilisateurDTO.getVraiOuFauxAdmCentral())) {
                 
                 // Redirige vers la page choisie comme preference par l'user

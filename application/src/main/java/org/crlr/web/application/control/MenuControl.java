@@ -222,6 +222,18 @@ public class MenuControl extends AbstractControl<AbstractForm> {
         chargerChangeEleve(utilisateurDTO);
         
         chargerChangerEtablissement(utilisateurDTO);
+
+        Set<Profil> profilsDisponibles = utilisateurDTO.getProfilsDisponibles();
+        
+		if (!CollectionUtils.isEmpty(profilsDisponibles)
+				&& profilsDisponibles.size() > 1) {
+			profilsDisponibles.remove(utilisateurDTO.getProfil());
+			for (Profil profilDisponible : profilsDisponibles) {
+				this.listeAction.add(new MenuAction("changeRole.png",
+						Outil.CHANGE_PROFIL.name(),
+						"Changer de rôle utilisateur", null));
+			}
+		}
     }
     
     /**
@@ -373,6 +385,8 @@ public class MenuControl extends AbstractControl<AbstractForm> {
             listeSousMenu = new ArrayList<MenuAction>();
             this.listeAction.add(new MenuAction("rechercheEdition.png", "", "Consultation-Impression par classe/groupe", listeSousMenu));
             listeSousMenu.add(new MenuAction("cahierTexteConsultation.png", Outil.SEANCE_SEMAINE.name(), "Séances par classe", null));
+            // Ajout de ce sous menu qui était à l'origine avec le bouton "Séances" qui a été retiré (ce sous menu s'appelait "Rechercher/Modifier") :
+            listeSousMenu.add(new MenuAction("seanceRecherche.png", Outil.RECH_SEANCE.name(), "Recherche de séances", null)); 
             listeSousMenu.add(new MenuAction("cahierTexteEditionSeance.png", Outil.PRINT_SEANCE.name(), "Détail/PDF des séances par classe", null));
             listeSousMenu.add(new MenuAction("cahierTexteEditionSequence.png", Outil.PRINT_SEQUENCE.name(), 
                     "Détail/PDF des séquences par classe",null));
@@ -413,11 +427,11 @@ public class MenuControl extends AbstractControl<AbstractForm> {
             }
            
             // 6. Seance
-            listeSousMenu = new ArrayList<MenuAction>();
+ /*           listeSousMenu = new ArrayList<MenuAction>();
             this.listeAction.add(new MenuAction("seance.png", "", "Séance", listeSousMenu));
             listeSousMenu.add(new MenuAction("seanceAjout.png", Outil.AJOUT_SEANCE.name(), "Ajout de séance", null));
             listeSousMenu.add(new MenuAction("seanceRecherche.png", Outil.RECH_SEANCE.name(), "Recherche/Modification", null));
-
+*/
             // 7. Carnet de bord
             listeSousMenu = new ArrayList<MenuAction>();
             this.listeAction.add(new MenuAction("carnet.png", "", "Carnet de bord", listeSousMenu));

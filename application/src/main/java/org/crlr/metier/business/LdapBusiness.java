@@ -27,6 +27,8 @@ import org.crlr.dto.application.base.TypeSkin;
 import org.crlr.dto.application.base.UtilisateurDTO;
 import org.crlr.exception.base.CrlrRuntimeException;
 import org.crlr.utils.Assert;
+import org.crlr.web.contexte.ContexteUtilisateur;
+import org.crlr.web.contexte.utils.ContexteUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -217,6 +219,35 @@ public class LdapBusiness implements LdapBusinessService, InitializingBean {
         return new HashSet<String>(uidsEnfantFiltre);
     }
 
+    /**
+         * {@inheritDoc}
+         */
+        @SuppressWarnings("unchecked")
+        public Set<String> getAutoriteTuteur(String uidTuteur,
+                Set<String> uidsEnfant) {
+            final DistinguishedName dn = new DistinguishedName();
+            dn.add("ou", branchePersonne);
+           
+            // On verifife uniquement si les eleves existent 
+            String filter = "(|";
+            for (String uidEnfant : uidsEnfant) {
+                filter += ("(uid=" + uidEnfant + ")");
+            }
+            filter += ")";
+            
+            final List<String> uidsEnfantFiltre =
+                (List<String>) ldapTemplate.search(dn, filter,
+                        new AttributesMapper() {
+                    public Object mapFromAttributes(Attributes attrs) throws NamingException {
+                        final String uid = (String) attrs.get("uid").get();
+                        return uid;
+                    }
+                });
+            return new HashSet<String>(uidsEnfantFiltre);
+        }
+     
+    
+    
 
     /**
      * Mapper qui renvoit le siren de l'établissement à partir des attributs.
@@ -559,9 +590,21 @@ public class LdapBusiness implements LdapBusinessService, InitializingBean {
                     final String profilName = (String) attributProfil.get(i);
                     for (Entry<String, Profil> entry : mapProfil.entrySet()) {
                         if (profilName.equals(entry.getKey())) {
+                        	// on fixe par defaut au dernier profile 
                             utilisateurDTO.setProfil(entry.getValue());
+                        	log.debug("TEST gestionProfilCRC : profil add : " + entry.getValue());
+                        	// on complete la liste des profiles
+                            utilisateurDTO.addProfilDisponible(entry.getValue());
                         }
                     }
+                }
+                ContexteUtilisateur contexteUtilisateur = ContexteUtils.getContexteUtilisateur();
+                if(contexteUtilisateur.getProfilPrefere() == null) {
+					 contexteUtilisateur.setProfilPrefere(utilisateurDTO.getProfil());
+                    log.debug("TEST gestionProfilCRC : profil prefere set : " + utilisateurDTO.getProfil());
+                } else {
+                    utilisateurDTO.setProfil(contexteUtilisateur.getProfilPrefere());
+                    log.debug("TEST gestionProfilCRC : profil set with profil prefere : " + utilisateurDTO.getProfil());
                 }
             }
 
@@ -633,12 +676,16 @@ public class LdapBusiness implements LdapBusinessService, InitializingBean {
          */
         private Set<String> extractListeEnfants(final Attributes attrs)
                                          throws NamingException {
-            final Attribute attPersRel = attrs.get("ENTAuxPersRelEleveEleve");
+        	Attribute attEleve = attrs.get("ENTAuxPersRelEleveEleve");
+        	            // RECIA - Modifications pour un maitre d'apprentissage
+        	            if(attEleve == null) {
+        	                attEleve =  attrs.get("ENTAuxTuteurStageEleves");
+        	            }
             final Set<String> listeUidEnfant = new HashSet<String>();
-            if (attPersRel != null) {
-                for (int i = 0; i < attPersRel.size(); i++) {
+            if (attEleve != null) {
+               for (int i = 0; i < attEleve.size(); i++) {
                     final String dnEnfant =
-                        StringUtils.trimToNull((String) attPersRel.get(i));
+                        StringUtils.trimToNull((String) attEleve.get(i));
                     final String[] dnEnfantTableau = dnEnfant.split(",")[0].split("=");
                     if (dnEnfantTableau.length > 1) {
                         listeUidEnfant.add(dnEnfantTableau[1]);

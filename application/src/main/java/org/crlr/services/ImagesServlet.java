@@ -169,7 +169,8 @@ public class ImagesServlet extends HttpServlet {
         
         String desc = processDTO(listeImages, printSeanceDTO.getDescription());
         
-        printSeanceDTO.setDescriptionPDF(desc);
+        //org printSeanceDTO.setDescriptionPDF(desc);
+        printSeanceDTO.setDescriptionPDF(org.crlr.utils.StringUtils.stripFontStyles(desc));
         printSeanceDTO.setListeImages(listeImages);
         log.info("Num images in seance {0} : {1}", printSeanceDTO.getId(), listeImages.size());
         
@@ -187,7 +188,8 @@ public class ImagesServlet extends HttpServlet {
         
         String desc = processDTO(listeImages, devoirDTO.getDescription());
         
-        devoirDTO.setDescription(desc);
+       // org  devoirDTO.setDescription(desc);
+        devoirDTO.setDescription(org.crlr.utils.StringUtils.stripFontStyles(desc));
         devoirDTO.setListeImages(listeImages);
     }
 

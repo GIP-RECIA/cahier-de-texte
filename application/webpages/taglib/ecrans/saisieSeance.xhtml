@@ -177,8 +177,8 @@ input.rf-sel-inp {
 						                        </cr:saisieHeureMinute>
 						                     </t:div>
 						                </td>
-                                    </tr>
-                                    <tr>
+<!-- Mise en commentaire pour avoir heure de début et de fin sur la même ligne - RECIA                                     </tr>
+                                    <tr> -->
 						                <td style="width: 102px;">
 						                    <h:outputLabel value="Heure fin*" styleClass="libelle" title="Heure de fin de la séance" />
 						                </td>
@@ -284,6 +284,34 @@ input.rf-sel-inp {
                     </cr:liena4j>
                 </td>                    
             </tr>
+ <tr>
+                <td colspan="2">
+                    <t:div id="#{idSaisieSeanceXX}_ListeDesPiecesJointe">
+                        <rich:panel id="#{idSaisieSeanceXX}_ListeDesPiecesJointePanel"  rendered="#{not empty seance.files}" 
+                                 style="vertical-align:top; overflow:auto; width:100%;">
+                            <cr:table idTable="#{idSaisieSeanceXX}_tableListingPieceJointeSea" style="width:100%;"
+                                liste="#{seance.files}" entete="Liste des pièces jointes ajoutées à la séance" >
+                                <cr:colonne libelleColonne="nom" id="">
+                                    <h:outputText value="#{ligne.nom}" />
+                                </cr:colonne>
+                                <cr:colonne libelleColonne="Actions" align="center" id="">
+                                    <cr:lien id="#{idSaisieSeanceXX}_dlSeaFichier" chemin="#{ligne.pathFullDownload}" rendered="#{ligne.activerLien}" bean=""
+                                         image="download.png" desc="Télécharger"/>   
+                                    <cr:lien bean="#{controleur}" id="#{idSaisieSeanceXX}_supprimer" 
+                                        confirm="Etes-vous sur de vouloir supprimer cette pièce jointe ?"
+                                        cible="#{cibleDeletePieceJointeSeance}" image="delete.gif" desc="Supprimer"
+                                        render="#{idSaisieSeanceXX}_ListeDesPiecesJointe" 
+                                        oncomplete="#{verifieModification}"
+                                        rendered="#{not readOnly}"
+                                         >
+                                        <f:setPropertyActionListener value="#{ligne}" target="#{controleur.form.pieceJointeASupprimer}" />
+                                    </cr:lien>
+                                </cr:colonne>
+                            </cr:table>
+                        </rich:panel>
+                    </t:div>
+                </td>            
+            </tr>           
             <tr style="#{showAnnotations and  not readOnly ? '' : 'display:none;'}">
                 <td colspan="2">
                     <h:outputLabel
@@ -354,34 +382,7 @@ input.rf-sel-inp {
                     </cr:liena4j>                       
                 </td>                    
             </tr>
-            <tr>
-                <td colspan="2">
-                    <t:div id="#{idSaisieSeanceXX}_ListeDesPiecesJointe">
-                        <rich:panel id="#{idSaisieSeanceXX}_ListeDesPiecesJointePanel"  rendered="#{not empty seance.files}" 
-                                 style="vertical-align:top; overflow:auto; width:100%; height:180px;">
-                            <cr:table idTable="#{idSaisieSeanceXX}_tableListingPieceJointeSea" style="width:100%;"
-                                liste="#{seance.files}" entete="Liste des pièces jointes ajoutées à la séance" >
-                                <cr:colonne libelleColonne="nom" id="">
-                                    <h:outputText value="#{ligne.nom}" />
-                                </cr:colonne>
-                                <cr:colonne libelleColonne="Actions" align="center" id="">
-                                    <cr:lien id="#{idSaisieSeanceXX}_dlSeaFichier" chemin="#{ligne.pathFullDownload}" rendered="#{ligne.activerLien}" bean=""
-                                         image="download.png" desc="Télécharger"/>   
-                                    <cr:lien bean="#{controleur}" id="#{idSaisieSeanceXX}_supprimer" 
-                                        confirm="Etes-vous sur de vouloir supprimer cette pièce jointe ?"
-                                        cible="#{cibleDeletePieceJointeSeance}" image="delete.gif" desc="Supprimer"
-                                        render="#{idSaisieSeanceXX}_ListeDesPiecesJointe" 
-                                        oncomplete="#{verifieModification}"
-                                        rendered="#{not readOnly}"
-                                         >
-                                        <f:setPropertyActionListener value="#{ligne}" target="#{controleur.form.pieceJointeASupprimer}" />
-                                    </cr:lien>
-                                </cr:colonne>
-                            </cr:table>
-                        </rich:panel>
-                    </t:div>
-                </td>            
-            </tr>
+           
         </table>
 	</rich:panel>
 </ui:composition>

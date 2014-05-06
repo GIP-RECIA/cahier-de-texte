@@ -64,7 +64,7 @@ public class RtfReport extends AbstractByteArrayReport implements Serializable {
      * @return le mode content disposition
      */
     public String getModeContentDisposition() {
-        return "inline";
+        return "attachment";
     }
 
     /**

@@ -55,7 +55,10 @@ public class UtilisateurDTO implements Serializable {
 
     /** Profil de l'utilisateur. */
     private Profil profil;
-
+    
+    /** Ensemble des profils disponibles pour l'utilisateur. */
+    private Set<Profil> profilsDisponibles = new HashSet<Profil>();
+    
     /**
      * Drapeau permetant de savoir si un inspecteur académique peut faire une
      * recherche dans le cahier de texte.
@@ -106,6 +109,18 @@ public class UtilisateurDTO implements Serializable {
     }
 
     /**
+     * Accesseur de profils disponnibles
+     * @return
+     */
+    public Set<Profil> getProfilsDisponibles() {
+		return profilsDisponibles;
+	}
+
+	public void addProfilDisponible(Profil profil) {
+		this.profilsDisponibles.add(profil);
+	}
+
+	/**
      * Accesseur sirenEtablissement.
      *
      * @return le sirenEtablissement.

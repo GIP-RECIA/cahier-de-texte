@@ -58,9 +58,9 @@
                     </a4j:repeat>
                     
                     
-                    <a4j:repeat value="#{semaine.map[jourColonne].devoirs}" var="vdevoir" rendered="#{not empty semaine.map[jourColonne].devoirs}" varStatus="myVarStatus">
+                    <a4j:repeat rowKeyVar="rkv" value="#{semaine.map[jourColonne].devoirs}" var="vdevoir" rendered="#{not empty semaine.map[jourColonne].devoirs}" varStatus="myVarStatus">
                         <cr:lienPlanningDevoir devoirLienId="DD#{cc.clientId}EV#{vdevoir}#{myVarStatus.index}"
-                            devoirDTO="#{vdevoir}"
+                            devoirDTO="#{semaine.map[jourColonne].devoirs[rkv]}"
                             visualisationNomEnseignant="#{planning.form.profile == 'ELEVE' || planning.form.profile == 'PARENT'}"
                             bean="#{planning}"
                             devoirSelectionne="#{planning.form.devoirSelected}"

@@ -70,5 +70,11 @@ public interface LdapBusinessService {
      * @return les uids des enfants qui sont sous la responsabilité du parent, choisit au sein des uidsEnfant.
      */
     public Set<String> getAutoriteParentale(String uidParent, Set<String> uidsEnfant);
-    
+        /**
+         * Retourne la listes des eleves qui sont sous la responsabilité du maitre d'apprentissage.
+         * @param uidTuteur l'uid du tuteur. 
+         * @param uidsEnfant les uids des personnes en relation avec le tuteur.
+         * @return les uids des enfants qui sont presents dans le ldap.
+         */
+        public Set<String> getAutoriteTuteur(String uidTuteur, Set<String> uidsEnfant);
 }

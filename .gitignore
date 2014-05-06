@@ -12,6 +12,7 @@
 build/
 crlr-commons/jar/
 bin/
+crlr-commons/bin/
 
 ###################
 # Eclipse 

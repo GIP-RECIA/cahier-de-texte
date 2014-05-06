@@ -304,10 +304,15 @@ public class ConfidentialiteFacade implements ConfidentialiteFacadeService {
             if (!vraiOuFauxEnvCRLR) {
                 // Seuls les enfants qui ont le parent pour responsable legal
                 // doivent être utilisés dans le cahier de texte du CRC
-                final Set<String> uidsEnfantsUtilisablesCDT = ldapBusinessService.getAutoriteParentale( identifiant,
-                        utilisateurDTO.getListeUidEnfant() );
+                Set<String> uidsEnfantsUtilisablesCDT = ldapBusinessService.getAutoriteParentale( identifiant,utilisateurDTO.getListeUidEnfant() );
+            
+                // RECIA - Modifications pour les maitres d'apprentissage
+                if (CollectionUtils.isEmpty(uidsEnfantsUtilisablesCDT)) {
+                    uidsEnfantsUtilisablesCDT = ldapBusinessService.getAutoriteTuteur(identifiant, utilisateurDTO.getListeUidEnfant());
+                }
+                
                 if (CollectionUtils.isEmpty( uidsEnfantsUtilisablesCDT )) {
-                    throw new MetierRuntimeException( new ConteneurMessage(), "Le parent n'est responsable d'aucun élève." );
+                    throw new MetierRuntimeException( new ConteneurMessage(), "Le parent (ou maitre d'apprentissage) n'est responsable d'aucun élève." );
                 } else {
                     utilisateurDTO.setListeUidEnfant( uidsEnfantsUtilisablesCDT );
                 }

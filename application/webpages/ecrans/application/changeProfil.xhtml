@@ -1,0 +1,44 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:cr="urn:crlr"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:rich="http://richfaces.org/rich"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:ui="http://java.sun.com/jsf/facelets" 
+    >
+    
+
+<cr:page titrePage="Changement de profil" bean="#{changeProfil}" form="#{changeProfil.form}" fishEye="false">
+    <h:outputScript library="js" name="jquery-ui-1.8.17.custom.min.js" target="head" />
+    <cr:menuAction id="idMenuAction" autreAction="false" />
+        
+
+    <rich:panel rendered="#{contexteUtilisateur.utilisateurDTO.profil eq 'DIRECTION_ETABLISSEMENT' or contexteUtilisateur.utilisateurDTO.profil eq 'ENSEIGNANT'}" 
+        header="Choix de rôle utilisateur" id="prefProfilUser">
+
+        <p style="text-align:center;">Sélectionnez un rôle parmi les rôles utilisateurs disponibles</p>
+        <center>
+        <p>
+            <h:panelGroup>
+                <h:selectOneRadio id="selectionProfil" value="#{changeProfil.form.typeProfil}">
+                 <f:selectItem itemLabel="Direction établissement" itemValue="DIRECTION_ETABLISSEMENT" />
+                 <f:selectItem itemLabel="Enseignant" itemValue="ENSEIGNANT" />
+                </h:selectOneRadio>
+            </h:panelGroup> 
+        </p>
+    </center>
+        <p style="text-align:center;">
+            <cr:lien id="idSaveProfil" 
+                status="statuspop" bean="#{changeProfil}" cible="saveProfil" image="save.png" desc="Sauvegarder."
+                render="prefProfil"
+                 />
+        </p>
+    </rich:panel>
+
+        
+</cr:page>    
+
+</html>

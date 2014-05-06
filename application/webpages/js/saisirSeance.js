@@ -16,9 +16,9 @@ function chargerAgenda() {
         console.log("Problem null JSON object dateLundi");
         return;
     }
-    var longDate = parseInt(stringDate);
-    var startDate = new Date(longDate);
-    console.log("START DATE = " + startDate);
+//    var longDate = parseInt(stringDate);
+    var startDate = new Date(stringDate);
+    console.log("stringDate = "+ stringDate  + " START DATE = " + startDate);
     
     // Recupere et parse la liste des elements a afficher dans l'agenda
     var agendaJSON = jQuery('#agendaJSON').val();

@@ -7,6 +7,8 @@
 
 package org.crlr.web.application.form.seance;
 
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +34,8 @@ public class SaisirSeanceForm extends AbstractForm {
 
     /**  Serial Key.*/
     private static final long serialVersionUID = 1238336429879110955L;
+    
+    public static final SimpleDateFormat dateFormat = new SimpleDateFormat("M/d/yyyy");
 
     /** Identifiant de l'enseignant sur lequel on travaille. */
     private Integer idEnseignant;
@@ -258,13 +262,22 @@ public class SaisirSeanceForm extends AbstractForm {
      * Retourne la date correspondant au lundi.
      * @return le lundi
      */
-    public long getDateLundi() {
+    public long getDateLundiOrg() {
         if (semaineSelectionne != null) {
             return semaineSelectionne.getLundi().getTime();
         }
         return 0; 
     }
-    
+    /** 
+         * Retourne la date correspondant au lundi sous forme de texte ex 1/1/2001.
+         * @return le lundi
+         */
+        public String getDateLundi() {
+            if (semaineSelectionne != null) {
+                return dateFormat.format(semaineSelectionne.getLundi());
+            }
+            return ""; 
+        }
     /**
      * Accesseur de grilleJSON {@link #grilleJSON}.
      * @return retourne grilleJSON

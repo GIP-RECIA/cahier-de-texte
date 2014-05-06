@@ -102,7 +102,7 @@ public class SeanceSemaineForm extends AbstractPopupForm {
         listeBarreSemaine = new ArrayList<BarreSemaineDTO>();
         semaineSelectionne = null;
         categorieSelectionne = TypeCategorieTypeDevoir.NORMAL.getId();
-        typeAffichage = "SEMAINE";
+        typeAffichage = "LISTE";
         listeSeance = new ArrayList<DetailJourDTO>();
         vraiOuFauxRechercheActive = false;
     }
