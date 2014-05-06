@@ -11,6 +11,7 @@
 ###################
 build/
 crlr-commons/jar/
+bin/
 
 ###################
 # Eclipse 
@@ -61,3 +62,10 @@ application/webpages/web.xml
 # files
 ###################
 *.pyc
+
+###################
+# Patch
+# File
+###################
+*.patch
+
