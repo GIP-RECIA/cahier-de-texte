@@ -67,8 +67,7 @@ public class EmploiBean {
     @Column(name = "code_salle", nullable = true)
     private String codeSalle;
 
-    @Column(name = "couleur_case", nullable = true)
-    private String couleurCase;
+    
     
     /** Identifiant de la periode correspondant. */
     @Column(name = "id_periode_emploi", nullable = false)
@@ -486,22 +485,7 @@ public class EmploiBean {
         this.codeSalle = codeSalle;
     }
 
-    /**
-     * Accesseur de couleurCase.
-     * @return le couleurCase
-     */
-    public String getCouleurCase() {
-        return couleurCase;
-    }
-
-    /**
-     * Mutateur de couleurCase.
-     * @param couleurCase le couleurCase à modifier.
-     */
-    public void setCouleurCase(String couleurCase) {
-        this.couleurCase = couleurCase;
-    }
-
+  
     /**
      * Accesseur de idPeriodeEmploi {@link #idPeriodeEmploi}.
      * @return retourne idPeriodeEmploi

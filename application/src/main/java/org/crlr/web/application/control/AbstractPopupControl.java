@@ -22,6 +22,7 @@ import org.crlr.dto.application.base.SequenceDTO;
 import org.crlr.dto.application.base.UtilisateurDTO;
 import org.crlr.dto.application.sequence.RechercheSequencePopupQO;
 import org.crlr.exception.metier.MetierException;
+import org.crlr.services.CouleurEnseignementClasseService;
 import org.crlr.services.EnseignementService;
 import org.crlr.services.GroupeClasseService;
 import org.crlr.services.SeanceService;
@@ -56,6 +57,10 @@ public abstract class AbstractPopupControl<F extends AbstractPopupForm>
     /** groupeClasseService. */
     @ManagedProperty(value="#{enseignementService}")
     protected transient EnseignementService enseignementService;
+    
+    /** couleurEnseignementClasseService. */
+    @ManagedProperty(value="#{couleurEnseignementClasseService}")
+    protected transient CouleurEnseignementClasseService couleurEnseignementClasseService;
 
     /** True si la popup séquence est utilisée dans la page sinon false. */
     protected boolean usePopupSequence;
@@ -263,5 +268,14 @@ public abstract class AbstractPopupControl<F extends AbstractPopupForm>
         }
         return liste;
     }
+
+	public CouleurEnseignementClasseService getCouleurEnseignementClasseService() {
+		return couleurEnseignementClasseService;
+	}
+
+	public void setCouleurEnseignementClasseService(
+			CouleurEnseignementClasseService couleurEnseignementClasseService) {
+		this.couleurEnseignementClasseService = couleurEnseignementClasseService;
+	}
     
 }

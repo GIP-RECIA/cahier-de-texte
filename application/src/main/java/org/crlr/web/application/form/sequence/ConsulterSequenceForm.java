@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.crlr.dto.application.admin.GenerateurDTO;
 import org.crlr.dto.application.base.EnseignementDTO;
 import org.crlr.dto.application.base.GroupesClassesDTO;
 import org.crlr.dto.application.base.TypeGroupe;
@@ -19,6 +20,7 @@ import org.crlr.dto.application.sequence.ResultatRechercheSequenceDTO;
 import org.apache.commons.lang.StringUtils;
 import org.crlr.web.application.form.AbstractPopupForm;
 import org.crlr.web.contexte.utils.ContexteUtils;
+import org.crlr.web.dto.TypeCouleur;
 
 /**
  * Classe associée a la fenêtre de consultation / modification / suppressio de séquence.
@@ -105,6 +107,11 @@ public class ConsulterSequenceForm extends AbstractPopupForm {
     /** Contrôle de l'activation de la saisie simplifiée. */
     private Boolean vraiOuFauxSaisieSimplifiee;
 
+    /** Liste des couleur possibles dans le popup d'emploi de temps. */
+    private List<TypeCouleur> listeCouleur = new ArrayList<TypeCouleur>();
+ 
+	/** Type couleur sélectionné. */
+    private TypeCouleur typeCouleur;    
 /**
      * Constructeur.
      */
@@ -140,6 +147,7 @@ public class ConsulterSequenceForm extends AbstractPopupForm {
         oldIdEnseignement = null;
         oldTypeGroupeSelectionne = null;
         filtreClasseGroupe = "";
+        listeCouleur = GenerateurDTO.generateBarreCouleur();
     }
 
     /**
@@ -567,6 +575,22 @@ public class ConsulterSequenceForm extends AbstractPopupForm {
     public void setOldTypeGroupeSelectionne(TypeGroupe oldTypeGroupeSelectionne) {
         this.oldTypeGroupeSelectionne = oldTypeGroupeSelectionne;
     }
+
+	public List<TypeCouleur> getListeCouleur() {
+		return listeCouleur;
+	}
+
+	public void setListeCouleur(List<TypeCouleur> listeCouleur) {
+		this.listeCouleur = listeCouleur;
+	}
+
+	public TypeCouleur getTypeCouleur() {
+		return typeCouleur;
+	}
+
+	public void setTypeCouleur(TypeCouleur typeCouleur) {
+		this.typeCouleur = typeCouleur;
+	}
 
     
     

@@ -7,12 +7,14 @@
 
 package org.crlr.web.application.form.sequence;
 
+import org.crlr.dto.application.admin.GenerateurDTO;
 import org.crlr.dto.application.base.EnseignementDTO;
 import org.crlr.dto.application.base.GroupesClassesDTO;
 import org.crlr.dto.application.base.TypeGroupe;
 
 import org.apache.commons.lang.StringUtils;
 import org.crlr.web.application.form.AbstractPopupForm;
+import org.crlr.web.dto.TypeCouleur;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -64,6 +66,11 @@ public class AjoutSequenceForm extends AbstractPopupForm {
     /** Filtre pour la popup enseignement. **/
     private String filtreEnseignement;
 
+    /** Liste des couleur possibles dans le popup d'emploi de temps. */
+    private List<TypeCouleur> listeCouleur = new ArrayList<TypeCouleur>();
+ 
+	/** Type couleur sélectionné. */
+    private TypeCouleur typeCouleur;    
 /**
      * Constructeur.
      */
@@ -89,6 +96,7 @@ public class AjoutSequenceForm extends AbstractPopupForm {
         code = null;
         filtreClasseGroupe = "";
         filtreEnseignement = "";
+        listeCouleur = GenerateurDTO.generateBarreCouleur();  
     }
     
 
@@ -318,4 +326,20 @@ public class AjoutSequenceForm extends AbstractPopupForm {
     public void setTypeGroupeSelectionne(TypeGroupe typeGroupeSelectionne) {
         this.typeGroupeSelectionne = typeGroupeSelectionne;
     }
+
+	public List<TypeCouleur> getListeCouleur() {
+		return listeCouleur;
+	}
+
+	public void setListeCouleur(List<TypeCouleur> listeCouleur) {
+		this.listeCouleur = listeCouleur;
+	}
+
+	public TypeCouleur getTypeCouleur() {
+		return typeCouleur;
+	}
+
+	public void setTypeCouleur(TypeCouleur typeCouleur) {
+		this.typeCouleur = typeCouleur;
+	}
 }

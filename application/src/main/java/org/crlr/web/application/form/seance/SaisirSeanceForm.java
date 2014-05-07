@@ -12,6 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.crlr.dto.application.admin.GenerateurDTO;
 import org.crlr.dto.application.base.AgendaSeanceDTO;
 import org.crlr.dto.application.base.EtablissementDTO;
 import org.crlr.dto.application.base.SeanceDTO;
@@ -21,6 +22,7 @@ import org.crlr.dto.application.emploi.DetailJourEmploiDTO;
 import org.crlr.web.application.form.AbstractForm;
 import org.crlr.web.dto.BarreSemaineDTO;
 import org.crlr.web.dto.MoisDTO;
+import org.crlr.web.dto.TypeCouleur;
 
 import com.google.gson.Gson;
 
@@ -121,7 +123,11 @@ public class SaisirSeanceForm extends AbstractForm {
     
     /** Affiche le bouton de retour ou pas. */
     private Boolean afficheRetour;
-
+    /** Liste des couleur possibles dans le popup d'emploi de temps. */
+    private List<TypeCouleur> listeCouleur = new ArrayList<TypeCouleur>();
+ 
+	/** Type couleur sélectionné. */
+    private TypeCouleur typeCouleur;    
     
     /** Reinitialise les donnees du formulaire. */
     public void reset() {
@@ -131,6 +137,7 @@ public class SaisirSeanceForm extends AbstractForm {
         stylePanelAgenda = "width: 30%;";
         stylePanelEdition = "width: 70%;";
         afficheRetour = false;
+        listeCouleur = GenerateurDTO.generateBarreCouleur();
     }
     
     /**
@@ -721,6 +728,22 @@ public class SaisirSeanceForm extends AbstractForm {
     public void setIdEnseignant(Integer idEnseignant) {
         this.idEnseignant = idEnseignant;
     }
+
+	public List<TypeCouleur> getListeCouleur() {
+		return listeCouleur;
+	}
+
+	public void setListeCouleur(List<TypeCouleur> listeCouleur) {
+		this.listeCouleur = listeCouleur;
+	}
+
+	public TypeCouleur getTypeCouleur() {
+		return typeCouleur;
+	}
+
+	public void setTypeCouleur(TypeCouleur typeCouleur) {
+		this.typeCouleur = typeCouleur;
+	}
     
     
     

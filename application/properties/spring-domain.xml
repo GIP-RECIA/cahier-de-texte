@@ -22,6 +22,7 @@ xsi:schemaLocation="
     <bean id="anneeScolaireService" class="org.crlr.services.AnneeScolaireDelegate"/>
     <bean id="etablissementService" class="org.crlr.services.EtablissementDelegate"/>
     <bean id="emploiService" class="org.crlr.services.EmploiDelegate"/>
+    <bean id="couleurEnseignementClasseService" class="org.crlr.services.CouleurEnseignementClasseDelegate"/>
     
     <bean id="emploiFacade" class="org.crlr.metier.facade.EmploiFacade"/>
     <bean id="seanceFacade" class="org.crlr.metier.facade.SeanceFacade"/>

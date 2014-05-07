@@ -14,6 +14,7 @@ import java.util.Date;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.crlr.alimentation.DTO.EnseignantDTO;
+import org.crlr.web.dto.TypeCouleur;
 
 /**
  * Un DOT pour contenir une sequence.
@@ -61,7 +62,8 @@ public class SequenceDTO implements Serializable, Identifiable {
     
     /** id de l'établissement. */
     private Integer idEtablissement;
-
+    
+    private TypeCouleur typeCouleur;
     /**
      * Constructeur par defaut.
      */
@@ -337,6 +339,14 @@ public class SequenceDTO implements Serializable, Identifiable {
     public void setEnseignantDTO(EnseignantDTO enseignantDTO) {
         this.enseignantDTO = enseignantDTO;
     }
+
+	public TypeCouleur getTypeCouleur() {
+		return typeCouleur;
+	}
+
+	public void setTypeCouleur(TypeCouleur typeCouleur) {
+		this.typeCouleur = typeCouleur;
+	}
     
     
 }

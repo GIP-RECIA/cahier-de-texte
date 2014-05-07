@@ -30,6 +30,7 @@ import org.crlr.web.application.control.AbstractPopupControl;
 import org.crlr.web.application.form.AbstractForm;
 import org.crlr.web.application.form.sequence.AjoutSequenceForm;
 import org.crlr.web.contexte.utils.ContexteUtils;
+import org.crlr.web.dto.TypeCouleur;
 import org.crlr.web.utils.MessageUtils;
 
 /**
@@ -63,7 +64,7 @@ public class AjoutSequenceControl extends AbstractPopupControl<AjoutSequenceForm
         log.debug("AjoutSequenceControl : initialisation form recherche");
         rechercherEnseignement();
         chargerEnseignement();
-
+        form.setTypeCouleur(TypeCouleur.Blanc);
     }
 
     /**
@@ -93,6 +94,7 @@ public class AjoutSequenceControl extends AbstractPopupControl<AjoutSequenceForm
         saveSequenceQO.setDateFin(form.getDateFin());
         saveSequenceQO.setIntitule(form.getIntitule());
         saveSequenceQO.setSeanceAssociee(false);
+        saveSequenceQO.setTypeCouleur(form.getTypeCouleur());
         
         final UtilisateurDTO utilisateurDTO = ContexteUtils.getContexteUtilisateur().getUtilisateurDTO();
         saveSequenceQO.getClasseGroupeSelectionne().setIdAnneeScolaire(utilisateurDTO.getAnneeScolaireDTO().getId());

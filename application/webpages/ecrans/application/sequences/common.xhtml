@@ -6,6 +6,7 @@
     xmlns:crx="urn:crlr:ext"
     xmlns:cr="urn:crlr"
     xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
     xmlns:rich="http://richfaces.org/rich">
     
     <a4j:queue requestDelay="300" ignoreDupResponce="true"/>  
@@ -70,7 +71,22 @@
                     valeur="#{consulterSequence.form.etablissementCible.designation}" />        
         </h:panelGrid>
     </ui:remove>
-
+ <h:panelGrid columns="5" class="table" style="padding-right: 220px;">
+          <h:outputLabel rendered="true"
+                         style="padding-right: 5px; padding-left: 5px;"
+                         styleClass="libelle"
+                         value="Couleur" />
+          <t:div id="couleurSelection"
+                 style="border:1px solid gray;width:20px;height:20px;background-color:#{consulterSequence.form.typeCouleur.id}" />
+          <h:outputLabel rendered="true"
+                         style="padding-right: 5px; padding-left: 5px;"
+                         styleClass="libelle"
+                         value="Palette" />
+          <cr:saisiePaletteCouleur listeCouleur="#{consulterSequence.form.listeCouleur}"
+           onClick="return true; jQuery('#idPopupEvent_form\\:couleurSelection').css('background-color', '#{coul.id}');"
+           valeur="#{consulterSequence.form.typeCouleur}"/>
+         <cr:spacer height="15" />
+        </h:panelGrid>
         <h:panelGrid  columns="2" class="table">                   
             <cr:saisieTexte id="intituleSequence" titre="Intitulé*" largeur="390" styleClassError="${fn:contains(consulterSequence.form.listeChampsObligatoire, 'SEQUENCE_08')}"
                     valeur="#{consulterSequence.form.intitule}"

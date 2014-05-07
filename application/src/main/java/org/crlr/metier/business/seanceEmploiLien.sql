@@ -1,6 +1,6 @@
 WITH sp as (
 select 
-emp.couleur_case,
+cl.couleur as couleur_case,
 lib.libelle as LibEtab,
 mat.designation as Lib,
 emp.code_salle,
@@ -29,12 +29,18 @@ LEFT JOIN
 cahier_courant.cahier_classe c ON c.id = seq.id_classe
 LEFT JOIN
 cahier_courant.cahier_libelle_enseignement lib ON lib.id_enseignement = emp.id_enseignement
+LEFT JOIN cahier_courant.cahier_couleur_enseignement_classe cl
+	on cl.id_etablissement=emp.id_etablissement
+	and	 cl.id_enseignant = emp.id_enseignant
+	and  cl.id_enseignement = emp.id_enseignement
+ 	and (cl.id_groupe is null OR  cl.id_groupe = emp.id_groupe )
+ 	and (cl.id_classe is null OR  cl.id_classe = emp.id_classe) 
 WHERE 
 emp.heure_debut = sea.heure_debut AND
 emp.heure_fin = sea.heure_fin AND
 emp.minute_debut = sea.minute_debut AND
 emp.minute_fin = sea.minute_fin AND
-emp.couleur_case IS NOT NULL AND
+cl.couleur IS NOT NULL AND
 seq.id_etablissement = p.id_etablissement AND
 (lib.id_etablissement IS NULL OR lib.id_etablissement = seq.id_etablissement) AND 
 sea.date >= p.date_debut AND

@@ -33,6 +33,7 @@ import org.crlr.web.application.control.AbstractPopupControl;
 import org.crlr.web.application.form.AbstractForm;
 import org.crlr.web.application.form.sequence.ConsulterSequenceForm;
 import org.crlr.web.contexte.utils.ContexteUtils;
+import org.crlr.web.dto.TypeCouleur;
 import org.crlr.web.utils.MessageUtils;
 import org.crlr.web.utils.NavigationUtils;
 
@@ -83,7 +84,7 @@ public class ConsulterSequenceControl extends AbstractPopupControl<ConsulterSequ
                     sequenceAffichageQO.setId(idSequence);
                     final SequenceDTO sequenceDTO = sequenceService.findSequenceAffichage(sequenceAffichageQO);
                     final EnseignementDTO enseignementDTO = enseignementService.find(sequenceDTO.getIdEnseignement());
-                    final GroupesClassesDTO groupesClassesDTO;
+                    GroupesClassesDTO groupesClassesDTO;
                     if(sequenceDTO.getTypeGroupe() != null && TypeGroupe.GROUPE  == (sequenceDTO.getTypeGroupe())) {
                         groupesClassesDTO = groupeClasseService.findGroupe(sequenceDTO.getIdClasseGroupe());
                         form.setGroupeClasseSelectionne(groupesClassesDTO);
@@ -91,6 +92,11 @@ public class ConsulterSequenceControl extends AbstractPopupControl<ConsulterSequ
                         groupesClassesDTO = groupeClasseService.findClasse(sequenceDTO.getIdClasseGroupe());
                         form.setGroupeClasseSelectionne(groupesClassesDTO);
                     }
+                    
+                    TypeCouleur typeCouleur = sequenceDTO.getTypeCouleur();
+                         if(typeCouleur == null) {
+                         typeCouleur = TypeCouleur.Blanc;
+                     }
                     form.setTypeGroupeSelectionne(sequenceDTO.getTypeGroupe());
                     form.setEnseignementSelectionne(enseignementDTO);
                     form.setCode(sequenceDTO.getCode());
@@ -99,7 +105,8 @@ public class ConsulterSequenceControl extends AbstractPopupControl<ConsulterSequ
                     form.setDateDebut(sequenceDTO.getDateDebut());
                     form.setDateFin(sequenceDTO.getDateFin());
                     form.setResultatRechercheSequenceDTO(resultatRechercheSequenceDTO);
-
+                    form.setTypeCouleur(typeCouleur);          
+					form.setResultatRechercheSequenceDTO(resultatRechercheSequenceDTO);
 
                     if(AbstractForm.MODE_DELETE.equals(resultatRechercheSequenceDTO.getMode())) {
                         form.setTitreDePate("Supprimer une séquence");
@@ -180,6 +187,7 @@ public class ConsulterSequenceControl extends AbstractPopupControl<ConsulterSequ
         saveSequenceQO.setDateDebut(form.getDateDebut());
         saveSequenceQO.setDateFin(form.getDateFin());
         saveSequenceQO.setIntitule(form.getIntitule());
+        saveSequenceQO.setTypeCouleur(form.getTypeCouleur());
         
         final UtilisateurDTO utilisateurDTO = ContexteUtils.getContexteUtilisateur().getUtilisateurDTO();
          
@@ -219,6 +227,7 @@ public class ConsulterSequenceControl extends AbstractPopupControl<ConsulterSequ
         saveSequenceQO.setDateDebut(form.getDateDebut());
         saveSequenceQO.setDateFin(form.getDateFin());
         saveSequenceQO.setIntitule(form.getIntitule());
+        saveSequenceQO.setTypeCouleur(form.getTypeCouleur());
         
         final UtilisateurDTO utilisateurDTO = ContexteUtils.getContexteUtilisateur().getUtilisateurDTO();
         

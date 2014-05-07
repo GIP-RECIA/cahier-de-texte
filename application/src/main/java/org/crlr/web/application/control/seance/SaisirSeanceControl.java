@@ -53,6 +53,7 @@ import org.crlr.web.contexte.utils.ContexteUtils;
 import org.crlr.web.dto.BarreSemaineDTO;
 import org.crlr.web.dto.GrilleHoraireDTO;
 import org.crlr.web.dto.MoisDTO;
+import org.crlr.web.dto.TypeCouleur;
 import org.crlr.web.utils.MessageUtils;
 import org.crlr.web.utils.NavigationUtils;
 import org.joda.time.LocalDate;
@@ -173,7 +174,8 @@ public class SaisirSeanceControl extends AbstractControl<SaisirSeanceForm> {
         } catch (MetierException e) {
             log.debug("Echec de l'initialisation de la page de saisie des seances par semaine. : {0}",e.getMessage());
         } 
-       
+        final SeanceDTO seance = ajoutSeanceControl.getForm().getSeance();
+               form.setTypeCouleur(seance.getTypeCouleur());
     }
     
     /**
@@ -694,6 +696,17 @@ public class SaisirSeanceControl extends AbstractControl<SaisirSeanceForm> {
         
         
         ajoutSeanceControl.chargerSequence();
+        
+        SequenceDTO sequenceDao = ajoutSeanceControl.getSequence();
+        TypeCouleur typeCouleur = sequenceDao.getTypeCouleur();
+       
+        if (typeCouleur == null) {
+        	typeCouleur = TypeCouleur.Blanc;
+        }
+        
+        // Mise a jour de la couleur avec celle de la sequence
+        form.setTypeCouleur(typeCouleur);
+                
         
        
     }

@@ -37,12 +37,14 @@ import org.crlr.dto.application.base.TypeReglesAcquittement;
 import org.crlr.dto.application.emploi.DetailJourEmploiDTO;
 import org.crlr.dto.application.emploi.RechercheEmploiQO;
 import org.crlr.dto.application.importEDT.PeriodeEdtQO;
+import org.crlr.dto.application.sequence.SaveCouleurEnseignementClasseQO;
 import org.crlr.exception.metier.MetierException;
 import org.crlr.exception.metier.MetierRuntimeException;
 import org.crlr.importEDT.DTO.EmploiDTO;
 import org.crlr.message.ConteneurMessage;
 import org.crlr.message.Message;
 import org.crlr.message.Message.Nature;
+import org.crlr.metier.entity.CouleurEnseignementClasseBean;
 import org.crlr.metier.entity.EmploiBean;
 import org.crlr.metier.entity.EtablissementBean;
 import org.crlr.metier.entity.PeriodeEmploiBean;
@@ -68,7 +70,9 @@ public class EmploiHibernateBusiness extends AbstractBusiness implements
     @Autowired
     private EnseignementHibernateBusinessService enseignementHibernateBusinessService;
 
-    
+    @Autowired
+    private CouleurEnseignementClasseHibernateBusinessService couleurEnseignementClasseHibernateBusinessService;
+         
     /**
      * Mutateur de enseignementHibernateBusinessService.
      * 
@@ -125,11 +129,6 @@ public class EmploiHibernateBusiness extends AbstractBusiness implements
                 log.error("exception", ex);
             }
 
-            if (element.getTypeCouleur() == null) {
-                emploiBean.setCouleurCase(TypeCouleur.Blanc.getId());
-            } else {
-                emploiBean.setCouleurCase(element.getTypeCouleur().getId());
-            }
 
             if (emploiBean.getId() == null) {
                 // récupère le prochains identifiant
@@ -139,6 +138,15 @@ public class EmploiHibernateBusiness extends AbstractBusiness implements
 
                 // Ajout à la base de données
                 getEntityManager().persist(emploiBean);
+            }
+            if (element.getTypeCouleur() != null) {
+            	SaveCouleurEnseignementClasseQO scecQO = new SaveCouleurEnseignementClasseQO();	
+            	scecQO.setClasseGroupe(element.getGroupeOuClasse());
+            	scecQO.setIdEtablissement(element.getIdEtablissement());
+            	scecQO.setIdEnseignant(element.getIdEnseignant());
+            	scecQO.setIdEnseignement(element.getIdEnseignement());
+            	scecQO.setTypeCouleur(element.getTypeCouleur());
+            	couleurEnseignementClasseHibernateBusinessService.save(scecQO);
             }
         }
 
@@ -240,7 +248,13 @@ public class EmploiHibernateBusiness extends AbstractBusiness implements
 
         final ResultatDTO<List<DetailJourEmploiDTO>> resultat = new ResultatDTO<List<DetailJourEmploiDTO>>();
 
-        String query = "SELECT e "
+        String query = "SELECT e, "
+        		+ " (select c.couleur from  " + CouleurEnseignementClasseBean.class.getName() + " c "
+        		+ " where e.idEtablissement = c.idEtablissement "
+        		+ " AND e.idEnseignant = c.idEnseignant "
+        		+ " AND e.idEnseignement = c.idEnseignement " 
+        		+ " AND (c.idGroupe is null OR c.idGroupe = e.idGroupe) " 
+        		+ " AND (c.idClasse is null OR c.idClasse = e.idClasse) ) "
                 + " FROM "
                 + EmploiBean.class.getName()
                 + " e WHERE e.idEtablissement = :idEtablissement "
@@ -260,10 +274,12 @@ public class EmploiHibernateBusiness extends AbstractBusiness implements
                 .setParameter("idPeriodeEmploi", idPeriodeEmploi).setParameter(
                         "idEnseignant", idEnseignant);
 
-        final List<EmploiBean> resultatQuery = queryObj.getResultList();
+        final List<Object[]> resultatQuery = queryObj.getResultList();
 
         final List<DetailJourEmploiDTO> listeEmploi = new ArrayList<DetailJourEmploiDTO>();
-        for (final EmploiBean result : resultatQuery) {
+        for (final Object[] objects : resultatQuery) {
+        	EmploiBean result = (EmploiBean) objects[0];
+        	String couleur = (String) objects[1];
             final DetailJourEmploiDTO detailJourEmploiDTO = new DetailJourEmploiDTO();
 
             try {
@@ -302,10 +318,8 @@ public class EmploiHibernateBusiness extends AbstractBusiness implements
             detailJourEmploiDTO.getMatiere().setIntitule(
                     result.getEnseignement().getDesignation());
 
-            final String idCouleur = result.getCouleurCase();
-            if (!StringUtils.isEmpty(idCouleur)) {
-                detailJourEmploiDTO.setTypeCouleur(TypeCouleur
-                        .getTypeCouleurById(idCouleur));
+            if (!StringUtils.isEmpty(couleur)) {
+            	detailJourEmploiDTO.setTypeCouleur(TypeCouleur.getTypeCouleurById(couleur));
             }
 
             detailJourEmploiDTO
@@ -352,6 +366,7 @@ public class EmploiHibernateBusiness extends AbstractBusiness implements
         // Construire les résultats jour par jour car chaque jour peut être
         // lié à des périodes distinctes
         while (queryCal.compareTo(queryEndCal) <= 0) {
+        	try {
             final Date queryDate = queryCal.getTime();
             log.debug("Query date {}", DateUtils.format(queryDate, "yyyy-MM-dd"));
 
@@ -368,7 +383,13 @@ public class EmploiHibernateBusiness extends AbstractBusiness implements
                     + "   e.idEnseignement as idEnseignement, "
                     + "   e.description as desc, "
                     + "   e.codeSalle as codeSalle,"
-                    + "   e.couleurCase as couleurCase,"
+                    + "   (select couleur from CouleurEnseignementClasseBean cl " 
+                    +  " where e.etablissement.id = cl.idEtablissement " 
+                    +  " AND e.enseignant.id = cl.idEnseignant " 
+                    +  " AND e.enseignement.id = cl.idEnseignement " 
+                    +  " AND (cl.idGroupe is null OR cl.idGroupe = e.idGroupe) " 
+                    +  " AND (cl.idClasse is null OR cl.idClasse = e.idClasse) "
+                    +  "  ) as couleurCase,"
                     + "   en.civilite as civ, "
                     + "   en.nom as nom, "
                     + "   en.prenom as prenom, "
@@ -522,6 +543,9 @@ public class EmploiHibernateBusiness extends AbstractBusiness implements
             listeEvents.addAll(celluleDetailJour);
 
             queryCal.add(Calendar.DATE, 1);
+        	} catch (Exception e) {
+                  	log.error("Exception : {}", e);
+              }
         }
 
         resultat.setValeurDTO(listeEvents);
@@ -1089,5 +1113,10 @@ public class EmploiHibernateBusiness extends AbstractBusiness implements
         
         // Valeur de retour
         return resultat;
+    }
+    
+    public void setCouleurEnseignementClasseHibernateBusinessService(
+    			CouleurEnseignementClasseHibernateBusinessService couleurEnseignementClasseHibernateBusinessService) {
+    		this.couleurEnseignementClasseHibernateBusinessService = couleurEnseignementClasseHibernateBusinessService;
     }
 }

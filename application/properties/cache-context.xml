@@ -44,6 +44,9 @@ xsi:schemaLocation="
         <!-- syntaxe : [<méthode>][<*>], -->
         <property name="parameters">
             <value>
+	            find,
+                exist,
+                save,
                 modifie*,
                 save*,
                 creer*,

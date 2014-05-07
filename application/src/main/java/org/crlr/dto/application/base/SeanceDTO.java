@@ -109,6 +109,8 @@ public class SeanceDTO implements Serializable {
         
     private Boolean accesEcriture;
 
+    /** Couleur selectionnee */
+        private String selectedCouleur;
     /**
      * Consturcteur.
      */
@@ -561,6 +563,9 @@ public class SeanceDTO implements Serializable {
      * @return le typeCouleur
      */
     public TypeCouleur getTypeCouleur() {
+    	if (typeCouleur == null && sequenceDTO != null) {
+    		return sequenceDTO.getTypeCouleur();
+    	}
         return typeCouleur;
     }
 
@@ -723,13 +728,17 @@ public class SeanceDTO implements Serializable {
             this.setHeureFin(detail.getHeureFin());
             this.setMinuteDebut(detail.getMinuteDebut());
             this.setMinuteFin(detail.getMinuteFin());
-
-            this.getSequenceDTO().setGroupesClassesDTO(
-                    detail.getGroupeOuClasse());
-
+            
+            SequenceDTO sequence = this.getSequenceDTO();
+          
             this.getEnseignantDTO().setCivilite(detail.getCiviliteNomPrenom());
-            this.getSequenceDTO()
-                    .setIdEnseignement(detail.getMatiere().getId());
+            sequence.setGroupesClassesDTO(detail.getGroupeOuClasse());
+            sequence.setIdEnseignement(detail.getMatiere().getId());
+            sequence.setIdEtablissement(detail.getIdEtablissement());
+            sequence.setIdEnseignant(detail.getIdEnseignant());
+            sequence.setTypeCouleur(detail.getTypeCouleur());
+            this.typeCouleur = detail.getTypeCouleur();
+            
         }
     }
 
@@ -961,6 +970,14 @@ public class SeanceDTO implements Serializable {
                 + ", visaInspecteur=" + visaInspecteur + ", accesEcriture="
                 + accesEcriture + "] dateMaj " + (dateMaj == null ? '-' : dateMaj.getTime());
     }
+
+	public String getSelectedCouleur() {
+		return selectedCouleur;
+	}
+
+	public void setSelectedCouleur(String selectedCouleur) {
+		this.selectedCouleur = selectedCouleur;
+	}
 
     
 

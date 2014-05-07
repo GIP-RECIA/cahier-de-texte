@@ -49,6 +49,7 @@ import org.crlr.utils.Assert;
 import org.crlr.utils.DateUtils;
 import org.crlr.utils.ObjectUtils;
 import org.crlr.web.application.form.AbstractForm;
+import org.crlr.web.dto.TypeCouleur;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -631,7 +632,13 @@ public class SequenceHibernateBusiness extends AbstractBusiness
             "SEQ.date_debut as debSeq, SEQ.date_fin as finSeq, " +
             "SEQ.id_enseignant as idEnseignant, " +
             "ENSEIGNANT.nom as nomEns, ENSEIGNANT.prenom as prenomEns, ENSEIGNANT.civilite as civiliteEns, " +
-            "SEQ.id_etablissement as idEtablissement" +
+            "SEQ.id_etablissement as idEtablissement, " +
+            "(select couleur from " + SchemaUtils.getTableAvecSchema(schema, "cahier_couleur_enseignement_classe") +
+            		" c where c.id_enseignant = SEQ.id_enseignant " +
+            		" and c.id_etablissement = SEQ.id_etablissement " +
+            		" and c.id_enseignement = SEQ.id_enseignement "+
+            		" and (c.id_groupe is null OR  c.id_groupe = SEQ.id_groupe ) "+
+            		" and (c.id_classe is null OR  c.id_classe = SEQ.id_classe) ) as couleur " +
             " FROM " + SchemaUtils.getTableAvecSchema(schema, "cahier_sequence") + " SEQ " +
             " INNER JOIN " + SchemaUtils.getTableAvecSchema(schema, "cahier_enseignement") + " ENS ON (ENS.id = SEQ.id_enseignement) " +
             " INNER JOIN " + SchemaUtils.getTableAvecSchema(schema, "cahier_enseignant") + 
@@ -685,6 +692,7 @@ public class SequenceHibernateBusiness extends AbstractBusiness
             sequenceDTO.getEnseignantDTO().setPrenom((String) result[champ++]);
             sequenceDTO.getEnseignantDTO().setCivilite((String) result[champ++]);
             sequenceDTO.setIdEtablissement((Integer) result[champ++]);
+            sequenceDTO.setTypeCouleur(TypeCouleur.getTypeCouleurById((String) result [champ++]));
         }
 
         return sequenceDTO;
@@ -1090,6 +1098,7 @@ public class SequenceHibernateBusiness extends AbstractBusiness
             
             //Condition dans la requête
             sequenceDTO.setIdEnseignant(rechercheSequence.getIdEnseignant());
+            sequenceDTO.setIdEtablissement(rechercheSequence.getIdEtablissement());
             
             sequenceDTO.setGroupesClassesDTO(new GroupesClassesDTO(
                     (Integer) result.get("idClasseGroupe"),

@@ -13,6 +13,9 @@
        <!--  <class>org.crlr.metier.entity.</class>   -->
         
         <class>org.crlr.metier.entity.AnneeScolaireBean</class>
+        
+        <class>org.crlr.metier.entity.CouleurEnseignementClasseBean</class>
+        
         <class>org.crlr.metier.entity.ArchiveDevoirBean</class>
         <class>org.crlr.metier.entity.ArchivePiecesJointesDevoirsBean</class>
         <class>org.crlr.metier.entity.ArchivePiecesJointesSeancesBean</class>

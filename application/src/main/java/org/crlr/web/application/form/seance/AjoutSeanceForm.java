@@ -23,6 +23,7 @@ import org.crlr.utils.DateUtils;
 import org.crlr.web.application.form.AbstractPopupForm;
 import org.crlr.web.contexte.utils.ContexteUtils;
 import org.crlr.web.dto.FileUploadDTO;
+import org.crlr.web.dto.TypeCouleur;
 
 /**
  * @author $author$
@@ -96,6 +97,8 @@ public class AjoutSeanceForm extends AbstractPopupForm {
     /** Exercice du mode archive. */
     private String exercice;
     
+    /** Type couleur sélectionné. */
+    private TypeCouleur typeCouleur;
     /**
      * Reset les donnees du formulaire.
      */
@@ -570,6 +573,14 @@ public class AjoutSeanceForm extends AbstractPopupForm {
     public void setAfficheSuiteSeancePrecedente(Boolean afficheSuiteSeancePrecedente) {
         this.afficheSuiteSeancePrecedente = afficheSuiteSeancePrecedente;
     }
+
+	public TypeCouleur getTypeCouleur() {
+		return typeCouleur;
+	}
+
+	public void setTypeCouleur(TypeCouleur typeCouleur) {
+		this.typeCouleur = typeCouleur;
+	}
 
     
 }

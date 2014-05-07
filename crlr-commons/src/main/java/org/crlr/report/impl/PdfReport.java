@@ -58,7 +58,7 @@ public class PdfReport extends AbstractByteArrayReport implements Serializable {
      * {@inheritDoc}
      */
     public String getModeContentDisposition() {
-        return "inline";
+        return "attachment";
     }
 
     /**

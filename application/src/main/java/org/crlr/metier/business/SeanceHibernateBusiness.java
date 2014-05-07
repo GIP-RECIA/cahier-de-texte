@@ -624,7 +624,10 @@ public class SeanceHibernateBusiness extends AbstractBusiness
                 emploi.setCodeSalle((String) empResult[3]);
                 emploi.setDescription((String) empResult[4]);
                 
-                seanceDTO.setTypeCouleur(emploi.getTypeCouleur());
+                TypeCouleur couleurSeance = seanceDTO.getTypeCouleur();
+                if(couleurSeance == null || couleurSeance == TypeCouleur.Blanc) {
+                        seanceDTO.setTypeCouleur(emploi.getTypeCouleur());
+                }
                 seanceDTO.setEmploiDeTempsDescription(
                         StringUtils.trimToEmpty(emploi.getCaseDescription()).replaceAll("\\n", "<br/>"));
             }

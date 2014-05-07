@@ -39,6 +39,7 @@ import org.crlr.dto.application.seance.ResultatRechercheSeanceDTO;
 import org.crlr.dto.application.seance.SaveSeanceQO;
 import org.crlr.dto.application.seance.TypeReglesSeance;
 import org.crlr.dto.application.sequence.RechercheSequenceQO;
+import org.crlr.dto.application.sequence.SaveCouleurEnseignementClasseQO;
 import org.crlr.exception.metier.MetierException;
 import org.crlr.message.Message;
 import org.crlr.services.DevoirService;
@@ -57,6 +58,7 @@ import org.crlr.web.application.form.seance.AjoutSeanceForm;
 import org.crlr.web.contexte.ContexteUtilisateur;
 import org.crlr.web.contexte.utils.ContexteUtils;
 import org.crlr.web.dto.FileUploadDTO;
+import org.crlr.web.dto.TypeCouleur;
 import org.crlr.web.utils.MessageUtils;
 import org.crlr.web.utils.NavigationUtils;
 import org.slf4j.Logger;
@@ -451,10 +453,26 @@ public class AjoutSeanceControl extends AbstractPopupControl<AjoutSeanceForm> im
         // Positionne la seance dans le form
         form.setSeance(ObjectUtils.clone(seance));
         
+        // fixe le type de couleur
+        form.setTypeCouleur(seance.getTypeCouleur());
+        
         //Pour que l'IHM est desactivé dans le cas où un remplaçant n'a pas le droit d'accés
         gestionRemplacementControl.getForm().setDateEffet(form.getSeance().getDate());
     }
 
+    /**
+     * Fonction permettant la récupération de la séquence associée
+     * à  la séance.
+     */
+    public SequenceDTO getSequence() {
+        final SeanceDTO seance = form.getSeance();
+        if(seance == null) {
+            return null;
+        }
+        final SequenceDTO sequence = seance.getSequence();
+        return sequence;
+         }
+    
     /**
      * Pre-alimentation des champs pour créer une séance à partir d'un autre
      * écran (comme planningMensuel).
@@ -790,10 +808,15 @@ public class AjoutSeanceControl extends AbstractPopupControl<AjoutSeanceForm> im
      *            la seance.     
      */
     private void ajouterSeance(final SeanceDTO seance) {
+    	final SequenceDTO sequence = seance.getSequence();
+        
         final SaveSeanceQO saveSeanceQO = construitAjoutSaveSeanceQO(seance);
         try {
             final ResultatDTO<Integer> resultatDTO = this.seanceService
                     .saveSeance(saveSeanceQO);
+            
+            TypeCouleur couleur = modifierCouleur(sequence, form.getTypeCouleur());
+            
             final Integer idSeance = resultatDTO.getValeurDTO();
             seance.setId(idSeance);
             seance.setIntitule(saveSeanceQO.getIntitule());
@@ -805,6 +828,27 @@ public class AjoutSeanceControl extends AbstractPopupControl<AjoutSeanceForm> im
         }
     }
 
+    
+    TypeCouleur modifierCouleur(SequenceDTO sequence , TypeCouleur typeCouleur) throws MetierException{
+     	
+         if(typeCouleur != null) {
+         	
+ 	        if (typeCouleur != sequence.getTypeCouleur()) {
+ 	        	SaveCouleurEnseignementClasseQO scecQO = new SaveCouleurEnseignementClasseQO();
+ 	        	scecQO.setClasseGroupe(sequence.getGroupesClassesDTO());
+ 	        	scecQO.setIdEnseignant(sequence.getIdEnseignant());
+ 	        	scecQO.setIdEnseignement(sequence.getIdEnseignement());
+ 	        	scecQO.setIdEtablissement(sequence.getIdEtablissement());
+ 	        	scecQO.setTypeCouleur(typeCouleur);
+ 	        	this.couleurEnseignementClasseService.saveCouleurEnseignementClasse(scecQO);
+ 	        	sequence.setTypeCouleur(typeCouleur);
+ 	        }
+         }
+         return sequence.getTypeCouleur();
+     }
+     
+    
+    
     /**
      * Enregistre une seance existante.
      * 
@@ -850,6 +894,7 @@ public class AjoutSeanceControl extends AbstractPopupControl<AjoutSeanceForm> im
             saveSeanceQO.setId(seance.getId());
             final ResultatDTO<Integer> resultatDTO = this.seanceService
                     .modifieSeance(saveSeanceQO);
+            seance.setTypeCouleur(modifierCouleur(sequence, form.getTypeCouleur() ));
             seance.setIntitule(saveSeanceQO.getIntitule());
             log.debug("Modification de la seance result = {}", resultatDTO
                     .getValeurDTO());
@@ -1244,6 +1289,11 @@ public class AjoutSeanceControl extends AbstractPopupControl<AjoutSeanceForm> im
         form.setAfficheSuiteSeancePrecedente(form.getListeSeancePrecedente().size()>0);
         final List<DateDTO> listeDateRemiseDevoir = chargerListeDateRemiseDevoir(form.getSeance());
         form.setListeDateRemiseDevoir(listeDateRemiseDevoir);
+        SeanceDTO seance = form.getSeance();
+        SequenceDTO sequence = seance.getSequence();
+        TypeCouleur tc = sequence.getTypeCouleur();
+        seance.setTypeCouleur(tc);
+        form.setTypeCouleur(tc);
     }
 
     /**

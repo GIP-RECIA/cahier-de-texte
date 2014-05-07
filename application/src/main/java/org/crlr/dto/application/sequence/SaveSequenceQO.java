@@ -13,6 +13,7 @@ import java.util.Date;
 import org.crlr.dto.application.base.EnseignementDTO;
 import org.crlr.dto.application.base.GroupesClassesDTO;
 import org.crlr.dto.application.base.TypeGroupe;
+import org.crlr.web.dto.TypeCouleur;
 
 /**
  * DOCUMENTATION INCOMPLETE!
@@ -74,7 +75,8 @@ public class SaveSequenceQO implements Serializable {
     /** id de l'établissement. */
     private Integer idEtablissement;
     
-
+    /** Type couleur */
+     private TypeCouleur typeCouleur;
     
     /**
      * 
@@ -362,5 +364,13 @@ public class SaveSequenceQO implements Serializable {
     public void setOldTypeGroupeSelectionne(TypeGroupe oldTypeGroupeSelectionne) {
         this.oldTypeGroupeSelectionne = oldTypeGroupeSelectionne;
     }
+
+	public TypeCouleur getTypeCouleur() {
+		return typeCouleur;
+	}
+
+	public void setTypeCouleur(TypeCouleur typeCouleur) {
+		this.typeCouleur = typeCouleur;
+	}
     
 }

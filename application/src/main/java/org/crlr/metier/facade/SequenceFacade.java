@@ -44,6 +44,7 @@ import org.crlr.dto.application.sequence.PrintSequenceDTO;
 import org.crlr.dto.application.sequence.RechercheSequencePopupQO;
 import org.crlr.dto.application.sequence.RechercheSequenceQO;
 import org.crlr.dto.application.sequence.ResultatRechercheSequenceDTO;
+import org.crlr.dto.application.sequence.SaveCouleurEnseignementClasseQO;
 import org.crlr.dto.application.sequence.SaveSequenceQO;
 import org.crlr.dto.application.sequence.SaveSequenceSimplifieeQO;
 import org.crlr.dto.application.sequence.SequenceAffichageQO;
@@ -56,6 +57,7 @@ import org.crlr.message.Message;
 import org.crlr.message.Message.Nature;
 import org.crlr.metier.business.AnneeScolaireHibernateBusinessService;
 import org.crlr.metier.business.ClasseHibernateBusinessService;
+import org.crlr.metier.business.CouleurEnseignementClasseHibernateBusinessService;
 import org.crlr.metier.business.EnseignementHibernateBusinessService;
 import org.crlr.metier.business.EtablissementHibernateBusinessService;
 import org.crlr.metier.business.GroupeHibernateBusinessService;
@@ -71,6 +73,7 @@ import org.crlr.utils.BooleanUtils;
 import org.crlr.utils.ClassUtils;
 import org.crlr.utils.DateUtils;
 import org.crlr.web.application.form.AbstractForm;
+import org.crlr.web.dto.TypeCouleur;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
@@ -114,6 +117,11 @@ public class SequenceFacade implements SequenceFacadeService {
     /** service métier établissement. */
     @Autowired
     private EtablissementHibernateBusinessService etablissementHibernateBusinessService;
+    
+    /** service mÃ©tier pour la couleur. */
+    @Autowired
+    private CouleurEnseignementClasseHibernateBusinessService couleurEnseignementClasseHibernateBusinessService;
+    
     
     protected final Log log = LogFactory.getLog(getClass());
     
@@ -529,6 +537,18 @@ public class SequenceFacade implements SequenceFacadeService {
 
         final Integer idSequence =
             sequenceHibernateBusinessService.saveSequence(saveSequenceQO);
+        
+     // Sauvegarde de l'association enseignant / etablissement / enseignement / classe (ou) groupe / couleur
+        TypeCouleur couleur = saveSequenceQO.getTypeCouleur();
+        if (couleur != null) {
+        	SaveCouleurEnseignementClasseQO scecQO = new SaveCouleurEnseignementClasseQO();
+        	scecQO.setIdEnseignant(saveSequenceQO.getIdEnseignant());
+        	scecQO.setIdEtablissement(saveSequenceQO.getIdEtablissement());
+        	scecQO.setIdEnseignement(saveSequenceQO.getIdEnseignement());
+        	scecQO.setClasseGroupe(saveSequenceQO.getClasseGroupeSelectionne());
+        	scecQO.setTypeCouleur(couleur);
+        	couleurEnseignementClasseHibernateBusinessService.save(scecQO);
+        }
 
         final SaveEnseignementQO saveEnseignementQO = new SaveEnseignementQO();
         saveEnseignementQO.setIdSequence(idSequence);
