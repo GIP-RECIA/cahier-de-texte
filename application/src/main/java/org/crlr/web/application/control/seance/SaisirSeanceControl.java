@@ -515,7 +515,7 @@ public class SaisirSeanceControl extends AbstractControl<SaisirSeanceForm> {
         
         ajoutSeanceControl.getForm().setListeSequenceSeance(listeSequences);
         
-        log.info("AjouterNouvelleSeance taille de la liste sequences total {0}, filtrée {1}", 
+        log.info("AjouterNouvelleSeance taille de la liste sequences total {}, filtrée {}", 
                 ajoutSeanceControl.getForm().getListeSequence().size(), 
                 ajoutSeanceControl.getForm().getListeSequenceSeance().size());
         

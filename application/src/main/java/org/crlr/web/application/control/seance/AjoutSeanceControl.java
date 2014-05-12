@@ -650,7 +650,7 @@ public class AjoutSeanceControl extends AbstractPopupControl<AjoutSeanceForm> im
         rechercheEmploi.setDateFin(utilisateurDTO.getAnneeScolaireDTO().getDateSortie());
         rechercheEmploi.setIdEnseignant(sequence.getIdEnseignant());
         rechercheEmploi.setIdEtablissement(utilisateurDTO.getIdEtablissement());
-        rechercheEmploi.setIdEnseignement(seance.getSequence().getIdEnseignement());
+        rechercheEmploi.setIdEnseignement(sequence.getIdEnseignement());
         rechercheEmploi.setIdGroupeOuClasse(sequence.getIdClasseGroupe());
         rechercheEmploi.setVraiOuFauxClasse(TypeGroupe.CLASSE.equals(sequence
                 .getTypeGroupe()));

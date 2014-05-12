@@ -395,7 +395,8 @@ public class EmploiHibernateBusiness extends AbstractBusiness implements
                     + "   en.prenom as prenom, "
                     + "   mat.designation as matiere, "
                     + "   c.designation as classe, c.id as idClasse, "
-                    + "   g.designation as groupe, g.id as idGroupe) "
+                    + "   g.designation as groupe, g.id as idGroupe, " 
+                    + "   e.idEnseignant as idEnseignant ) "
                     + " FROM "
                     + EmploiBean.class.getName()
                     + " e "
@@ -509,6 +510,7 @@ public class EmploiHibernateBusiness extends AbstractBusiness implements
                     detailJourEmploiDTO.setCodeSalle((String) mapResult.get("codeSalle"));
                     detailJourEmploiDTO.setTypeSemaine(typeSemaine);
                     detailJourEmploiDTO.setIdEtablissement(idEtablissement);
+                    detailJourEmploiDTO.setIdEnseignant((Integer) mapResult.get("idEnseignant"));
 
                     final String civNomPrenom = StringUtils
                             .trimToEmpty(StringUtils
