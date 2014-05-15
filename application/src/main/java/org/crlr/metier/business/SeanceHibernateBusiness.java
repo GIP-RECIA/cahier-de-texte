@@ -53,6 +53,7 @@ import org.crlr.message.ConteneurMessage;
 import org.crlr.message.Message;
 import org.crlr.message.Message.Nature;
 import org.crlr.metier.entity.ClasseBean;
+import org.crlr.metier.entity.CouleurEnseignementClasseBean;
 import org.crlr.metier.entity.ElevesClassesBean;
 import org.crlr.metier.entity.ElevesGroupesBean;
 import org.crlr.metier.entity.EnseignantBean;
@@ -1206,6 +1207,7 @@ public class SeanceHibernateBusiness extends AbstractBusiness
             } else if (StringUtils.equals(visa.getProfil(),"ENTInspecteur")) {
                 seanceDTO.setVisaInspecteur(visaDTO);
             }
+            visaDTO.calculerEstPerime(seanceDTO.getDateMaj());
         }
     }
 
@@ -2667,7 +2669,13 @@ public class SeanceHibernateBusiness extends AbstractBusiness
                 + " GRP.code as codeGroupe, " 
                 + " GRP.designation as designationGroupe, "
                 + " CLA.code as codeClasse, "
-                + " CLA.designation as designationClasse, " + CREER_REQUETE_FIND_LISTE_SEANCE_EDITION
+                + " CLA.designation as designationClasse, " 
+                + " (select c.couleur from " + CouleurEnseignementClasseBean.class.getName() 
+                +		" c where c.idEnseignant = SEQ.idEnseignant " 
+                +		" and c.idEtablissement = SEQ.idEtablissement " 
+                +		" and c.idEnseignement = SEQ.idEnseignement "
+                +		" and c.idClasse = SEQ.idClasse ) as couleur, " 
+                + CREER_REQUETE_FIND_LISTE_SEANCE_EDITION
                 + " FROM " + SequenceBean.class.getName() + " SEQ "
                 + " INNER JOIN SEQ.enseignement ENS "
                 + " LEFT JOIN SEQ.classe CLA " + " LEFT JOIN SEQ.groupe GRP "
@@ -2753,7 +2761,13 @@ public class SeanceHibernateBusiness extends AbstractBusiness
         
             String requete1 =
                 "SELECT " + " distinct new map(" + " GRP.code as codeGroupe, " +
-                " GRP.designation as designationGroupe, " + CREER_REQUETE_FIND_LISTE_SEANCE_EDITION + " FROM " +
+                " GRP.designation as designationGroupe, "
+                + " (select c.couleur from " + CouleurEnseignementClasseBean.class.getName() 
+                +		" c where c.idEnseignant = SEQ.idEnseignant " 
+                +		" and c.idEtablissement = SEQ.idEtablissement " 
+                +		" and c.idEnseignement = SEQ.idEnseignement "
+                +		" and c.idGroup = SEQ.idGroup ) as couleur, " 		
+                + CREER_REQUETE_FIND_LISTE_SEANCE_EDITION + " FROM " +
                 SequenceBean.class.getName() + " SEQ " +
                 " INNER JOIN SEQ.enseignement ENS " +
                 " INNER JOIN SEQ.groupe GRP " +
@@ -2944,7 +2958,8 @@ public class SeanceHibernateBusiness extends AbstractBusiness
             printSeanceDTO.getEnseignantDTO().setCivilite((String) result.get("civiliteEnseignant"));
             
             printSeanceDTO.setMatiere((String) result.get("designationEnseignement"));
-
+            printSeanceDTO.setDateMaj((Date) result.get("dateMaj"));
+            printSeanceDTO.setTypeCouleur(TypeCouleur.getTypeCouleurById((String)result.get("couleur")));
             
             
             
@@ -2954,6 +2969,7 @@ public class SeanceHibernateBusiness extends AbstractBusiness
             c.set(Calendar.HOUR, (Integer) result.get("heureDebutSeance"));
             c.set(Calendar.MINUTE, (Integer) result.get("minuteDebutSeance"));
             printSeanceDTO.setDate(c.getTime());
+            findInfoVisa(printSeanceDTO);
 
             
 
@@ -2978,6 +2994,7 @@ public class SeanceHibernateBusiness extends AbstractBusiness
             + " SEA.minuteDebut as minuteDebutSeance, "
             + " SEA.heureFin as heureFinSeance, "
             + " SEA.minuteFin as minuteFinSeance, "
+            + " SEA.dateMaj as dateMaj, "
             + " SEQ.id as idSequence, "
             + " SEQ.intitule as intituleSequence, "
             + " SEQ.description as descriptionSequence, "

@@ -15,17 +15,17 @@ import java.awt.Color;
  *
  */
 public enum TypeCouleur {
-    Bleu_azur("#5484ED"), 
+    Bleu_azur("#5484ED", "#FFFFFF"), 
     Bleu("#A4BDFC"),
     Turquoise("#46D6DB"),
     
     Vert("#7AE7BF"),
-    Vert_vif("#51B749"),
+    Vert_vif("#51B749", "#FFFFFF"),
     Jaune("#FBD75B"),
     
     Orange("#FFB878"),
     Rouge("#FF887C"),
-    Rouge_vif("#DC2127"),
+    Rouge_vif("#DC2127", "#FFFFFF"),
     
     Violet("#DBADFF"),
     Gris("#E1E1E1"),
@@ -34,6 +34,8 @@ public enum TypeCouleur {
     /** Valeur de la couleur. */
     private final String id;
     
+    /** couleur du texte sur fond de la couleur considéré */
+    private final String couleurTexte;
     
     
     
@@ -76,8 +78,13 @@ public enum TypeCouleur {
         * Constructeur.
         * @param id l'id.
         */
-    private TypeCouleur(final String id) {
+    private TypeCouleur(final String id, final String couleurTexte) {
         this.id = id;
+        this.couleurTexte = couleurTexte;
+    }
+    
+    private TypeCouleur(final String id) {
+    	this(id, "#000000");
     }
 
     /**
@@ -107,4 +114,10 @@ public enum TypeCouleur {
         final Integer poid = color.getRed() + color.getGreen() + color.getBlue();
         return (poid > 3 * 0x7E); 
     }
+
+
+
+	public String getCouleurTexte() {
+		return couleurTexte;
+	}
 }

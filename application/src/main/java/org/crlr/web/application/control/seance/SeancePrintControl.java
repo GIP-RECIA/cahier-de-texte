@@ -10,20 +10,26 @@ package org.crlr.web.application.control.seance;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
+import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 
 import org.crlr.dto.ResultatDTO;
+import org.crlr.dto.application.base.ArchiveSeanceDTO;
 import org.crlr.dto.application.base.GroupeDTO;
 import org.crlr.dto.application.base.GroupesClassesDTO;
+import org.crlr.dto.application.base.SeanceDTO;
 import org.crlr.dto.application.base.UtilisateurDTO;
 import org.crlr.dto.application.devoir.DevoirDTO;
 import org.crlr.dto.application.seance.PrintSeanceDTO;
 import org.crlr.dto.application.sequence.PrintSeanceOuSequenceQO;
+import org.crlr.dto.application.visa.VisaDTO;
 import org.crlr.exception.metier.MetierException;
+import org.crlr.metier.facade.VisaFacadeService;
 import org.crlr.web.application.control.AbstractPrintControl;
 import org.crlr.web.application.form.seance.SeancePrintForm;
 import org.crlr.web.contexte.utils.ContexteUtils;
@@ -39,7 +45,15 @@ import org.springframework.util.CollectionUtils;
 @ManagedBean(name = "printSeance")
 @ViewScoped
 public class SeancePrintControl extends AbstractPrintControl<SeancePrintForm> {
-    /**
+ 
+	 /** Le controleur des seances ajout . */
+    @ManagedProperty(value="#{ajoutSeance}")
+    private transient AjoutSeanceControl ajoutSeance;
+    
+    @ManagedProperty(value = "#{visaFacade}")
+    private transient VisaFacadeService visaFacade;
+    
+	/**
      * 
      * Constructeur.
      *
@@ -157,7 +171,7 @@ public class SeancePrintControl extends AbstractPrintControl<SeancePrintForm> {
     }
     
     /**
-     * Rechercher des seance avec le detail.
+     * Rechercher des seances avec les details.
      */
     public void rechercher(){
 
@@ -199,7 +213,7 @@ public class SeancePrintControl extends AbstractPrintControl<SeancePrintForm> {
         
         try {
             final ResultatDTO<List<PrintSeanceDTO>> res = seanceService.findListeSeanceEdition(rechercheSeancePrintQO);
-            //on complete les rechercher car il faut connaître tous les devoirs dès le debut
+            //on complete les recherches car il faut connaître tous les devoirs dès le debut
             form.setListeSeances(res.getValeurDTO());
             
             
@@ -221,7 +235,23 @@ public class SeancePrintControl extends AbstractPrintControl<SeancePrintForm> {
             devoir.setOpen(nouvelEtat);
         }        
     }
-    
+    public void refreshList(){
+    	log.debug("refresh list de séance");
+    	// on mémorise la liste de seance ouverte
+    	HashSet<Integer> idsOpenedSceance = new HashSet<Integer>();
+    	for (PrintSeanceDTO psDTO : form.getListeSeances()){
+    		if (psDTO.getOpen()) {
+    			idsOpenedSceance.add(psDTO.getId());
+    		}
+    	}
+    	// on recalcule tout
+    	rechercher();
+    	// on ouvre celle qui doivent l'êtres
+    	for (PrintSeanceDTO psDTO : form.getListeSeances()){
+    		psDTO.setOpen(idsOpenedSceance.contains(psDTO.getId()));
+    	}
+     	
+    };
   
     
     /**
@@ -249,7 +279,90 @@ public class SeancePrintControl extends AbstractPrintControl<SeancePrintForm> {
     public void openDevoir(){
         form.getDevoirSelectionne().setOpen(! form.getDevoirSelectionne().getOpen());
     }
-   
+    
+    //Declenchee lors du click sur la loupe d'une seance.
+    public void chargerSeance() {
+
+        log.debug("chargerSeance");
+        
+        PrintSeanceDTO psDTO = form.getSeanceSelectionne();
+        
+        // on teste s'il y a des archives
+        if (psDTO != null) {
+        	form.setVisualiseArchiveDirecteur(	psDTO.isVisaDirecteurMemo() 
+        									&& 	psDTO.isVisaDirecteurPerime());
+        	
+        	form.setVisualiseArchiveInspecteur(	psDTO.isVisaInspecteurMemo() 
+        									&&	psDTO.isVisaInspecteurPerime());
+	        form.setVisualiseBack(false);
+	        ajoutSeance.alimenterSeance(psDTO.getId());
+        	//ajoutSeance.getForm().setSeance( psDTO );
+        } else {
+        	log.debug("aucune seance de selectionnée");
+        }
+    }
+
+	public AjoutSeanceControl getAjoutSeance() {
+		return ajoutSeance;
+	}
+
+	public void setAjoutSeance(AjoutSeanceControl ajoutSeance) {
+		this.ajoutSeance = ajoutSeance;
+	}
+    
+	 /**
+     * charge l'archive d'une seance correspondant a un visa
+     */
+    private void chargerArchiveSeance(SeanceDTO seance, VisaDTO visa) { 
+        Integer idVisa = visa.getIdVisa();
+
+        try {
+            ArchiveSeanceDTO archiveSeance = null;
+            archiveSeance = visaFacade.findArchiveSeance(
+                    seance.getId(), idVisa).getValeurDTO();
+
+            if (archiveSeance != null) {
+               // ajoutSeance.getForm().setSeance(archiveSeance);
+                ajoutSeance.alimenterSeance(archiveSeance.getId());
+                form.setVisualiseBack(true);
+            } else {
+                log.error("Archive séance n'a pas été trouvé");
+           //     ajoutSeance.getForm().setSeance(new SeanceDTO());
+            }
+        } catch (MetierException ex) {
+            log.debug( "ex", ex);
+        }
+    }
+
+    public void chargerArchiveDirecteur(){
+    	PrintSeanceDTO psDTO= form.getSeanceSelectionne();
+    	if (psDTO == null) {
+    		log.debug("Aucune seance de sélectionnée");
+    		return ;
+    	}
+    	form.setVisualiseArchiveDirecteur(false);
+    	if (psDTO.isVisaDirecteurMemo() && psDTO.isVisaDirecteurPerime()) {
+    		chargerArchiveSeance(psDTO, psDTO.getVisaDirecteur());
+    	}
+    }
+    public void chargerArchiveInspecteur(){
+    	PrintSeanceDTO psDTO= form.getSeanceSelectionne();
+    	if (psDTO == null) {
+    		log.debug("Aucune seance de sélectionnée");
+    		return ;
+    	}
+    	form.setVisualiseArchiveInspecteur(false);
+    	if (psDTO.isVisaInspecteurMemo() && psDTO.isVisaInspecteurPerime()) {
+    		chargerArchiveSeance(psDTO, psDTO.getVisaInspecteur());
+    	}
+    }
+	public VisaFacadeService getVisaFacade() {
+		return visaFacade;
+	}
+
+	public void setVisaFacade(VisaFacadeService visaFacade) {
+		this.visaFacade = visaFacade;
+	}
     
     
 }

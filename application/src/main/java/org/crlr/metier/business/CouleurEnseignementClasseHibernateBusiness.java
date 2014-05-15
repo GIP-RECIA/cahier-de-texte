@@ -148,7 +148,8 @@ public class CouleurEnseignementClasseHibernateBusiness extends AbstractBusiness
     	Integer idClasse = null;
     	
     	if (idEnseignant == null || idEtablissement == null || idEnseignement == null || gcDTO == null) {
-    		log.error("id NUll : enseignant={0}, etablissement={1}, enseignement={}, goupeClasse={}",  idEnseignant,  idEtablissement, idEnseignement, gcDTO);
+    		log.error("id NUll : enseignant={}, etablissement={}, enseignement={}, goupeClasse={}",  
+    				idEnseignant,  idEtablissement, idEnseignement, gcDTO);
     		return ;
     	}
     	String couleur = scecQO.getTypeCouleur().getId();

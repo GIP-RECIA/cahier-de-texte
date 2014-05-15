@@ -91,7 +91,7 @@ div.messagesDiv {
 .listeMessagesReplie {
     float: left;
     position: absolute;
-    bottom: 10;
+    bottom: 10px;
     height: 25px;
     overflow: hidden;
 }
@@ -99,7 +99,7 @@ div.messagesDiv {
 .listeMessageDeplie {
     float: left;
     position: absolute;
-    bottom: 10;
+    bottom: 10px;
     height: 200px;
     overflow: auto;
 }

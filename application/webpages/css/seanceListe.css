@@ -1,0 +1,67 @@
+/*css pour la nouvelle présentation des listes de scéances */
+
+.panelSeance.panelSeanceList {
+	width:99%;
+}
+.panelSeance.panelSeanceList > .rf-p-hdr {
+	background-color: transparent;
+	background-image: none;
+	border: 1px none grey;
+}
+
+.panelSeanceDetail td.detailSeanceLeft {
+	border-right-style: solid ;
+	border-right-color: #E0E0E0;
+	width: 60%;
+}
+.panelSeanceDetail .detailSeanceRight > table {
+	width: 100%;
+}
+
+.panelSeanceDetail .detailSeanceRight > table div.rf-p-b > table {
+	padding-left: 2%;
+}
+
+img.iconInText {
+	padding-left: 1ex;
+}
+
+.fondRouge {
+	background-color: red; 
+}
+
+.panelSeanceList table.panelSeanceDetail {
+	border: 0 hidden;
+}
+.divTampon {
+	float:right;
+}
+ .detailSeanceLeft div.tamponImage {
+	transform: rotate(315deg);
+}
+ 
+
+.panelDevoir.panelDevoirInList > .rf-p-hdr  {
+	background-color: #FFFFFF;
+	color: #000000;
+	background-image: none;
+	border:0;
+	
+}
+.panelDevoir.panelDevoirInList .description {
+	border:none;
+	width: 100%;
+	margin-top: -1em;
+	
+}
+
+.detailSeanceLeft > table.description {
+	width:100%;
+}
+
+.detailSeanceLeft > table .description {
+	border:none;
+	width:98%;
+	padding: 0px 1%;
+}
+

@@ -11,9 +11,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.crlr.dto.application.base.ArchiveSeanceDTO;
+import org.crlr.dto.application.base.SeanceDTO;
 import org.crlr.dto.application.devoir.DevoirDTO;
 import org.crlr.dto.application.seance.PrintSeanceDTO;
 import org.crlr.dto.application.sequence.PrintSequenceDTO;
+import org.crlr.dto.application.visa.VisaDTO;
+import org.crlr.exception.metier.MetierException;
 import org.crlr.web.application.form.AbstractPrintForm;
 
 /**
@@ -38,6 +42,10 @@ public class SeancePrintForm extends AbstractPrintForm {
     private PrintSeanceDTO seanceSelectionne;
     /** Le devoir selectionne. */
     private DevoirDTO devoirSelectionne;
+    
+    private boolean visualiseArchiveDirecteur;
+    private boolean visualiseArchiveInspecteur;
+    private boolean visualiseBack;
     
 /**
      * Constructeur.
@@ -172,7 +180,43 @@ public class SeancePrintForm extends AbstractPrintForm {
         this.listeSequences = listeSequences;
     }
 
+
+
+	public boolean isVisualiseArchiveInspecteur() {
+		return visualiseArchiveInspecteur;
+	}
+
+
+
+	public void setVisualiseArchiveInspecteur(boolean visualiseArchiveInspecteur) {
+		this.visualiseArchiveInspecteur = visualiseArchiveInspecteur;
+	}
+
+
+
+	public boolean isVisualiseArchiveDirecteur() {
+		return visualiseArchiveDirecteur;
+	}
+
+
+
+	public void setVisualiseArchiveDirecteur(boolean visualiseArchiveDirecteur) {
+		this.visualiseArchiveDirecteur = visualiseArchiveDirecteur;
+	}
+
+
+
+	public boolean isVisualiseBack() {
+		return visualiseBack;
+	}
+
+
+
+	public void setVisualiseBack(boolean visualiseBack) {
+		this.visualiseBack = visualiseBack;
+	}
+
     
-    
+   
     
 }

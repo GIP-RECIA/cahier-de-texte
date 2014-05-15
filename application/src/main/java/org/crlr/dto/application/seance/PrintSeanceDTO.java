@@ -12,7 +12,10 @@ import java.util.Date;
 import java.util.List;
 
 import org.crlr.dto.application.base.SeanceDTO;
+import org.crlr.dto.application.base.SequenceDTO;
 import org.crlr.dto.application.sequence.PrintSequenceDTO;
+import org.crlr.dto.application.visa.TypeVisa;
+import org.crlr.dto.application.visa.VisaDTO;
 
 /**
  * DOCUMENTATION INCOMPLETE!
@@ -46,14 +49,7 @@ public class PrintSeanceDTO extends SeanceDTO implements Serializable {
         
     }
 
-   
-
-    
-   
-
-   
-   
-
+  
     /**
      * Accesseur dateCourante.
      * @return le dateCourante
@@ -134,8 +130,39 @@ public class PrintSeanceDTO extends SeanceDTO implements Serializable {
         setSequenceDTO(printSequenceDTO);
     }
 
-
-
-
+    
+    
+    private  boolean isVisaPerime(VisaDTO visa){
+    	if (visa == null) return false;
+    	return visa.getEstPerime();
+    }
+    
+    public boolean isVisaPerime(){
+    	return isVisaInspecteurPerime() || isVisaDirecteurPerime();
+    }
+    
+    public boolean isVisaDirecteurPerime(){
+    	return isVisaPerime(getVisaDirecteur());
+    }
+    
+    public boolean isVisaInspecteurPerime(){
+    	return isVisaPerime(getVisaInspecteur());
+    }
+    
+    public boolean isVisaDirecteurMemo(){
+    	return isVisaMemo(getVisaDirecteur());
+    }
+    
+    public boolean isVisaInspecteurMemo(){
+    	return isVisaMemo(getVisaInspecteur());
+    }
+    
+    private boolean isVisaMemo (VisaDTO visa){
+    	if (visa == null) return false;
+    	return visa.getTypeVisa() == TypeVisa.MEMO;
+    }
+    
+   
+    
     
 }
