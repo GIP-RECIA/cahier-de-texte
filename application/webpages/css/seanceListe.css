@@ -65,3 +65,17 @@ img.iconInText {
 	padding: 0px 1%;
 }
 
+
+.seanceDevoirDivList .boutonResize {
+	float: left;
+	margin-right: 0.5ex;
+	margin-left: -0.5ex;
+	margin-top: -1em;
+	margin-bottom: 0px;
+}
+.panelDevoirInList .boutonResize {
+	margin-rigth: 1ex;
+	margin-left: 0px;
+	margin-top:0px;
+	margin-bottom: 0px;
+}

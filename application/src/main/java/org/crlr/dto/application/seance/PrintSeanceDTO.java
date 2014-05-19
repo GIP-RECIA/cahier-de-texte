@@ -13,6 +13,7 @@ import java.util.List;
 
 import org.crlr.dto.application.base.SeanceDTO;
 import org.crlr.dto.application.base.SequenceDTO;
+import org.crlr.dto.application.devoir.DevoirDTO;
 import org.crlr.dto.application.sequence.PrintSequenceDTO;
 import org.crlr.dto.application.visa.TypeVisa;
 import org.crlr.dto.application.visa.VisaDTO;
@@ -39,6 +40,9 @@ public class PrintSeanceDTO extends SeanceDTO implements Serializable {
     
     /** Si la séance est déplié dans l'IHM. */
     private boolean open;
+    
+    
+    
     
     private List<ImageDTO> listeImages;
         
@@ -161,8 +165,35 @@ public class PrintSeanceDTO extends SeanceDTO implements Serializable {
     	if (visa == null) return false;
     	return visa.getTypeVisa() == TypeVisa.MEMO;
     }
-    
+
    
-    
-    
+
+   
+    /**
+     * Y a-t-il un devoir ouvret/fermer pour la seance.
+     * Attention ne peut répondre true que s'il y a plus d'1 devoir pour la séance. 
+     */
+    private boolean isDevoirOpened(boolean open) {
+		List<DevoirDTO> devoirList = getDevoirs();
+		if (devoirList != null && devoirList.size() > 1) { 
+	    	for (DevoirDTO devoir : devoirList){
+	    		if (devoir.getOpen() == open) {
+	    			return true;
+	    		}
+	    	}
+		}
+	    return false;
+    }
+    /**
+     * Y a-t-il un devoir ouvert pour la séance sélectioné
+     */
+    public boolean isDevoirOpened(){
+    	return isDevoirOpened(true) ;
+    }
+    /**
+     * Y a-t-il un devoir fermer pour la séance sélectioné
+     */
+    public boolean isDevoirClosed(){
+    	return isDevoirOpened(false) ;
+    }
 }

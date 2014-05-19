@@ -68,7 +68,7 @@
                    id="openToutIcone"
                    image="#{form.existeSeancePlier ? 'plus.png' : 'minus.png' }"
                    oncomplete="handleResize();"
-                   render="listingSeances, openToutIcone"
+                   render="listingSeances, openToutIcone, devoirSeance"
                    styleClass="boutonResize" />
           <h:outputText value="Détail/PDF des séances par classe" />
         </t:panelGroup>
@@ -225,20 +225,54 @@
                 </h:panelGrid>
               </rich:panel>
             </h:panelGroup>
+            
+            <ui:remove>La partie affichage des devoirs </ui:remove>
             <h:panelGrid id="devoirSeance"
-                       styleClass="seanceDevoirDiv">
+                       styleClass="seanceDevoirDiv seanceDevoirDivList">
+             
+             <t:panelGroup >
+             <cr:lien bean="#{printSeance}"
+                         cible="closeAllDevoirs"
+                         id="devoirOpenIcone"
+                         image="minus.png"
+                         render="devoirSeance"
+                         styleClass="boutonResize"
+                         rendered="#{ligne.devoirOpened}">
+                         <f:setPropertyActionListener target="#{printSeance.form.seanceSelectionne}"
+                                               value="#{ligne}" />
+             </cr:lien>
+             <cr:lien bean="#{printSeance}"
+                         cible="openAllDevoirs"
+                         id="devoirCloseIcone"
+                         image="plus.png"
+                         render="devoirSeance"
+                         styleClass="boutonResize"
+                         rendered="#{ligne.devoirClosed}">
+                         <f:setPropertyActionListener target="#{printSeance.form.seanceSelectionne}"
+                                               value="#{ligne}" />
+             </cr:lien>
+             </t:panelGroup> 
+                                               
             <a4j:repeat rendered="#{not empty ligne.devoirs}"
                         value="#{ligne.devoirs}"
                         var="devoirDTO">
               <rich:panel id="panelDevoir"
                           styleClass="panelDevoir  panelDevoirInList">
                 <f:facet name="header">
-                 
+                 <cr:lien bean="#{printSeance}"
+                         cible="openDevoir"
+                         id="devoirIcone"
+                         image="#{(devoirDTO.open)? 'minus.png' : 'plus.png'}"
+                         render="devoirSeance"
+                         styleClass="boutonResize">
+                  <f:setPropertyActionListener target="#{printSeance.form.devoirSelectionne}"
+                                               value="#{devoirDTO}" />
+                </cr:lien>
                     <h:outputText value="Pour le #{cr:formatDate(devoirDTO.dateRemise, 'dd/MM/yyyy')} : #{devoirDTO.intitule}" style="font-weight:bold;"/>
                   
                 </f:facet>
                 <h:panelGrid id="devoirDetail"
-                             style="#{devoirDTO.open ? 'display:block;' : 'display:block;'}">
+                             style="#{devoirDTO.open ? 'display:block;' : 'display:none;'}">
 
                   <h:panelGrid columns="2"
                                rendered="#{not empty devoirDTO.typeDevoirDTO}">
@@ -367,6 +401,7 @@
                         render="outilRecherche :idPopupEnseignant_form:idPopupEnseignantRegion listingSeances" />
   <cr:popupStatus idStatus="statuspop" />
   
+  
    <cr:popupConfirmSauvegardeModification action=""
                                            bean="#{printSeance}"
                                            cible="sauver"
@@ -485,10 +520,11 @@
           		checkModification="false"
                 afficheDate="true"
                 onchangedate=" var lien = $('#idPopupSeance_form\\:idLienChangeDate'); if (lien != null) { lien.click(); }"
-                 
+                noVisa="true"
           />
         </t:div>
       </rich:tab>
+      <ui:remove>L'onglet des travaux à faire</ui:remove>
       <rich:tab header="Travail à faire"
                 id="TAB_DEVOIR"
                 rendered="true">
@@ -497,24 +533,26 @@
           <c:forEach items="#{ajoutSeance.form.seance.devoirs}"
                      var="devoir"
                      varStatus="status">
-            <cr:saisieDevoir checkModification="false"
-                             cibleAfficherChargeTravail="afficherChargeTravail"
-                             cibleAfterAjouterPieceJointe="afterAjouterPieceJointe"
-                             cibleAjouterPieceJointe="ajouterPieceJointe"
-                             cibleChargeImagesLatex="chargeImagesLatexDevoir"
-                             cibleDeleteDevoir="deleteDevoir"
-                             cibleDeletePieceJointe="deletePieceJointe"
-                             cibleResetDevoir="resetDevoir"
-                             controleur="#{ajoutSeance}"
-                             devoirDTO="#{devoir}"
-                             formulaire_contenant="idPopupSeance_form"
-                             idPopupPiecesJointes="idPopupPiecesJointes"
-                             id_devoirConteneur="idListeDesDevoirsSeance"
-                             id_popupChargeTravail="idPopupChargeTravailSeance"
-                             id_saisieDevoir="idSaisieDevoirSeance${status.index}"
-                             listeDate="#{ajoutSeance.form.listeDateRemiseDevoir}"
-                             listeTypeDevoir="#{ajoutSeance.form.listeTypeDevoir}"
-                             readOnly="true" />
+            <cr:saisieDevoir 
+            	formulaire_contenant="idPopupSeance_form"
+            	id_saisieDevoir="idSaisieDevoirSeance${status.index}"
+            	devoirDTO="#{devoir}"
+            	readOnly="#{not ajoutSeance.form.seance.accesEcriture}"
+            	id_devoirConteneur="idListeDesDevoirsSeance"
+            	idPopupPiecesJointes="idPopupPiecesJointes"
+            	listeTypeDevoir="#{ajoutSeance.form.listeTypeDevoir}"
+            	controleur="#{ajoutSeance}"
+            	cibleResetDevoir="resetDevoir"
+            	cibleDeleteDevoir="deleteDevoir"
+            	cibleDeletePieceJointe="deletePieceJointe"
+            	cibleAjouterPieceJointe="ajouterPieceJointe"
+            	cibleAfterAjouterPieceJointe="afterAjouterPieceJointe"
+            	cibleAfficherChargeTravail="afficherChargeTravail"
+            	cibleChargeImagesLatex="chargeImagesLatexDevoir"
+            	checkModification="false"
+            	listeDate="#{ajoutSeance.form.listeDateRemiseDevoir}"
+                id_popupChargeTravail="idPopupChargeTravailSeance" 
+            />
           </c:forEach>
         </t:div>
       </rich:tab>

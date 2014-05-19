@@ -41,7 +41,7 @@ input.rf-sel-inp {
 		value="${empty formulaire_contenant ? '#formulaire_principal' : cr:concat('#',formulaire_contenant)}" />
     <c:set var="verifieModification" value="#{empty checkModification or checkModification ? 'setModificationFormulaire(true);' : ''}" />
     <c:set var="showAnnotations" value="#{empty showAnnotations ? true : showAnnotations}" />
-    
+    <c:set var="noVisa" value="#{empty noVisa ? readOnly : noVisa}" />
 	<rich:panel>
 		<cr:lien id="#{idSaisieSeanceXX}_idRefreshDateSequence" bean="#{bean}" cible="#{cible}"
 			render="#{idSaisieSeanceXX}_dateDeb,#{idSaisieSeanceXX}_dateFin,#{idSaisieSeanceXX}_idEnteteSeance,#{render}" titre="" />
@@ -221,7 +221,7 @@ input.rf-sel-inp {
                                 </table>
                             </td>
                             <td>
-                                <t:div id="displayDuTampon" rendered="#{(not empty seance.visaDirecteur or not empty seance.visaInspecteur) and (not readOnly)}">
+                                <t:div id="displayDuTampon" rendered="#{(not empty seance.visaDirecteur or not empty seance.visaInspecteur) and (not noVisa)}">
                                     <cr:tamponVisa
 				                        dateVisaDirecteur="#{seance.visaDirecteur.dateVisa}"
 				                        typeVisaDirecteur="#{seance.visaDirecteur.typeVisa}"

@@ -10,6 +10,7 @@ package org.crlr.web.application.control.seance;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
@@ -24,6 +25,7 @@ import org.crlr.dto.application.base.GroupeDTO;
 import org.crlr.dto.application.base.GroupesClassesDTO;
 import org.crlr.dto.application.base.SeanceDTO;
 import org.crlr.dto.application.base.UtilisateurDTO;
+import org.crlr.dto.application.devoir.DevoirCompar;
 import org.crlr.dto.application.devoir.DevoirDTO;
 import org.crlr.dto.application.seance.PrintSeanceDTO;
 import org.crlr.dto.application.sequence.PrintSeanceOuSequenceQO;
@@ -237,18 +239,34 @@ public class SeancePrintControl extends AbstractPrintControl<SeancePrintForm> {
     }
     public void refreshList(){
     	log.debug("refresh list de séance");
-    	// on mémorise la liste de seance ouverte
-    	HashSet<Integer> idsOpenedSceance = new HashSet<Integer>();
+    	
+    	// on mémorise les listes des seances et devoirs ouverts
+    	HashSet<Integer> openedSceance = new HashSet<Integer>();
+    	HashSet<DevoirCompar> closedDevoir = new HashSet<DevoirCompar> ();
+    	
     	for (PrintSeanceDTO psDTO : form.getListeSeances()){
     		if (psDTO.getOpen()) {
-    			idsOpenedSceance.add(psDTO.getId());
+    			openedSceance.add(psDTO.getId());
+    			
+    			// on memorise les devoirs fermés ainsi les nouveaux devoirs seront ouvert par défaut
+	    		for (DevoirDTO devoir : psDTO.getDevoirs()) {
+	    			if (!devoir.getOpen()) {
+	    				closedDevoir.add(new DevoirCompar(devoir));
+	    			}
+	    		}
     		}
     	}
     	// on recalcule tout
     	rechercher();
     	// on ouvre celle qui doivent l'êtres
     	for (PrintSeanceDTO psDTO : form.getListeSeances()){
-    		psDTO.setOpen(idsOpenedSceance.contains(psDTO.getId()));
+    		boolean open = openedSceance.contains(psDTO.getId());
+    		psDTO.setOpen(open);
+    		if (open) {
+    			for (DevoirDTO devoir : psDTO.getDevoirs()) {
+    				devoir.setOpen(! closedDevoir.contains(new DevoirCompar(devoir)));
+    			}
+    		}
     	}
      	
     };
@@ -263,18 +281,38 @@ public class SeancePrintControl extends AbstractPrintControl<SeancePrintForm> {
         
         for (PrintSeanceDTO seance : form.getListeSeances()) {
             seance.setOpen(deplier);
-            
-            for (DevoirDTO devoir : seance.getDevoirs()){
-                devoir.setOpen(deplier);
-            } 
+            openAllDevoirs(seance, deplier);
         }
     
     }
-    
-    
+    /**
+     * Ouverture de tous les devoirs de la séance sélectionée
+     */
+    public void openAllDevoirs(){
+    	openAllDevoirs(form.getSeanceSelectionne(), true);
+    }
+    /**
+     * Fermeture des tous les devoirs de la séance sélectionée
+     */
+    public void closeAllDevoirs(){
+    	openAllDevoirs(form.getSeanceSelectionne(),false);
+    	
+    }
     
     /**
-     * ouverture/fermeture de la zone du devoir.
+     * Ouverture/fermeture de tous les devoirs d'une séance. 
+     * @param seance
+     * @param open
+     */
+    private  void openAllDevoirs(PrintSeanceDTO seance, boolean open) {
+    	if (seance != null) {
+    		for (DevoirDTO devoir : seance.getDevoirs()){
+    			devoir.setOpen(open);
+    		}
+    	}
+    }
+    /**
+     * ouverture/fermeture du devoir sélectionné.
      */
     public void openDevoir(){
         form.getDevoirSelectionne().setOpen(! form.getDevoirSelectionne().getOpen());
