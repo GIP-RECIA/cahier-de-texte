@@ -10,7 +10,6 @@ package org.crlr.web.application.control.seance;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
