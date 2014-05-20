@@ -8,7 +8,8 @@
 	width:100%;
 }
 
-
+.panelSequence.panelSequenceList > .rf-p-hdr,
+.seqSeanceDiv.panelSeanceList > .rf-p-hdr,
 .panelSeance.panelSeanceList > .rf-p-hdr {
 	background-color: transparent;
 	background-image: none;

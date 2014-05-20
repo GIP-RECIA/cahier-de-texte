@@ -10,6 +10,7 @@ package org.crlr.web.application.control.sequence;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -20,6 +21,7 @@ import org.crlr.dto.ResultatDTO;
 import org.crlr.dto.application.base.GroupeDTO;
 import org.crlr.dto.application.base.GroupesClassesDTO;
 import org.crlr.dto.application.base.UtilisateurDTO;
+import org.crlr.dto.application.devoir.DevoirCompar;
 import org.crlr.dto.application.devoir.DevoirDTO;
 import org.crlr.dto.application.seance.PrintSeanceDTO;
 import org.crlr.dto.application.sequence.PrintSeanceOuSequenceQO;
@@ -55,6 +57,18 @@ public class SequencePrintControl extends
         usePopupSeance = false;
     }
 
+    
+    @Override
+   	public PrintSeanceDTO getSeanceSelectionne() {
+   		return form.getSeanceSelectionne();
+   	}
+    
+    @Override
+    public DevoirDTO getDevoirSelectionne(){
+    	return form.getDevoirSelectionne();
+    }
+    
+    
     /**
      * 
      */
@@ -240,38 +254,54 @@ public class SequencePrintControl extends
                     
         for (PrintSeanceDTO seance : form.getSequenceSelectionne()
                 .getListeSeances()) {
-            
-            seance.setOpen(nouvelEtat);
-            for (DevoirDTO devoir : seance.getDevoirs()) {
-                devoir.setOpen(nouvelEtat);
-            }
+            openSeance(seance, nouvelEtat);
         }
        
     }
-
-    /**
-     * Ouverture d'une seance.
-     */
-    public void openSeance() {
-        final Boolean nouvelEtat = !form.getSeanceSelectionne().getOpen();
-        form.getSeanceSelectionne().setOpen(nouvelEtat);
-
-        for (DevoirDTO devoir : form.getSeanceSelectionne().getDevoirs()) {
-            devoir.setOpen(nouvelEtat);
-        }
-
+    
+    public void refreshList(){
+    	// on mémorise les listes des séquences, seances et devoirs ouverts
+    	HashSet<Integer> openedSequence = new HashSet<Integer>();
+    	HashSet<Integer> openedSeance = new HashSet<Integer>();
+    	HashSet<DevoirCompar> closedDevoir = new HashSet<DevoirCompar> ();
+    	for (PrintSequenceDTO sequence : form.getListeSequences()) {
+    		if (sequence.getOpen()) {
+    			openedSequence.add(sequence.getId());
+    			for (PrintSeanceDTO seance : sequence.getListeSeances()) {
+					if (seance.getOpen()) {
+						openedSeance.add(seance.getId());
+						for (DevoirDTO devoir : seance.getDevoirs()) {
+			    			if (!devoir.getOpen()) {
+			    				closedDevoir.add(new DevoirCompar(devoir));
+			    			}
+			    		}
+					}
+				}
+    		}
+    	}
+    	
+    	rechercher();
+    	for (PrintSequenceDTO sequence : form.getListeSequences()) {
+    		if (openedSequence.contains(sequence.getId())){
+    			sequence.setOpen(true);
+    			for (PrintSeanceDTO seance : sequence.getListeSeances()) {
+    				if (openedSeance.contains(seance.getId())) {
+    					seance.setOpen(true);
+    					for (DevoirDTO devoir : seance.getDevoirs()) {
+    						devoir.setOpen(! closedDevoir.contains(new DevoirCompar(devoir)));
+    					}
+    				} else {
+    					seance.setOpen(false);
+    				}
+    			}
+    		} else {
+    			sequence.setOpen(false);
+    		}
+    	}
+    	
+    	
     }
 
     
-
-
-    /**
-     * ouverture/fermeture de la zone du devoir.
-     */
-    public void openDevoir() {
-        form.getDevoirSelectionne().setOpen(
-                !form.getDevoirSelectionne().getOpen());
-    }
-
   
 }

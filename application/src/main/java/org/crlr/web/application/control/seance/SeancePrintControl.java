@@ -67,6 +67,19 @@ public class SeancePrintControl extends AbstractPrintControl<SeancePrintForm> {
         usePopupEnseignement = true;
     }
 
+    
+
+	@Override
+	public PrintSeanceDTO getSeanceSelectionne() {
+		return form.getSeanceSelectionne();
+	}
+    
+	@Override
+    public DevoirDTO getDevoirSelectionne(){
+    	return form.getDevoirSelectionne();
+    }
+    
+    
     /**
      * 
      */
@@ -229,23 +242,19 @@ public class SeancePrintControl extends AbstractPrintControl<SeancePrintForm> {
      * Ouverture d'une seance.
      */
     public void open(){
-        final Boolean nouvelEtat = ! form.getSeanceSelectionne().getOpen();
-        form.getSeanceSelectionne().setOpen(nouvelEtat);
-        
-        for (DevoirDTO devoir : form.getSeanceSelectionne().getDevoirs()){
-            devoir.setOpen(nouvelEtat);
-        }        
+    	openSeance();
     }
+    
     public void refreshList(){
     	log.debug("refresh list de séance");
     	
     	// on mémorise les listes des seances et devoirs ouverts
-    	HashSet<Integer> openedSceance = new HashSet<Integer>();
+    	HashSet<Integer> openedSeance = new HashSet<Integer>();
     	HashSet<DevoirCompar> closedDevoir = new HashSet<DevoirCompar> ();
     	
     	for (PrintSeanceDTO psDTO : form.getListeSeances()){
     		if (psDTO.getOpen()) {
-    			openedSceance.add(psDTO.getId());
+    			openedSeance.add(psDTO.getId());
     			
     			// on memorise les devoirs fermés ainsi les nouveaux devoirs seront ouvert par défaut
 	    		for (DevoirDTO devoir : psDTO.getDevoirs()) {
@@ -259,7 +268,7 @@ public class SeancePrintControl extends AbstractPrintControl<SeancePrintForm> {
     	rechercher();
     	// on ouvre celle qui doivent l'êtres
     	for (PrintSeanceDTO psDTO : form.getListeSeances()){
-    		boolean open = openedSceance.contains(psDTO.getId());
+    		boolean open = openedSeance.contains(psDTO.getId());
     		psDTO.setOpen(open);
     		if (open) {
     			for (DevoirDTO devoir : psDTO.getDevoirs()) {
@@ -284,45 +293,14 @@ public class SeancePrintControl extends AbstractPrintControl<SeancePrintForm> {
         }
     
     }
-    /**
-     * Ouverture de tous les devoirs de la séance sélectionée
-     */
-    public void openAllDevoirs(){
-    	openAllDevoirs(form.getSeanceSelectionne(), true);
-    }
-    /**
-     * Fermeture des tous les devoirs de la séance sélectionée
-     */
-    public void closeAllDevoirs(){
-    	openAllDevoirs(form.getSeanceSelectionne(),false);
-    	
-    }
-    
-    /**
-     * Ouverture/fermeture de tous les devoirs d'une séance. 
-     * @param seance
-     * @param open
-     */
-    private  void openAllDevoirs(PrintSeanceDTO seance, boolean open) {
-    	if (seance != null) {
-    		for (DevoirDTO devoir : seance.getDevoirs()){
-    			devoir.setOpen(open);
-    		}
-    	}
-    }
-    /**
-     * ouverture/fermeture du devoir sélectionné.
-     */
-    public void openDevoir(){
-        form.getDevoirSelectionne().setOpen(! form.getDevoirSelectionne().getOpen());
-    }
+   
     
     //Declenchee lors du click sur la loupe d'une seance.
     public void chargerSeance() {
 
         log.debug("chargerSeance");
         
-        PrintSeanceDTO psDTO = form.getSeanceSelectionne();
+        PrintSeanceDTO psDTO = getSeanceSelectionne();
         
         // on teste s'il y a des archives
         if (psDTO != null) {
@@ -372,7 +350,7 @@ public class SeancePrintControl extends AbstractPrintControl<SeancePrintForm> {
     }
 
     public void chargerArchiveDirecteur(){
-    	PrintSeanceDTO psDTO= form.getSeanceSelectionne();
+    	PrintSeanceDTO psDTO= getSeanceSelectionne();
     	if (psDTO == null) {
     		log.debug("Aucune seance de sélectionnée");
     		return ;
@@ -383,7 +361,7 @@ public class SeancePrintControl extends AbstractPrintControl<SeancePrintForm> {
     	}
     }
     public void chargerArchiveInspecteur(){
-    	PrintSeanceDTO psDTO= form.getSeanceSelectionne();
+    	PrintSeanceDTO psDTO= getSeanceSelectionne();
     	if (psDTO == null) {
     		log.debug("Aucune seance de sélectionnée");
     		return ;
@@ -400,6 +378,6 @@ public class SeancePrintControl extends AbstractPrintControl<SeancePrintForm> {
 	public void setVisaFacade(VisaFacadeService visaFacade) {
 		this.visaFacade = visaFacade;
 	}
-    
+
     
 }

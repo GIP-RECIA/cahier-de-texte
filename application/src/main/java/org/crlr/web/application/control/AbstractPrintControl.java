@@ -4,6 +4,8 @@ import javax.faces.bean.ManagedProperty;
 
 import org.apache.commons.lang.BooleanUtils;
 import org.crlr.dto.application.base.UtilisateurDTO;
+import org.crlr.dto.application.devoir.DevoirDTO;
+import org.crlr.dto.application.seance.PrintSeanceDTO;
 import org.crlr.metier.facade.SeanceFacadeService;
 import org.crlr.web.application.control.ClasseGroupeControl.ClasseGroupeListener;
 import org.crlr.web.application.control.EnseignantControl.EnseignantListener;
@@ -33,6 +35,11 @@ public abstract class AbstractPrintControl<F extends AbstractPrintForm> extends
     @ManagedProperty(value="#{seanceFacade}")
     protected transient SeanceFacadeService seanceFacade;
 
+    
+    abstract public PrintSeanceDTO getSeanceSelectionne();
+    
+    abstract public DevoirDTO getDevoirSelectionne();
+    
     /**
      * @param form f
      */
@@ -226,6 +233,56 @@ public abstract class AbstractPrintControl<F extends AbstractPrintForm> extends
         this.enseignantControl = enseignantControl;
     }
 
-
+    /**
+     * Ouverture d'une seance.
+     */
+    public void openSeance() {
+    	PrintSeanceDTO psDTO = getSeanceSelectionne();
+    	if (psDTO != null) {
+    		openSeance(psDTO,!psDTO.getOpen() );
+    	}
+    }
+    
+    protected void  openSeance(PrintSeanceDTO seance, boolean open) {
+    	seance.setOpen(open);
+    	for (DevoirDTO devoir : seance.getDevoirs()) {
+            devoir.setOpen(open);
+        }
+    }
+    
+    /**
+     * ouverture/fermeture du devoir sélectionné.
+     */
+    public void openDevoir(){
+        getDevoirSelectionne().setOpen(! getDevoirSelectionne().getOpen());
+    }
+    
+    /**
+     * Ouverture de tous les devoirs de la séance sélectionée
+     */
+    public void openAllDevoirs(){
+    	openAllDevoirs(getSeanceSelectionne(), true);
+    }
+    /**
+     * Fermeture des tous les devoirs de la séance sélectionée
+     */
+    public void closeAllDevoirs(){
+    	openAllDevoirs(getSeanceSelectionne(),false);
+    	
+    }
+    
+    /**
+     * Ouverture/fermeture de tous les devoirs d'une séance. 
+     * @param seance
+     * @param open
+     */
+    protected  void openAllDevoirs(PrintSeanceDTO seance, boolean open) {
+    	if (seance != null) {
+    		for (DevoirDTO devoir : seance.getDevoirs()){
+    			devoir.setOpen(open);
+    		}
+    	}
+    }
+  
     
 }

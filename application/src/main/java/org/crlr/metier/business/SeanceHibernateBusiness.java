@@ -2872,7 +2872,8 @@ public class SeanceHibernateBusiness extends AbstractBusiness
         
         printSequenceDTO.setDesignationEnseignement((String) result.get("designationEnseignement"));
         printSequenceDTO.setIdEnseignement((Integer) result.get("idEnseignement"));
-        
+        printSequenceDTO.setTypeCouleur(TypeCouleur.getTypeCouleurById((String) result.get("couleur")));
+        printSequenceDTO.setId((Integer) result.get("idSequence"));
       
         return printSequenceDTO;
     }
@@ -2940,7 +2941,7 @@ public class SeanceHibernateBusiness extends AbstractBusiness
             final PrintSeanceDTO printSeanceDTO = new PrintSeanceDTO();
             printSequenceDTO.getListeSeances().add(printSeanceDTO);
             printSeanceDTO.setPrintSequenceDTO(printSequenceDTO);
-           
+          
 
             //Seance 
             printSeanceDTO.setId((Integer) result.get("idSeance"));
@@ -2960,7 +2961,7 @@ public class SeanceHibernateBusiness extends AbstractBusiness
             printSeanceDTO.setMatiere((String) result.get("designationEnseignement"));
             printSeanceDTO.setDateMaj((Date) result.get("dateMaj"));
             printSeanceDTO.setTypeCouleur(TypeCouleur.getTypeCouleurById((String)result.get("couleur")));
-            
+        
             
             
             final Date dateSeance = (Date) result.get("dateSeance");
