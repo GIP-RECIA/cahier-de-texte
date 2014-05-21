@@ -15,12 +15,10 @@
   <cr:page bean="#{printSeance}"
            form="#{printSeance.form}"
            titrePage="Détail/PDF des séances par classe">
-    <h:outputScript library="js" name="jquery-ui-1.8.20.custom.js" target="head" />
-    <h:outputScript library="js" name="jquery.qtip.js" target="head" />
-   	<h:outputScript library="js" name="editor.js" target="head" />
+        
     <h:outputScript library="js" name="seanceList.js" target="head" />      
     <h:outputScript library="js" name="visualisation.js" target="head" />
-    
+   
     <h:outputStylesheet library="css" name="jquery.qtip.css" target="head" />
     <h:outputStylesheet library="css" name="visualisation.css" target="head" />
     <h:outputStylesheet library="css" name="seanceListe.css" target="head" />         
@@ -70,6 +68,13 @@
                    oncomplete="handleResize();"
                    render="listingSeances, openToutIcone, devoirSeance"
                    styleClass="boutonResize" />
+          <cr:lien bean="#{printSeance}"
+                   cible=""
+                   id="tesIcon"
+                   image="loupe-icone.png"
+                   oncomplete="#{rich:component('idPopupTest')}.show();"
+                
+                   styleClass="boutonResize" />
           <h:outputText value="Détail/PDF des séances par classe" />
         </t:panelGroup>
       </f:facet>
@@ -95,6 +100,7 @@
       <cr:selectEnseignant bean="#{printSeance}" render="listingSeances outilRecherche">
       </cr:selectEnseignant>
     </rich:panel>
+    <cr:saisieDate rendered="false" id="saisieDateInvisible" valeur="" titre="Date bidon qui permet de faire marcher dans le composant cr:saisieSeance les champs de saisie de date" />  
     <t:div style="display: none;"><cr:saisieEditeur rendered="true" id="saisieEditeurInvisible" commentaire="Editeur bidon qui permet de faire marcher dans le composant cr:saisieSeance les champs de saisie de editeur" /></t:div>
     
     <ui:remove>DEBUT LISTES DES SCEANCEs </ui:remove>
@@ -169,10 +175,12 @@
                                 rendered="#{ligne.visaInspecteurMemo}"
                                 title="Visamémo Inspecteur" 
                                 styleClass="iconInText" />
-						
+
 						<h:commandLink action="#{printSeance.chargerSeance}"
 							id="idvisuseance"
-							onclick="console.log('onclick chargerSeance')" rendered="true"
+							 immediate="true"
+								onclick="#{_js} console.log('onclick chargerSeance'); #{confirmation} desactiveClick(this.id, this.onclick);"
+							
 							style="white-space: normal; text-decoration: none;"
 							styleClass="#{myBackgroundClass} planningLien"
 							title="Séance\n #{seance.intitule}">
@@ -183,12 +191,34 @@
 							<f:ajax event="action" execute="@form"
 								oneerror="handleErrorAjaxVS"
 								onevent="handleEventAfficherSeance"
-								render="@form :idPopupSeance_form :idPopupSeance_form:idPopupSeance_panel" />
+								render=":idPopupSeance_form :idPopupSeance_form:idPopupSeance_panel " />
+					
 							<h:graphicImage library="images/icones" name="loupe-icone.png"
 								styleClass="iconInText"
 								rendered="true" title="Voir le détail de la séance" />
 						</h:commandLink>
+						
+						<ui:remove>
+						<t:commandLink action="#{printSeance.chargerSeance}"
+															
+						>
+							<f:setPropertyActionListener
+								target="#{printSeance.form.seanceSelectionne}"
+								value="#{ligne}" />
+							<f:ajax event="action" 
+							onevent="handleEventAfficherSeance"
+							
+							render=":idPopupSeance_form :idPopupSeance_form:idPopupSeance_panel " />
+						<h:graphicImage library="images/icones" name="loupe-icone.png"
+								styleClass="iconInText"
+								
+								rendered="true" title="Voir le détail de la séance" />	
+						</t:commandLink>
+                       
+                       </ui:remove>
 
+				
+			  	
 								</h:panelGroup>
                     
                   </h:panelGrid>
@@ -334,8 +364,9 @@
    
    <cr:liena4j idliena4j="idRefreshAfterModification" 
         bean="#{printSeance}"
+        immediate="true"
         cible="refreshList"
-        render="listingSeances"
+        render="listingSeances "
         status="statusPopup" 
     />
                         
@@ -419,19 +450,32 @@
     statusPopup="statuspopup" 
     raffraichirTabAfterUpload="#{ajoutSeance.form.raffraichirTabAfterUpload}" />
   
+  <cr:popupModifiable domElementAttachment="form"
+                      idPopup="idPopupTest"
+                      largeurPopup="800"
+                      maxlength="50"
+                      popupUseRichEditor="true"
+                      statusPopup="statuspop"
+                      titrePopup="Détail de la séance"
+                      
+                      >
+   </cr:popupModifiable>
+  
+  
   <ui:remove> puis la popup d'édition des seances:</ui:remove>
    <cr:popupModifiable domElementAttachment="form"
                       idPopup="idPopupSeance"
                       largeurPopup="800"
                       maxlength="50"
                       popupUseRichEditor="true"
-                      statusPopup="statusPopup"
+                      statusPopup="statuspop"
                       titrePopup="Détail de la séance"
                       
                       >
 
     <a4j:outputPanel id="idPopupConsulterSeanceRegion">
-    <cr:menuAction surcharge="false">
+   
+    <cr:menuAction id="idMenuActionPopupSeance" surcharge="false">
       <cr:elemMenuAction bean="#{printSeance}"
                          cible="chargerSeance"
                          idaction="idMenuBackArchiveSeance"
@@ -465,13 +509,15 @@
               bean="#{ajoutSeance}" cible="sauver"
               image="save.png" 
               title="Sauvegarder"
+             
               oncomplete="
               if (#{facesContext.maximumSeverity == null or facesContext.maximumSeverity.ordinal le 0} ) {
                 #{rich:component('idPopupSeance')}.hide();
                 lancerLienAjax('idRefreshAfterModification');  
               }" 
-              rendered="#{ajoutSeance.form.seance.accesEcriture}" 
+             rendered="#{ajoutSeance.form.seance.accesEcriture}"
             />
+            
             <cr:elemMenuAction 
               idaction="idCopierSeance" 
               bean="#{ajoutSeance}" cible="copier"
@@ -482,6 +528,7 @@
             />
                            
     </cr:menuAction>
+ 
     <cr:liena4j bean="#{ajoutSeance}"
                 cible="changeDateSeance"
                 idliena4j="idLienChangeDate"
@@ -558,5 +605,6 @@
       </rich:tab>
     </rich:tabPanel>
     </a4j:outputPanel>
+      
   </cr:popupModifiable>
 </html>

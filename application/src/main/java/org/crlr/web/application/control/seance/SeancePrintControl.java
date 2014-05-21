@@ -17,6 +17,7 @@ import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
+import javax.faces.event.ActionEvent;
 
 import org.crlr.dto.ResultatDTO;
 import org.crlr.dto.application.base.ArchiveSeanceDTO;
@@ -49,7 +50,7 @@ public class SeancePrintControl extends AbstractPrintControl<SeancePrintForm> {
  
 	 /** Le controleur des seances ajout . */
     @ManagedProperty(value="#{ajoutSeance}")
-    private transient AjoutSeanceControl ajoutSeance;
+    private  transient AjoutSeanceControl ajoutSeance;
     
     @ManagedProperty(value = "#{visaFacade}")
     private transient VisaFacadeService visaFacade;
@@ -61,9 +62,9 @@ public class SeancePrintControl extends AbstractPrintControl<SeancePrintForm> {
      */
     public SeancePrintControl() {
         super(new SeancePrintForm());
-        usePopupSequence = false;
+        usePopupSequence = true;
         usePopupGroupeClasse = true;
-        usePopupSeance = false;
+        usePopupSeance = true;
         usePopupEnseignement = true;
     }
 
@@ -315,6 +316,10 @@ public class SeancePrintControl extends AbstractPrintControl<SeancePrintForm> {
         } else {
         	log.debug("aucune seance de selectionnée");
         }
+    }
+    
+    public void chargerSeance(ActionEvent ae) {
+    	chargerSeance();
     }
 
 	public AjoutSeanceControl getAjoutSeance() {

@@ -320,7 +320,7 @@ public class SaisirSeanceControl extends AbstractControl<SaisirSeanceForm> {
             form.setListeSeance(listeSeance);
         } catch (MetierException e) {
             this.form.setListeSeance(new ArrayList<SeanceDTO>());
-            log.debug("{0}", e.getMessage());
+            log.debug("chargerListeSeance: {}", e.getMessage());
         }
     }
 
@@ -764,7 +764,7 @@ public class SaisirSeanceControl extends AbstractControl<SaisirSeanceForm> {
             final ResultatDTO<Integer> resultatDTO = this.seanceService.deleteSeance(resultatRechercheSeanceDTO);
             log.debug("Modification de la seance result = {0}", resultatDTO.getValeurDTO());
         } catch (final MetierException e) {
-            log.debug("{0}", e.getMessage());
+            log.debug("erreur ligne 767 {}", e.getMessage());
         }
         
         

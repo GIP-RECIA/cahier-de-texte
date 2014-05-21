@@ -91,7 +91,7 @@ public class ContexteOutilControl extends AbstractControl<AbstractForm> {
      *         contexte
      */
     public Object recupererObjet(String cle) {
-        this.log.debug("OutilControl - Demande de récupération de l'objet avec la clé \"{0}\"",
+        this.log.debug("OutilControl - Demande de récupération de l'objet avec la clé \"{}\"",
                        cle);
         return this.contexteOutil.get(cle);
     }
@@ -113,7 +113,7 @@ public class ContexteOutilControl extends AbstractControl<AbstractForm> {
      * @param cle la clé associée à cet objet
      */
     public void supprimerObjet(String cle) {
-        this.log.debug("OutilControl - Demande de suppression de l'objet avec la clé \"{0}\"",
+        this.log.debug("OutilControl - Demande de suppression de l'objet avec la clé \"{}\"",
                        cle);
         this.contexteOutil.remove(cle);
     }

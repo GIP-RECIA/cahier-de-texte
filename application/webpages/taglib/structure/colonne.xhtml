@@ -20,7 +20,7 @@
     <c:set var="id" value="${empty id ? cr:idcompteur('colonne') : id}"/> 
     <c:set var="width" value="${not empty taille ? cr:concat('width:',cr:concat(taille, 'px;')) : ''}"/> 
     <c:set var="avecHeader" value="${empty avecHeader ? true : false}"/>
-    <c:set var="align" value="${empty align ? left : align}"/>
+    <c:set var="align" value="${empty align ? 'left' : align}"/>
 
 	<rich:column id="#{id}" rendered="#{rendered}" style="#{width};text-align:#{align};#{style}" styleClass="#{styleClass}">
 

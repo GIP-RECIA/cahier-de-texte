@@ -17,9 +17,8 @@
     <h:outputStylesheet library="css"
                         name="visualisation.css"
                         target="head" />
-   <h:outputScript library="js" name="jquery-ui-1.8.20.custom.js" target="head" />
-    <h:outputScript library="js" name="jquery.qtip.js" target="head" />
-   	<h:outputScript library="js" name="editor.js" target="head" />
+    
+   
     <h:outputScript library="js" name="seanceList.js" target="head" />      
                         
     <h:outputScript library="js"
@@ -212,7 +211,7 @@
                                 rendered="#{ligne.visaInspecteurMemo}"
                                 title="Visamémo Inspecteur" 
                                 styleClass="iconInText" />
-						
+						<ui:remove>
 						<h:commandLink action="#{printSeance.chargerSeance}"
 							id="idvisuseance"
 							onclick="console.log('onclick chargerSeance')" rendered="true"
@@ -226,12 +225,43 @@
 							<f:ajax event="action" execute="@form"
 								oneerror="handleErrorAjaxVS"
 								onevent="handleEventAfficherSeance"
-								render="@form :idPopupSeance_form :idPopupSeance_form:idPopupSeance_panel" />
+								render=":idPopupSeance_form :idPopupSeance_form:idPopupSeance_panel" />
 							<h:graphicImage library="images/icones" name="loupe-icone.png"
 								styleClass="iconInText"
-								rendered="true" title="Voir le détail de la séance" />
+								 title="Voir le détail de la séance" />
 						</h:commandLink>
-
+				</ui:remove>
+					<cr:lien id="ideditseance"	
+							desc="Séance\n #{seance.intitule}"
+							render=":idPopupSeance_form :idPopupSeance_form:idPopupSeance_panel" 
+					oncomplete="#{rich:component('idPopupSeance')}.show();
+							if (#{rich:element('richTabPanel')}) {
+                         #{rich:component('richTabPanel')}.switchToItem('tabSeance');
+                         }
+							"
+                    	bean="#{printSeance}"
+                    	cible="chargerSeance"
+                    	execute="@form"
+								oneerror="handleErrorAjaxVS"
+								onevent="handleEventAfficherSeance"
+                    	style="white-space: normal; text-decoration: none;"
+                    	styleClass="#{myBackgroundClass} planningLien"
+                    onclick="console.log('onclick chargerSeance')" 
+                    rendered="true"
+                    	modifiable="#{not readonly}"
+                    	
+					>
+						<f:setPropertyActionListener
+								target="#{printSeance.form.seanceSelectionne}"
+								value="#{ligne}" />
+					<h:graphicImage library="images/icones" name="loupe-icone.png"
+								styleClass="iconInText"
+								 title="Voir le détail de la séance" />
+				
+					
+					</cr:lien>
+				
+				
 								</h:panelGroup>
                     
                   </h:panelGrid>
@@ -349,7 +379,7 @@
         bean="#{printSequence}"
         cible="refreshList"
         render="listingSequences"
-        status="statusPopup" 
+        status="statuspop" 
     />
   </cr:page>
   <cr:popupEnseignant  render="outilRecherche listingSequences" />
@@ -410,7 +440,7 @@
       </h:panelGrid>
     </a4j:outputPanel>
   </cr:popupModifiable>
-  <cr:popupStatus idStatus="statuspop" />
+  
   
    
    <cr:popupConfirmSauvegardeModification action=""
@@ -427,7 +457,7 @@
   <cr:popupPiecesJointes 
     idPopup="idPopupPiecesJointes" tailleAuto="true"
     largeurPopup="660" titrePopup="Pièces jointes"
-    statusPopup="statuspopup" 
+    statusPopup="statuspop" 
     raffraichirTabAfterUpload="#{ajoutSeance.form.raffraichirTabAfterUpload}" />
   
   <ui:remove> puis la popup d'édition des seances:</ui:remove>
@@ -436,12 +466,11 @@
                       largeurPopup="800"
                       maxlength="50"
                       popupUseRichEditor="true"
-                      statusPopup="statusPopup"
+                      statusPopup="statuspop"
                       titrePopup="Détail de la séance"
-                      
                       >
 
-    <a4j:outputPanel id="idPopupConsulterSeanceRegion">
+    
     <cr:menuAction surcharge="false">
       <cr:elemMenuAction bean="#{printSeance}"
                          cible="chargerSeance"
@@ -493,11 +522,12 @@
             />
                            
     </cr:menuAction>
+    <a4j:outputPanel id="idPopupConsulterSeanceRegion">
     <cr:liena4j bean="#{ajoutSeance}"
                 cible="changeDateSeance"
                 idliena4j="idLienChangeDate"
                 render="richTabPanel"
-                status="statusPopup"
+                status="statuspop"
                 titre=""></cr:liena4j>
     <rich:tabPanel id="richTabPanel"
                    selectedTab="seance"
@@ -570,4 +600,7 @@
     </rich:tabPanel>
     </a4j:outputPanel>
   </cr:popupModifiable>
+  
+  <cr:popupStatus idStatus="statuspop" />
+  
 </html>
