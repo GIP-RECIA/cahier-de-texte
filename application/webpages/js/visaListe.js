@@ -20,7 +20,7 @@ function chargerAgenda() {
         }
 //        var longDate = parseInt(stringDate);
         var startDate = new Date(stringDate);
-        console.log("stringDate = "+ stringDate + "START DATE = " + startDate + );
+        console.log("stringDate = "+ stringDate + "START DATE = " + startDate );
         
         // Recupere et parse la liste des elements a afficher dans l'agenda
         var agendaJSON = jQuery('#agendaJSON').val();

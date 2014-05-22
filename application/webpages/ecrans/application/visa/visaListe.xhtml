@@ -284,7 +284,7 @@
                 </td>
                 <td style="width:50px; border-bottom-style:hidden; border-right-style:hidden; background-color: #FFFFFF;">&nbsp;</td>
             </tr>
-            <tr style="#{enseignantVisa.vraiOuFauxCollapse ? 'display: none;' : 'padding-right: 30px;'}'" >
+            <tr style="#{enseignantVisa.vraiOuFauxCollapse ? 'display: none;' : 'padding-right: 30px;'}" >
                 <td colspan="9" style="padding-left:30px;">
                     <h:outputText value="Aucun cahier de texte pour cet enseignant" rendered="#{not enseignantVisa.vraiOuFauxCollapse and empty enseignantVisa.listeVisa}" />
                     <t:div rendered="#{not enseignantVisa.vraiOuFauxCollapse and not empty enseignantVisa.listeVisa}">

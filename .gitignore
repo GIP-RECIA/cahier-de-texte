@@ -30,9 +30,9 @@ crlr-commons/bin/
 # Properties files
 ###################
 build.properties
-application/properties/config.properties
-application/properties/droit.properties
-application/properties/log4j.properties
+application/properties/config.properties*
+application/properties/droit.properties*
+application/properties/log4j.properties*
 application/webpages/web.xml
 
 ###################
