@@ -21,6 +21,7 @@ crlr-commons/bin/
 .settings/
 
 
+
 ########################################
 # Files
 ########################################
@@ -39,6 +40,7 @@ application/webpages/web.xml
 ###################
 .classpath
 .project
+.checkstyle
 
 ###################
 # Log files

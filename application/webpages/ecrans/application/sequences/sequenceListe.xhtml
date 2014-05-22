@@ -181,40 +181,36 @@
                           
 				<h:panelGroup>
 				<t:div id="displayDuTampon" styleClass="divTampon" rendered="#{(not empty ligne.visaDirecteur or not empty ligne.visaInspecteur) and (not readOnly)}">
-                                    <cr:tamponVisa
-				                        dateVisaDirecteur="#{ligne.visaDirecteur.dateVisa}"
-				                        typeVisaDirecteur="#{ligne.visaDirecteur.typeVisa}"
-				                        dateVisaInspecteur="#{ligne.visaInspecteur.dateVisa}"
-				                        typeVisaInspecteur="#{ligne.visaInspecteur.typeVisa}"
-                                    />
-                   </t:div>
+                	<cr:tamponVisa
+	                      dateVisaDirecteur="#{ligne.visaDirecteur.dateVisa}"
+	                      typeVisaDirecteur="#{ligne.visaDirecteur.typeVisa}"
+	                      dateVisaInspecteur="#{ligne.visaInspecteur.dateVisa}"
+	                      typeVisaInspecteur="#{ligne.visaInspecteur.typeVisa}"
+                    />
+                </t:div>
                    <h:panelGrid columns="2" styleClass="intitule"
                                rendered="#{not empty ligne.intitule}">
                                
                     <h:outputLabel styleClass="libelle"
                                    value="Intitulé :" />
                     <h:outputText value="#{ligne.intitule}" /> 
-                    <h:outputLabel styleClass="libelle" value="Dernière modification :" />
-                    <h:panelGroup>
-                    	<h:outputText value="#{cr:formatDate(ligne.dateMaj, 'dd/MM/yyyy')}" 
-                    		styleClass="#{ligne.visaPerime ? 'fondRouge dateModif' : 'dateModif'}"
-                    	/>
-                    	
-                    	<h:graphicImage library="images/icones"
-                                name="lock.png"
-                                rendered="#{ligne.visaDirecteurMemo}"
-                                title="Visamémo Directeur" 
-                                styleClass="iconInText" />
-                        
-                        <h:graphicImage library="images/icones"
-                                name="lock.png"
-                                rendered="#{ligne.visaInspecteurMemo}"
-                                title="Visamémo Inspecteur" 
-                                styleClass="iconInText" />
-						<ui:remove>
+            	  	<h:outputLabel styleClass="libelle" value="Dernière modification :" />
+					<h:panelGroup>
+						<h:outputText
+							value="#{cr:formatDate(ligne.dateMaj, 'dd/MM/yyyy')}"
+							styleClass="#{ligne.visaPerime ? 'fondRouge dateModif' : 'dateModif'}" />
+
+						<h:graphicImage library="images/icones" name="lock.png"
+							rendered="#{ligne.visaDirecteurMemo}"
+							title="Visamémo Directeur" styleClass="iconInText" />
+
+						<h:graphicImage library="images/icones" name="lock.png"
+							rendered="#{ligne.visaInspecteurMemo}"
+							title="Visamémo Inspecteur" styleClass="iconInText" />
+
 						<h:commandLink action="#{printSeance.chargerSeance}"
 							id="idvisuseance"
-							onclick="console.log('onclick chargerSeance')" rendered="true"
+							onclick="console.log('onclick chargerSeance')"
 							style="white-space: normal; text-decoration: none;"
 							styleClass="#{myBackgroundClass} planningLien"
 							title="Séance\n #{seance.intitule}">
@@ -226,45 +222,15 @@
 								oneerror="handleErrorAjaxVS"
 								onevent="handleEventAfficherSeance"
 								render=":idPopupSeance_form :idPopupSeance_form:idPopupSeance_panel" />
-							<h:graphicImage library="images/icones" name="loupe-icone.png"
-								styleClass="iconInText"
-								 title="Voir le détail de la séance" />
+							<h:graphicImage library="images/icones"
+								name="loupe-icone.png" styleClass="iconInText"
+								title="Voir le détail de la séance" />
 						</h:commandLink>
-				</ui:remove>
-					<cr:lien id="ideditseance"	
-							desc="Séance\n #{seance.intitule}"
-							render=":idPopupSeance_form :idPopupSeance_form:idPopupSeance_panel" 
-					oncomplete="#{rich:component('idPopupSeance')}.show();
-							if (#{rich:element('richTabPanel')}) {
-                         #{rich:component('richTabPanel')}.switchToItem('tabSeance');
-                         }
-							"
-                    	bean="#{printSeance}"
-                    	cible="chargerSeance"
-                    	execute="@form"
-								oneerror="handleErrorAjaxVS"
-								onevent="handleEventAfficherSeance"
-                    	style="white-space: normal; text-decoration: none;"
-                    	styleClass="#{myBackgroundClass} planningLien"
-                    onclick="console.log('onclick chargerSeance')" 
-                    rendered="true"
-                    	modifiable="#{not readonly}"
-                    	
-					>
-						<f:setPropertyActionListener
-								target="#{printSeance.form.seanceSelectionne}"
-								value="#{ligne}" />
-					<h:graphicImage library="images/icones" name="loupe-icone.png"
-								styleClass="iconInText"
-								 title="Voir le détail de la séance" />
-				
-					
-					</cr:lien>
-				
-				
-								</h:panelGroup>
-                    
-                  </h:panelGrid>
+
+
+					</h:panelGroup>
+
+				</h:panelGrid>
                     <h:panelGrid columns="1"
                                  rendered="#{not empty ligne.descriptionHTML}">
                                  
@@ -379,7 +345,8 @@
         bean="#{printSequence}"
         cible="refreshList"
         render="listingSequences"
-        status="statuspop" 
+        status="statuspop"
+        immediate="true"
     />
   </cr:page>
   <cr:popupEnseignant  render="outilRecherche listingSequences" />

@@ -158,29 +158,23 @@
                     <h:outputLabel styleClass="libelle"
                                    value="Intitulé :" />
                     <h:outputText value="#{ligne.intitule}" /> 
-                    <h:outputLabel styleClass="libelle" value="Dernière modification :" />
-                    <h:panelGroup>
-                    	<h:outputText value="#{cr:formatDate(ligne.dateMaj, 'dd/MM/yyyy')}" 
-                    		styleClass="#{ligne.visaPerime ? 'fondRouge dateModif' : 'dateModif'}"
-                    	/>
-                    	
-                    	<h:graphicImage library="images/icones"
-                                name="lock.png"
-                                rendered="#{ligne.visaDirecteurMemo}"
-                                title="Visamémo Directeur" 
-                                styleClass="iconInText" />
-                        
-                        <h:graphicImage library="images/icones"
-                                name="lock.png"
-                                rendered="#{ligne.visaInspecteurMemo}"
-                                title="Visamémo Inspecteur" 
-                                styleClass="iconInText" />
+                 	<h:outputLabel styleClass="libelle" value="Dernière modification :" />
+					<h:panelGroup>
+						<h:outputText
+							value="#{cr:formatDate(ligne.dateMaj, 'dd/MM/yyyy')}"
+							styleClass="#{ligne.visaPerime ? 'fondRouge dateModif' : 'dateModif'}" />
+
+						<h:graphicImage library="images/icones" name="lock.png"
+							rendered="#{ligne.visaDirecteurMemo}"
+							title="Visamémo Directeur" styleClass="iconInText" />
+
+						<h:graphicImage library="images/icones" name="lock.png"
+							rendered="#{ligne.visaInspecteurMemo}"
+							title="Visamémo Inspecteur" styleClass="iconInText" />
 
 						<h:commandLink action="#{printSeance.chargerSeance}"
-							id="idvisuseance"
-							 immediate="true"
-								onclick="#{_js} console.log('onclick chargerSeance'); #{confirmation} desactiveClick(this.id, this.onclick);"
-							
+							id="idvisuseance" immediate="true"
+							onclick="#{_js} console.log('onclick chargerSeance'); #{confirmation} desactiveClick(this.id, this.onclick);"
 							style="white-space: normal; text-decoration: none;"
 							styleClass="#{myBackgroundClass} planningLien"
 							title="Séance\n #{seance.intitule}">
@@ -192,36 +186,14 @@
 								oneerror="handleErrorAjaxVS"
 								onevent="handleEventAfficherSeance"
 								render=":idPopupSeance_form :idPopupSeance_form:idPopupSeance_panel " />
-					
-							<h:graphicImage library="images/icones" name="loupe-icone.png"
-								styleClass="iconInText"
-								rendered="true" title="Voir le détail de la séance" />
-						</h:commandLink>
-						
-						<ui:remove>
-						<t:commandLink action="#{printSeance.chargerSeance}"
-															
-						>
-							<f:setPropertyActionListener
-								target="#{printSeance.form.seanceSelectionne}"
-								value="#{ligne}" />
-							<f:ajax event="action" 
-							onevent="handleEventAfficherSeance"
-							
-							render=":idPopupSeance_form :idPopupSeance_form:idPopupSeance_panel " />
-						<h:graphicImage library="images/icones" name="loupe-icone.png"
-								styleClass="iconInText"
-								
-								rendered="true" title="Voir le détail de la séance" />	
-						</t:commandLink>
-                       
-                       </ui:remove>
 
-				
-			  	
-								</h:panelGroup>
-                    
-                  </h:panelGrid>
+							<h:graphicImage library="images/icones" name="loupe-icone.png"
+								styleClass="iconInText" rendered="true"
+								title="Voir le détail de la séance" />
+						</h:commandLink>
+					</h:panelGroup>
+
+				</h:panelGrid>
                    
               <h:panelGrid columns="1" 
                            rendered="#{not empty ligne.descriptionHTML}">
