@@ -1817,7 +1817,11 @@ throw new MetierException(conteneurMessage,
      * {@inheritDoc}
      */
     public ResultatDTO<List<PrintSequenceDTO>> findListeSequencesEdition(PrintSeanceOuSequenceQO rechercheSeancePrintQO) throws MetierException {
-        ConteneurMessage conteneurMessage = findListeEditionVerification(rechercheSeancePrintQO);
+        
+    	
+    	initSchemaInterceptor(rechercheSeancePrintQO);
+    	
+    	ConteneurMessage conteneurMessage = findListeEditionVerification(rechercheSeancePrintQO);
         
         //On recherche toutes les séances qui correspondent aux critères pour l'édition.
         final ResultatDTO<List<PrintSequenceDTO>> resultatDTO =
@@ -1840,18 +1844,30 @@ throw new MetierException(conteneurMessage,
         
         return resultatDTO;
     }
-    /**
-     * {@inheritDoc}
+    
+    /** 
+     * si la requette porte sur les archives  
+     * on change le schema base de donnée pour toute les requettes de la transaction.
+     * 
+     * @param rechercheSeancePrintQO
      */
-    public ResultatDTO<List<PrintSeanceDTO>> findListeSeanceEdition(PrintSeanceOuSequenceQO rechercheSeancePrintQO)
-        throws MetierException {
-        
+    private void initSchemaInterceptor(PrintSeanceOuSequenceQO rechercheSeancePrintQO){
     	boolean  isArchive  = rechercheSeancePrintQO.isInArchive();
     	if (isArchive) {
     		String exercice = rechercheSeancePrintQO.getAnneeScolaireDTO().getExercice();
     		final String schema = SchemaUtils.getSchemaCourantOuArchive(isArchive, exercice);
     		SchemaInterceptorImpl.setSchema(schema);
     	}
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public ResultatDTO<List<PrintSeanceDTO>> findListeSeanceEdition(PrintSeanceOuSequenceQO rechercheSeancePrintQO)
+        throws MetierException {
+        
+    		
+    	initSchemaInterceptor(rechercheSeancePrintQO);
     	
         ConteneurMessage conteneurMessage = findListeEditionVerification(rechercheSeancePrintQO);
         

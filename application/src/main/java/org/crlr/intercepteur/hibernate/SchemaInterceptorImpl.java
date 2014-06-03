@@ -1,11 +1,11 @@
 package org.crlr.intercepteur.hibernate;
 
-import java.util.regex.Pattern;
 
-import org.apache.oro.text.PatternCacheFIFO;
+
 import org.crlr.metier.utils.SchemaUtils;
 import org.hibernate.EmptyInterceptor;
 import org.hibernate.Interceptor;
+import org.hibernate.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,8 +51,14 @@ public class SchemaInterceptorImpl extends EmptyInterceptor implements
 		}
 		String newSql = sql.replaceAll(REGEX, schema);
 
-		log.debug("réecriture requette: [{}]" , newSql);
+		//log.debug("réecriture requette: [{}]" , newSql);
 		return newSql;
+	}
+
+	@Override
+	public void afterTransactionCompletion(Transaction tx) {
+		super.afterTransactionBegin(tx);
+		SCHEMA.set(null);
 	}
 	
 	

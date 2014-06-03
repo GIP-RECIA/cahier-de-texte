@@ -18,8 +18,10 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 
 import org.crlr.dto.ResultatDTO;
+import org.crlr.dto.application.base.ArchiveEnseignantDTO;
 import org.crlr.dto.application.base.GroupeDTO;
 import org.crlr.dto.application.base.GroupesClassesDTO;
+import org.crlr.dto.application.base.Profil;
 import org.crlr.dto.application.base.UtilisateurDTO;
 import org.crlr.dto.application.devoir.DevoirCompar;
 import org.crlr.dto.application.devoir.DevoirDTO;
@@ -29,6 +31,7 @@ import org.crlr.dto.application.sequence.PrintSequenceDTO;
 import org.crlr.exception.metier.MetierException;
 import org.crlr.web.application.control.AbstractPrintControl;
 import org.crlr.web.application.form.sequence.SequencePrintForm;
+import org.crlr.web.contexte.ContexteUtilisateur;
 import org.crlr.web.contexte.utils.ContexteUtils;
 import org.crlr.web.utils.ReportUtils;
 import org.springframework.util.CollectionUtils;
@@ -179,14 +182,33 @@ public class SequencePrintControl extends
      * Rechercher des seance avec le detail.
      */
     public void rechercher(){
-
-        final UtilisateurDTO utilisateurDTO = ContexteUtils.getContexteUtilisateur().getUtilisateurDTO();
+    	
+    	final ContexteUtilisateur ctx = ContexteUtils.getContexteUtilisateur();
+        final UtilisateurDTO utilisateurDTO = ctx.getUtilisateurDTO();
         final PrintSeanceOuSequenceQO rechercheSeancePrintQO = new PrintSeanceOuSequenceQO();
         
-        rechercheSeancePrintQO.setAnneeScolaireDTO(utilisateurDTO.getAnneeScolaireDTO());
-        rechercheSeancePrintQO.setIdUtilisateur(utilisateurDTO.getUserDTO().getIdentifiant());
-        rechercheSeancePrintQO.setProfil(utilisateurDTO.getProfil());
-        rechercheSeancePrintQO.setIdEtablissement(utilisateurDTO.getIdEtablissement());
+        final boolean isArchive = ctx.isOutilArchive();
+        final Profil profil = utilisateurDTO.getProfil();
+        final ArchiveEnseignantDTO archive = getArchiveEnseignantDTO();
+
+        rechercheSeancePrintQO.setProfil(profil);
+        
+        if (isArchive && profil == Profil.ENSEIGNANT && archive != null) {
+        		rechercheSeancePrintQO.setInArchive(true);
+        		rechercheSeancePrintQO.setAnneeScolaireDTO(archive.getAnneeScolaire());
+        		rechercheSeancePrintQO.setIdUtilisateur(archive.getIdEnseigantSelected());
+                rechercheSeancePrintQO.setIdEtablissement(archive.getIdEtablissementSelected());
+                
+        } else {
+        	rechercheSeancePrintQO.setAnneeScolaireDTO(utilisateurDTO.getAnneeScolaireDTO());
+            rechercheSeancePrintQO.setIdUtilisateur(utilisateurDTO.getUserDTO().getIdentifiant());
+            rechercheSeancePrintQO.setIdEtablissement(utilisateurDTO.getIdEtablissement());
+        }
+        
+       
+        
+        
+        
         rechercheSeancePrintQO.setDateCourante(form.getDateCourante());
         
         rechercheSeancePrintQO.setDateDebut(form.getDateDebut());

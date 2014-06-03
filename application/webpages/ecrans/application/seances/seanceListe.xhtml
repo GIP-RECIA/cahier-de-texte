@@ -68,10 +68,15 @@
                    oncomplete="handleResize();"
                    render="listingSeances, openToutIcone, devoirSeance"
                    styleClass="boutonResize" />
-          
-          <h:outputText value="Détail/PDF des séances par classe" />
+
+
+          <h:outputText value="#{contexteUtilisateur.outilArchive ? 'Historique des séances par classe' : 'Détail/PDF des séances par classe'}" />
+
+         
         </t:panelGroup>
       </f:facet>
+      <h:panelGrid 	class="table archive"  
+                   		columns="4" rendered="#{contexteUtilisateur.outilArchive}" >  
       <cr:saisieListe id="selectAnnee" titre="Année scolaire: "
 		               rendered="#{contexteUtilisateur.outilArchive}" 
 		               largeur="100" decalageTitreGauche="0" decalageTitreDroite="0" 
@@ -92,13 +97,12 @@
 	  					listener="#{printSeance['selectionnerEtablissement']}"
 	  					render="listingSeances, outilRecherche" />
 	  </cr:saisieListe>
-	  
+	  </h:panelGrid>
       <cr:selectClasseGroupe oncomplete="" 
       						rendered="#{printSeance.classGroupLoadable}"
                              render="listingSeances outilRecherche :idPopupEnseignant_form:idPopupEnseignantRegion" />
       
-      <h:outputText value="MODE ARCHIVE" rendered="#{contexteUtilisateur.outilArchive}" />
-      <h:outputText value="MODE TEST"  />
+      
       <h:panelGrid class="table"
                    columns="4">
         

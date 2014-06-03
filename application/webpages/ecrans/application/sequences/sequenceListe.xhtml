@@ -61,8 +61,33 @@
                     rendered="true"
                     sansImage="true"
                     titre="" />
-    <rich:panel header="Détail/PDF des séquences par classe"
+    <rich:panel header="#{contexteUtilisateur.outilArchive ? 'Historique des séquences par classe': 'Détail/PDF des séquences par classe'}"
                 id="outilRecherche">
+          <h:panelGrid 	class="table archive"  
+                   		columns="4" rendered="#{contexteUtilisateur.outilArchive}" >    
+		       <cr:saisieListe id="selectAnnee" titre="Année scolaire: "
+				               rendered="#{contexteUtilisateur.outilArchive}" 
+				               largeur="100" decalageTitreGauche="0" decalageTitreDroite="0" 
+				               valeur="#{printSequence.form.idAnneeScolaire}" 
+				               donnees="#{printSequence.form.listeAnneeScolaire}"
+				               proprieteLibelle="exercice" proprieteValeur="id">
+				               <a4j:ajax event="change" 
+				                   listener="#{printSequence['selectionnerAnneeScolaire']}" 
+				                   render="listingSeances, outilRecherche" />
+			  </cr:saisieListe>  
+			  
+			  <cr:saisieListe 	id="selectEtab" titre="Etablissement: "
+			  					rendered="#{contexteUtilisateur.outilArchive}" 
+			  					valeur="#{printSequence.form.idEtablissement}"
+			  					donnees="#{printSequence.form.listeEtablissement}"
+			  					proprieteLibelle="designation" proprieteValeur="id">
+			  					<a4j:ajax event="change" 
+			  					listener="#{printSequence['selectionnerEtablissement']}"
+			  					render="listingSeances, outilRecherche" />
+			  </cr:saisieListe>
+	  </h:panelGrid>
+      
+      
       <cr:selectClasseGroupe oncomplete=""
                              render="listingSequences outilRecherche :idPopupEnseignant_form:idPopupEnseignantRegion">
                              </cr:selectClasseGroupe>
@@ -213,7 +238,9 @@
 							onclick="console.log('onclick chargerSeance')"
 							style="white-space: normal; text-decoration: none;"
 							styleClass="#{myBackgroundClass} planningLien"
-							title="Séance\n #{seance.intitule}">
+							title="Séance\n #{seance.intitule}"
+							rendered="#{! contexteUtilisateur.outilArchive}"
+							>
 
 							<f:setPropertyActionListener
 								target="#{printSeance.form.seanceSelectionne}"
@@ -435,6 +462,8 @@
                       popupUseRichEditor="true"
                       statusPopup="statuspop"
                       titrePopup="Détail de la séance"
+                      rendered="#{! contexteUtilisateur.outilArchive}"
+                      
                       >
 
     
@@ -501,7 +530,9 @@
                    switchType="client">
       <rich:tab header="#{ajoutSeance.form.seanceTitre}"
                 id="SEANCE"
-                name="tabSeance">
+                name="tabSeance"
+                rendered="#{! contexteUtilisateur.outilArchive}">
+                >
         <t:div style="height:450px; overflow:auto;">
           <cr:saisieSeance 
           		seance="#{ajoutSeance.form.seance}"
@@ -535,7 +566,8 @@
       <ui:remove>L'onglet des travaux à faire</ui:remove>
       <rich:tab header="Travail à faire"
                 id="TAB_DEVOIR"
-                rendered="true">
+                rendered="#{! contexteUtilisateur.outilArchive}">
+
         <t:div id="idListeDesDevoirsSeance"
                styleClass="listeDesDevoirsSeance">
           <c:forEach items="#{ajoutSeance.form.seance.devoirs}"

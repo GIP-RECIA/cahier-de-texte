@@ -94,3 +94,11 @@ img.iconInText {
 	margin-top:0px;
 	margin-bottom: 0px;
 }
+
+.table.archive {
+	margin-top:1em;
+	margin-bottom:1em;
+}
+.table.archive label.libelle {
+	margin-left:2ex !important;
+}
