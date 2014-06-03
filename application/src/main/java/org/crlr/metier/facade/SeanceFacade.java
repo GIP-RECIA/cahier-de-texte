@@ -426,6 +426,8 @@ public class SeanceFacade implements SeanceFacadeService {
         //La séquence associée à la séance
             final SequenceAffichageQO sequenceAffichageQO = new SequenceAffichageQO();
             sequenceAffichageQO.setId(seanceDTO.getSequence().getId());
+            sequenceAffichageQO.setArchive(archive);
+            sequenceAffichageQO.setExercice(exercice);
             
             final SequenceDTO sequenceDTO =
                 sequenceHibernateBusinessService.findSequenceAffichage(sequenceAffichageQO);

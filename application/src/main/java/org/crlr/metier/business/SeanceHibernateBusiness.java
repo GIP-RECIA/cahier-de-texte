@@ -1246,7 +1246,7 @@ public class SeanceHibernateBusiness extends AbstractBusiness
 
         String nativeRequete = 
             "SELECT " +
-            "  sea.id,  " +
+            "  sea.id ,  " +
             "  sea.code, " +
             "  sea.intitule, " +
             "  sea.date, " +
@@ -1260,17 +1260,17 @@ public class SeanceHibernateBusiness extends AbstractBusiness
             "  sea.annotations, " +
             //"  sea.date_maj, " +
             
-            "  seq.id, " +
-            "  seq.code, " +
-            "  seq.intitule, " +
-            "  seq.description, " +
-            "  seq.date_debut, " +
-            "  seq.date_fin, " +
-            "  seq.id_enseignant, " +
-            "  seq.id_etablissement, " +
-            "  seq.id_enseignement, " +
-            "  seq.id_groupe, " +
-            "  seq.id_classe " +
+            "  seq.id  seq_id, " +
+            "  seq.code seq_code, " +
+            "  seq.intitule seq_intitule, " +
+            "  seq.description seq_description, " +
+            "  seq.date_debut seq_date_debut, " +
+            "  seq.date_fin seq_date_fin, " +
+            "  seq.id_enseignant seq_id_enseignant, " +
+            "  seq.id_etablissement seq_id_etablissement, " +
+            "  seq.id_enseignement seq_id_enseignement, " +
+            "  seq.id_groupe seq_id_groupe, " +
+            "  seq.id_classe seq_id_classe " +
             "FROM " + 
                 SchemaUtils.getTableAvecSchema(schema, "cahier_seance") + " sea " +
                 "inner join " + SchemaUtils.getTableAvecSchema(schema, "cahier_sequence") + " seq on (sea.id_sequence = seq.id) " +
@@ -1280,9 +1280,10 @@ public class SeanceHibernateBusiness extends AbstractBusiness
             final Query query = getEntityManager().createNativeQuery(nativeRequete);
             query.setParameter(1, consulterSeanceQO.getId());
             resultatQuery.addAll(query.getResultList());
+            log.debug("id seance = {} ", consulterSeanceQO.getId());
             
         for (final Object[] result : resultatQuery) {
-            
+        	log.debug("9 &  12  , 18 = {} {} {} ", result[9], result[12], result[18]);
             seanceDTO.setId((Integer) result[0]);
             seanceDTO.setCode((String) result[1]);
             seanceDTO.setIntitule((String) result[2]);

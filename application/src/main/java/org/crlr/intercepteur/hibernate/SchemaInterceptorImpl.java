@@ -6,6 +6,8 @@ import org.apache.oro.text.PatternCacheFIFO;
 import org.crlr.metier.utils.SchemaUtils;
 import org.hibernate.EmptyInterceptor;
 import org.hibernate.Interceptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SchemaInterceptorImpl extends EmptyInterceptor implements
 		Interceptor {
@@ -17,7 +19,7 @@ public class SchemaInterceptorImpl extends EmptyInterceptor implements
 	
 	final static private ThreadLocal<String>  SCHEMA = new ThreadLocal<String>();
 
-	
+	protected final Logger log = LoggerFactory.getLogger(SchemaInterceptorImpl.class);
 	
 	private final static String REGEX = "\"?" + SchemaUtils.getDefaultSchema() + "\"?" ; 
 	
@@ -49,7 +51,7 @@ public class SchemaInterceptorImpl extends EmptyInterceptor implements
 		}
 		String newSql = sql.replaceAll(REGEX, schema);
 
-		
+		log.debug("réecriture requette: [{}]" , newSql);
 		return newSql;
 	}
 	

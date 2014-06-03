@@ -469,8 +469,8 @@ implements ClasseGroupeListener, EnseignementListener {
     }
     
     /**
-     * Voir le detail d'un devoir.
-     * Charge le devoir grace a son id.
+     * Voir le detail d'une séance
+     * Charge la séance grace a son id.
      */
     public void naviguerDetailSeance() {
         final Integer idSeance = form.getSelectSeance().getIdSeance();
