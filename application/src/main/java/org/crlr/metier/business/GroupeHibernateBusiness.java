@@ -18,6 +18,7 @@ import javax.persistence.Query;
 import org.apache.commons.lang.StringUtils;
 import org.crlr.alimentation.DTO.EnseignantDTO;
 import org.crlr.dto.ResultatDTO;
+import org.crlr.dto.application.base.AnneeScolaireDTO;
 import org.crlr.dto.application.base.EnseignantsClasseGroupeQO;
 import org.crlr.dto.application.base.GroupeDTO;
 import org.crlr.dto.application.base.GroupesClassesDTO;
@@ -94,11 +95,22 @@ public class GroupeHibernateBusiness extends AbstractBusiness
         final Integer idInspecteur = rechercheGroupeClassePopupQO.getIdInspecteur();
         final Integer idEnseignant = rechercheGroupeClassePopupQO.getIdEnseignant();
         final Integer idEtablissement = rechercheGroupeClassePopupQO.getIdEtablissement();
-        final Integer idAnneeScolaire = rechercheGroupeClassePopupQO.getIdAnneeScolaire();
+         Integer idAnneeScolaire = rechercheGroupeClassePopupQO.getIdAnneeScolaire();
 
+        final String exercice = rechercheGroupeClassePopupQO.getExerciceScolaire();
+        boolean inArchive = false;
+        
+        
+        
         final String schema = 
             SchemaUtils.getSchemaCourantOuArchive(rechercheGroupeClassePopupQO.getArchive(), 
-                    rechercheGroupeClassePopupQO.getExerciceScolaire());        
+                    exercice);        
+        
+        if (!StringUtils.isBlank(exercice)) {
+        	idAnneeScolaire = AnneeScolaireDTO.id(exercice);
+        	inArchive = true;
+        }
+        
         
         String requete = "";
         

@@ -70,7 +70,7 @@ public class ServiceMessageInterceptor {
             redirectUnknowException(e);
             throw e;
         } finally {
-            log.debug("Traitement des méssages et exceptions de la couche métier terminé.");
+            log.debug("Traitement des messages et exceptions de la couche métier terminé.");
         }
 
         return result;

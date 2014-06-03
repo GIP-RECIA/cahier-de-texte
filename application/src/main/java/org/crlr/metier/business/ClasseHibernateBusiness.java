@@ -18,6 +18,7 @@ import javax.persistence.Query;
 import org.apache.commons.lang.StringUtils;
 import org.crlr.alimentation.DTO.EnseignantDTO;
 import org.crlr.dto.ResultatDTO;
+import org.crlr.dto.application.base.AnneeScolaireDTO;
 import org.crlr.dto.application.base.EnseignantsClasseGroupeQO;
 import org.crlr.dto.application.base.GroupesClassesDTO;
 import org.crlr.dto.application.base.RechercheGroupeClassePopupQO;
@@ -32,6 +33,7 @@ import org.crlr.metier.entity.EnseignantsEnseignementsBean;
 import org.crlr.metier.entity.OuvertureInspecteurBean;
 import org.crlr.metier.utils.SchemaUtils;
 import org.crlr.utils.Assert;
+import org.hibernate.Session;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 
@@ -92,12 +94,19 @@ public class ClasseHibernateBusiness extends AbstractBusiness
         final Integer idInspecteur = rechercheGroupeClassePopupQO.getIdInspecteur();
         final Integer idEnseignant = rechercheGroupeClassePopupQO.getIdEnseignant();
         final Integer idEtablissement = rechercheGroupeClassePopupQO.getIdEtablissement();
-        final Integer idAnneeScolaire = rechercheGroupeClassePopupQO.getIdAnneeScolaire();
-
+         Integer idAnneeScolaire = rechercheGroupeClassePopupQO.getIdAnneeScolaire();
+        final String exercice = rechercheGroupeClassePopupQO.getExerciceScolaire();
+        boolean inArchive = false;
+        
         final String schema =
             SchemaUtils.getSchemaCourantOuArchive(rechercheGroupeClassePopupQO.getArchive(),
-                                                  rechercheGroupeClassePopupQO.getExerciceScolaire());
-
+                                                  exercice);
+        
+        if (!StringUtils.isBlank(exercice)) {
+        	idAnneeScolaire = AnneeScolaireDTO.id(exercice);
+        	inArchive = true;
+        }
+        
         String requete = "";
         if (idInspecteur != null) {
             requete = "SELECT DISTINCT C.id, C.code, C.designation " + " FROM " +
@@ -116,6 +125,7 @@ public class ClasseHibernateBusiness extends AbstractBusiness
             requete +=" EC.id_enseignant = OUV.id_enseignant " + 
                       " ORDER BY C.id ASC";
         } else if (idEnseignant != null) {
+        	
             requete = "SELECT DISTINCT C.id, C.code, C.designation " + " FROM " +
                       SchemaUtils.getTableAvecSchema(schema, "cahier_enseignant_classe") +
                       " EC INNER JOIN " +
@@ -123,6 +133,7 @@ public class ClasseHibernateBusiness extends AbstractBusiness
                       " C ON (C.id = EC.id_classe)" + " WHERE " +
                       " C.id_etablissement =? AND " + " C.id_annee_scolaire =? AND " +
                       " EC.id_enseignant =? " + " ORDER BY C.id ASC";
+        	
         } else {
             requete = "SELECT DISTINCT C.id, C.code, C.designation " + " FROM " +
                       SchemaUtils.getTableAvecSchema(schema, "cahier_classe") + " C " +
@@ -252,7 +263,8 @@ public class ClasseHibernateBusiness extends AbstractBusiness
         boolean verif = false;
 
         final String schema = SchemaUtils.getSchemaCourantOuArchive(archive, exercice);
-
+        Session o = (Session) getEntityManager().getDelegate() ;
+        String className = o.getClass().getCanonicalName();
         final String query =
             "SELECT 1 FROM " +
             SchemaUtils.getTableAvecSchema(schema, "cahier_enseignant_classe") + " EC " +

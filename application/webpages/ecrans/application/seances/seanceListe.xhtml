@@ -68,20 +68,40 @@
                    oncomplete="handleResize();"
                    render="listingSeances, openToutIcone, devoirSeance"
                    styleClass="boutonResize" />
-          <cr:lien bean="#{printSeance}"
-                   cible=""
-                   id="tesIcon"
-                   image="loupe-icone.png"
-                   oncomplete="#{rich:component('idPopupTest')}.show();"
-                
-                   styleClass="boutonResize" />
+          
           <h:outputText value="Détail/PDF des séances par classe" />
         </t:panelGroup>
       </f:facet>
-      <cr:selectClasseGroupe oncomplete=""
+      <cr:saisieListe id="selectAnnee" titre="Année scolaire: "
+		               rendered="#{contexteUtilisateur.outilArchive}" 
+		               largeur="100" decalageTitreGauche="0" decalageTitreDroite="0" 
+		               valeur="#{printSeance.form.idAnneeScolaire}" 
+		               donnees="#{printSeance.form.listeAnneeScolaire}"
+		               proprieteLibelle="exercice" proprieteValeur="id">
+		               <a4j:ajax event="change" 
+		                   listener="#{printSeance['selectionnerAnneeScolaire']}" 
+		                   render="listingSeances, outilRecherche" />
+	  </cr:saisieListe>  
+	  
+	  <cr:saisieListe 	id="selectEtab" titre="Etablissement: "
+	  					rendered="#{contexteUtilisateur.outilArchive}" 
+	  					valeur="#{printSeance.form.idEtablissement}"
+	  					donnees="#{printSeance.form.listeEtablissement}"
+	  					proprieteLibelle="designation" proprieteValeur="id">
+	  					<a4j:ajax event="change" 
+	  					listener="#{printSeance['selectionnerEtablissement']}"
+	  					render="listingSeances, outilRecherche" />
+	  </cr:saisieListe>
+	  
+      <cr:selectClasseGroupe oncomplete="" 
+      						rendered="#{printSeance.classGroupLoadable}"
                              render="listingSeances outilRecherche :idPopupEnseignant_form:idPopupEnseignantRegion" />
+      
+      <h:outputText value="MODE ARCHIVE" rendered="#{contexteUtilisateur.outilArchive}" />
+      <h:outputText value="MODE TEST"  />
       <h:panelGrid class="table"
                    columns="4">
+        
         <cr:saisieDate decalageTitreDroite="5"
                        decalageTitreGauche="14"
                        id="datedu"
@@ -97,7 +117,7 @@
       </h:panelGrid>
       <cr:selectEnseignement bean="#{printSeance}" render="listingSeances :idPopupEnseignant_form:idPopupEnseignantRegion outilRecherche">
       </cr:selectEnseignement>
-      <cr:selectEnseignant bean="#{printSeance}" render="listingSeances outilRecherche">
+      <cr:selectEnseignant bean="#{printSeance}" render="listingSeances outilRecherche" toujoursVisible="false" >
       </cr:selectEnseignant>
     </rich:panel>
     <cr:saisieDate rendered="false" id="saisieDateInvisible" valeur="" titre="Date bidon qui permet de faire marcher dans le composant cr:saisieSeance les champs de saisie de date" />  
@@ -177,7 +197,9 @@
 							onclick="#{_js} console.log('onclick chargerSeance'); #{confirmation} desactiveClick(this.id, this.onclick);"
 							style="white-space: normal; text-decoration: none;"
 							styleClass="#{myBackgroundClass} planningLien"
-							title="Séance\n #{seance.intitule}">
+							title="Séance\n #{seance.intitule}"
+							rendered="#{! contexteUtilisateur.outilArchive}"
+							>
 
 							<f:setPropertyActionListener
 								target="#{printSeance.form.seanceSelectionne}"
@@ -420,7 +442,9 @@
     idPopup="idPopupPiecesJointes" tailleAuto="true"
     largeurPopup="660" titrePopup="Pièces jointes"
     statusPopup="statuspopup" 
-    raffraichirTabAfterUpload="#{ajoutSeance.form.raffraichirTabAfterUpload}" />
+    raffraichirTabAfterUpload="#{ajoutSeance.form.raffraichirTabAfterUpload}"
+    rendered="#{! contexteUtilisateur.outilArchive}"
+     />
   
   <cr:popupModifiable domElementAttachment="form"
                       idPopup="idPopupTest"
@@ -429,7 +453,7 @@
                       popupUseRichEditor="true"
                       statusPopup="statuspop"
                       titrePopup="Détail de la séance"
-                      
+                      rendered="#{! contexteUtilisateur.outilArchive}"
                       >
    </cr:popupModifiable>
   
@@ -442,7 +466,7 @@
                       popupUseRichEditor="true"
                       statusPopup="statuspop"
                       titrePopup="Détail de la séance"
-                      
+                      rendered="#{! contexteUtilisateur.outilArchive}"
                       >
 
     <a4j:outputPanel id="idPopupConsulterSeanceRegion">
@@ -506,13 +530,15 @@
                 idliena4j="idLienChangeDate"
                 render="richTabPanel"
                 status="statusPopup"
-                titre=""></cr:liena4j>
+                titre="">
+    </cr:liena4j>
     <rich:tabPanel id="richTabPanel"
                    selectedTab="seance"
                    switchType="client">
       <rich:tab header="#{ajoutSeance.form.seanceTitre}"
                 id="SEANCE"
-                name="tabSeance">
+                name="tabSeance"
+                rendered="#{! contexteUtilisateur.outilArchive}">
         <t:div style="height:450px; overflow:auto;">
           <cr:saisieSeance 
           		seance="#{ajoutSeance.form.seance}"
@@ -546,7 +572,7 @@
       <ui:remove>L'onglet des travaux à faire</ui:remove>
       <rich:tab header="Travail à faire"
                 id="TAB_DEVOIR"
-                rendered="true">
+                rendered="#{! contexteUtilisateur.outilArchive}">
         <t:div id="idListeDesDevoirsSeance"
                styleClass="listeDesDevoirsSeance">
           <c:forEach items="#{ajoutSeance.form.seance.devoirs}"

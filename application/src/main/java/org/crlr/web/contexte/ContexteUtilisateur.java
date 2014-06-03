@@ -293,6 +293,14 @@ public class ContexteUtilisateur implements Serializable {
     }
 
     /**
+     * test si l'outil en cours est du type archive
+     * @return
+     */
+    public boolean isOutilArchive() {
+    	if (outil == null) return false;
+    	return outil.isArchive();
+    }
+    /**
      * Accesseur uidLdapCas.
      * @return the uidLdapCas
      */

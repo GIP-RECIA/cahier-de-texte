@@ -29,6 +29,7 @@ import org.crlr.services.EtablissementService;
 import org.crlr.services.GroupeClasseService;
 import org.crlr.utils.ObjectUtils;
 import org.crlr.web.application.form.ClasseGroupeForm;
+import org.crlr.web.contexte.ContexteUtilisateur;
 import org.crlr.web.contexte.utils.ContexteUtils;
 
 /**
@@ -90,9 +91,8 @@ public class ClasseGroupeControl extends AbstractControl<ClasseGroupeForm> {
      */
     @PostConstruct
     public void onLoad() {
-
-        final UtilisateurDTO utilisateurDTO =
-            ContexteUtils.getContexteUtilisateur().getUtilisateurDTO();
+    	final ContexteUtilisateur ctxUser = ContexteUtils.getContexteUtilisateur();
+        final UtilisateurDTO utilisateurDTO = ctxUser.getUtilisateurDTO();
             
         
         form.setProfil(utilisateurDTO.getProfil());
@@ -112,7 +112,10 @@ public class ClasseGroupeControl extends AbstractControl<ClasseGroupeForm> {
             form.setListeGroupe(groupes);  
         } else {
             //Sinon, simuler un clique de type pour chercher les choix
-            classeGroupeTypeSelectionne(null);
+        	// sauf en mode archive ou il faut selectioner une annee
+        	if (! ctxUser.isOutilArchive()) {
+        		classeGroupeTypeSelectionne(null);
+        	}
         }
     }
 
@@ -123,11 +126,12 @@ public class ClasseGroupeControl extends AbstractControl<ClasseGroupeForm> {
      * @param exercice exercice 
      * @return l'id 
      */
-    private Integer getIdEtablissementArchive(Boolean archive, String exercice) {
+    private Integer getIdEtablissementArchive(Boolean archive, String exercice, Integer idEtablissement) {
         final UtilisateurDTO utilisateurDTO = ContexteUtils.getContexteUtilisateur().getUtilisateurDTO();
         if (archive==null || !archive || exercice==null) {
             return utilisateurDTO.getIdEtablissement();
         }
+        if (idEtablissement != null) return idEtablissement;
         return etablissementService.findIdEtablissementParCode(utilisateurDTO.getSirenEtablissement(), archive, exercice);
     }
     
@@ -147,7 +151,7 @@ public class ClasseGroupeControl extends AbstractControl<ClasseGroupeForm> {
         rechercheGroupeClassePopupQO.setIdEnseignant(idEnseignant);
 
         // En mode archive, le id etablissement peut etre different
-        final Integer idEtablissement = getIdEtablissementArchive(form.getArchive(), form.getExercice());
+        final Integer idEtablissement = getIdEtablissementArchive(form.getArchive(), form.getExercice(), form.getIdEtablissementFiltre());
         rechercheGroupeClassePopupQO.setIdEtablissement(idEtablissement);
         
         return rechercheGroupeClassePopupQO;

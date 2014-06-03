@@ -82,6 +82,8 @@ public class PrintSeanceOuSequenceQO implements Serializable {
 
     /** id de l'enseignant sélectionné. */
     private EnseignantDTO enseignant;
+    
+    private boolean inArchive;
 
     
     
@@ -330,5 +332,17 @@ public class PrintSeanceOuSequenceQO implements Serializable {
 
 	public void setIsPrintSeance(Boolean isPrintSeance) {
 		this.isPrintSeance = isPrintSeance;
+	}
+
+
+
+	public boolean isInArchive() {
+		return inArchive;
+	}
+
+
+
+	public void setInArchive(boolean inArchive) {
+		this.inArchive = inArchive;
 	}   
 }

@@ -2734,7 +2734,7 @@ public class SeanceHibernateBusiness extends AbstractBusiness
             query1.setParameter("idEtablissement",
                     rechercheSeancePrintQO.getIdEtablissement());
         }
-
+        
         return query1;
     }
     
@@ -2908,6 +2908,8 @@ public class SeanceHibernateBusiness extends AbstractBusiness
         }
         final List<Map<String, ?>> resultatQuery = new ArrayList<Map<String, ?>>();
 
+       
+        
         if (vraiOufauxClasse) {
             final Query query1 = findListeSeanceEditionHelperClass(
                     rechercheSeancePrintQO.getGroupeClasseSelectionne().getId(),

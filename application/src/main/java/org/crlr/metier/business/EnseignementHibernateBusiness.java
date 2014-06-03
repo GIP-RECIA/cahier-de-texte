@@ -446,7 +446,7 @@ public class EnseignementHibernateBusiness extends AbstractBusiness
                 "SELECT distinct E.id as id, E.code as code, E.designation as designation" +
                 " FROM " + 
                 SchemaUtils.getTableAvecSchema(schema, "cahier_enseignant_enseignement") + " EE "+
-                " INNER JOIN " + SchemaUtils.getTableAvecSchema(schema, "cahier_enseignement") + " E on (EE.id_enseignement = E.id), " +
+                " INNER JOIN " + SchemaUtils.getTableAvecSchema(schema, "cahier_enseignement") + " E on (EE.id_enseignement = E.id) " +
                 " WHERE EE.id_Enseignant = " + idEnseignant + " AND EE.id_Etablissement = " + idEtablissement + 
                 " ORDER BY E.id ASC";
             

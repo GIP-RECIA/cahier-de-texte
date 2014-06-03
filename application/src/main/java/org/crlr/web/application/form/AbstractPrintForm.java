@@ -6,8 +6,10 @@
 package org.crlr.web.application.form;
 
 import java.util.Date;
+import java.util.List;
 
 import org.crlr.dto.application.base.AnneeScolaireDTO;
+import org.crlr.dto.application.base.EtablissementDTO;
 import org.crlr.dto.application.base.Profil;
 import org.crlr.dto.application.base.TypeAffichage;
 import org.crlr.report.Report;
@@ -56,6 +58,17 @@ public abstract class AbstractPrintForm extends AbstractPopupForm {
     /** avec saut de page. */
     private Boolean vraiOuFauxSautPage;
     
+    
+    /** liste des années scolaires. */
+    private List<AnneeScolaireDTO> listeAnneeScolaire; 
+    
+    /** Id de l'annee scolaire selectionnee dans la liste des archives. */
+    private Integer idAnneeScolaire;
+    
+    /** id de l'etablissement pour les archives */
+    private Integer idEtablissement;
+    
+    private List<EtablissementDTO> listeEtablissement;
     /**
      * reset.
      */
@@ -216,5 +229,94 @@ public abstract class AbstractPrintForm extends AbstractPopupForm {
     public void setReport(Report report) {
         this.report = report;
     }
-    
+
+
+
+
+
+
+	public List<AnneeScolaireDTO> getListeAnneeScolaire() {
+		return listeAnneeScolaire;
+	}
+
+
+
+
+
+
+	public void setListeAnneeScolaire(List<AnneeScolaireDTO> listeAnneeScolaire) {
+		this.listeAnneeScolaire = listeAnneeScolaire;
+	}
+
+
+
+
+
+
+	public Integer getIdAnneeScolaire() {
+		return idAnneeScolaire;
+	}
+
+
+
+
+
+
+	public void setIdAnneeScolaire(Integer idAnneeScolaire) {
+		this.idAnneeScolaire = idAnneeScolaire;
+	}
+	
+	 /**
+     * Retourne l'exercice correspondant à l'ID annee scolaire selectionnee.
+     * @return exercice
+     */
+    public String getExercice() {
+        if (this.idAnneeScolaire == null) {
+            return null;
+        }
+        for (final AnneeScolaireDTO annee : listeAnneeScolaire) {
+            if (annee.getId().equals(idAnneeScolaire)) {
+                return annee.getExercice();
+            }
+        }
+        return null;
+    }
+
+
+
+
+
+
+	public Integer getIdEtablissement() {
+		return idEtablissement;
+	}
+
+
+
+
+
+
+	public void setIdEtablissement(Integer idEtablissement) {
+		this.idEtablissement = idEtablissement;
+	}
+
+
+
+
+
+
+	public List<EtablissementDTO> getListeEtablissement() {
+		return listeEtablissement;
+	}
+
+
+
+
+
+
+	public void setListeEtablissement(List<EtablissementDTO> listeEtablissement) {
+		this.listeEtablissement = listeEtablissement;
+	}
+
+
 }

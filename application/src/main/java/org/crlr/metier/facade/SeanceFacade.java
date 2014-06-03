@@ -48,6 +48,7 @@ import org.crlr.dto.application.sequence.PrintSequenceDTO;
 import org.crlr.dto.application.sequence.SequenceAffichageQO;
 import org.crlr.dto.application.sequence.TypeReglesSequence;
 import org.crlr.exception.metier.MetierException;
+import org.crlr.intercepteur.hibernate.SchemaInterceptorImpl;
 import org.crlr.message.ConteneurMessage;
 import org.crlr.message.Message;
 import org.crlr.message.Message.Nature;
@@ -66,6 +67,7 @@ import org.crlr.metier.entity.ClasseBean;
 import org.crlr.metier.entity.EnseignementBean;
 import org.crlr.metier.entity.GroupeBean;
 import org.crlr.metier.entity.SequenceBean;
+import org.crlr.metier.utils.SchemaUtils;
 import org.crlr.report.Report;
 import org.crlr.report.impl.PdfReportGenerator;
 import org.crlr.services.ImagesServlet;
@@ -1842,6 +1844,13 @@ throw new MetierException(conteneurMessage,
     public ResultatDTO<List<PrintSeanceDTO>> findListeSeanceEdition(PrintSeanceOuSequenceQO rechercheSeancePrintQO)
         throws MetierException {
         
+    	boolean  isArchive  = rechercheSeancePrintQO.isInArchive();
+    	if (isArchive) {
+    		String exercice = rechercheSeancePrintQO.getAnneeScolaireDTO().getExercice();
+    		final String schema = SchemaUtils.getSchemaCourantOuArchive(isArchive, exercice);
+    		SchemaInterceptorImpl.setSchema(schema);
+    	}
+    	
         ConteneurMessage conteneurMessage = findListeEditionVerification(rechercheSeancePrintQO);
         
         //On recherche toutes les séances qui correspondent aux critères pour l'édition.

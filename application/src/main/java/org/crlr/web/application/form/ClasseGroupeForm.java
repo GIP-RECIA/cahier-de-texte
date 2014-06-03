@@ -47,6 +47,12 @@ public class ClasseGroupeForm extends AbstractForm {
     private Integer idEnseignantFiltre; 
     
     /**
+     *  Filtre sur l'etablissement pour les recherches dans les archives des enseignants.
+     */
+    private Integer idEtablissementFiltre;
+    
+    
+    /**
      * Liste des groupes associé à une classe via cahier_groupe_classe.
      */
     private List<GroupeDTO> listeGroupe;
@@ -219,6 +225,14 @@ public class ClasseGroupeForm extends AbstractForm {
     public void setIdEnseignantFiltre(Integer idEnseignantFiltre) {
         this.idEnseignantFiltre = idEnseignantFiltre;
     }
+
+	public Integer getIdEtablissementFiltre() {
+		return idEtablissementFiltre;
+	}
+
+	public void setIdEtablissementFiltre(Integer idEtablissementFiltre) {
+		this.idEtablissementFiltre = idEtablissementFiltre;
+	}
     
     
 }

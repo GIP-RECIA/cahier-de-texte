@@ -225,6 +225,13 @@ public class MenuControl extends AbstractControl<AbstractForm> {
 
         Set<Profil> profilsDisponibles = utilisateurDTO.getProfilsDisponibles();
         
+        /* modif pl */
+        if (profilsDisponibles != null && profilsDisponibles.size() > 1) {
+        	this.listeAction.add(new MenuAction("changeRole.png",
+					Outil.CHANGE_PROFIL.name(),
+					"Changer de rôle utilisateur", null));
+        }
+        /*
 		if (!CollectionUtils.isEmpty(profilsDisponibles)
 				&& profilsDisponibles.size() > 1) {
 			profilsDisponibles.remove(utilisateurDTO.getProfil());
@@ -234,6 +241,7 @@ public class MenuControl extends AbstractControl<AbstractForm> {
 						"Changer de rôle utilisateur", null));
 			}
 		}
+		*/
     }
     
     /**
@@ -443,7 +451,14 @@ public class MenuControl extends AbstractControl<AbstractForm> {
             
             // 9. Gestion des remplacements
             this.listeAction.add(new MenuAction("changeEnseignant.png", Outil.REMPLACEMENT_ENSEIGNANT.name(), "Gestion des remplacements", null));
-        }
+            
+            // Archives
+       //     this.listeAction.add(new MenuAction("archive.png", Outil.CAHIER_ARCHIVE.name(), "Archives", null));  
+            listeSousMenu = new ArrayList<MenuAction>();
+            this.listeAction.add(new MenuAction("archive.png","", "Archives",listeSousMenu));
+            listeSousMenu.add(new MenuAction("cahierTexteEditionSeance.png", Outil.ARCHIVE_SEANCE.name(), "Séances par classe", null));
+            listeSousMenu.add(new MenuAction("cahierTexteEditionSequence.png", Outil.ARCHIVE_SEQUENCE.name(), "Séquences par classe",null));
+         }
     }
 
     /**

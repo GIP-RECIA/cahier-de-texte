@@ -10,6 +10,7 @@ package org.crlr.dto.application.base;
 import java.io.Serializable;
 
 import java.util.Date;
+import java.util.HashMap;
 
 /**
  * AnneeScolaireDTO.
@@ -21,6 +22,8 @@ public class AnneeScolaireDTO implements Serializable {
     /** Serial UID. */
     private static final long serialVersionUID = -6236127360926292999L;
 
+    static private HashMap<String, Integer> EXERCISE2ID = new HashMap<String, Integer>(); 
+    
     /** id. */
     private Integer id;
 
@@ -53,6 +56,10 @@ public class AnneeScolaireDTO implements Serializable {
         return id;
     }
 
+    static public Integer id(String exercise){
+    	return EXERCISE2ID.get(exercise);
+    }
+    
     /**
      * Mutateur.
      *
@@ -112,6 +119,9 @@ public class AnneeScolaireDTO implements Serializable {
      */
     public void setExercice(String exercice) {
         this.exercice = exercice;
+        if (exercice != null && id != null ) {
+        	EXERCISE2ID.put(exercice, id);
+        }
     }
 
     /**

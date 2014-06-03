@@ -273,7 +273,7 @@ public class AnneeScolaireHibernateBusiness extends AbstractBusiness
             " FROM " +
                 AnneeScolaireBean.class.getName() + " ANNEE WHERE " +
              " ANNEE.dateRentree < :dateDuJour AND ANNEE.dateSortie <= :dateDuJour " +
-            " ORDER BY ANNEE.id ASC";
+            " ORDER BY ANNEE.id DESC";
         
         final List<Map<String, ?>> liste = 
             getEntityManager().createQuery(requete)
