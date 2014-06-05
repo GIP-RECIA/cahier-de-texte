@@ -1582,14 +1582,14 @@ throw new MetierException(conteneurMessage,
             printSeanceDTO.setLibelleClasseGroupe(libelleCLasseGroupe);
 
         }
-
+/*
         Collections.sort(listSeances, new Comparator<PrintSeanceDTO>() {
             @Override
             public int compare(PrintSeanceDTO o1, PrintSeanceDTO o2) {
                 return DateUtils.compare(o1.getDate(), o2.getDate(), true);
             }
         });
-
+*/
         args.put("dateCourante",
                 DateUtils.format(printSeanceQO.getDateCourante()));
         args.put("dateDebut", DateUtils.format(printSeanceQO.getDateDebut()));

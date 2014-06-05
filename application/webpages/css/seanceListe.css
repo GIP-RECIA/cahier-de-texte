@@ -1,5 +1,8 @@
 /*css pour la nouvelle présentation des listes de scéances */
 
+
+
+
 .panelSeance.panelSeanceList {
 	width:99%;
 }
@@ -59,6 +62,9 @@ img.iconInText {
 	
 }
 
+
+
+
 .panelSequenceDetail .description {
 	border:none;
 	width: 100%;
@@ -78,8 +84,12 @@ img.iconInText {
 	border:none;
 	width:98%;
 	padding: 0px 1%;
+	word-wrap: normal;
+	vertical-align: initial;
 }
-
+.detailSeanceLeft > table .description sup {
+	
+}
 
 .seanceDevoirDivList .boutonResize {
 	float: left;
