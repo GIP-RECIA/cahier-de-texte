@@ -4,9 +4,10 @@
 function appliqueRotationTampon() {
     var divDate = jQuery('.tamponImage');
     if (divDate != null) {
-        divDate.jangle(315);
+      /*  divDate.jangle(315);
         divDate.css({
             position: "static"
         });
+       */
     }
 }

@@ -430,10 +430,12 @@ public class MenuControl extends AbstractControl<AbstractForm> {
                this.listeAction.add(new MenuAction("sequence.png", "", "Séquence", listeSousMenu));
                listeSousMenu.add(new MenuAction("sequenceAjout.png", Outil.AJOUT_SEQUENCE.name(), "Ajout de séquence", null));
                listeSousMenu.add(new MenuAction("sequenceRecherche.png", Outil.RECH_SEQUENCE.name(), "Recherche", null));
-            } else {
+            } /*
+            inutile pour les utilisateurs qui utilisent les séquences automatiques. cd le 18/06/2014
+            else {
                this.listeAction.add(new MenuAction("sequenceRecherche.png",Outil.RECH_SEQUENCE.name() , "Recherche de séquences", null));
             }
-           
+           */
             // 6. Seance
  /*           listeSousMenu = new ArrayList<MenuAction>();
             this.listeAction.add(new MenuAction("seance.png", "", "Séance", listeSousMenu));

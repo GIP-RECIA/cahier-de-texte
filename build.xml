@@ -282,7 +282,8 @@
 		<copy file="${project.application.webpages}/web.xml" tofile="${project.application.build.web}/web.xml" filtering="true" encoding="UTF-8" overwrite="yes">
 		    <filterset refid="auth.cas"/>
 		</copy>
-		
+		<copy file="${project.application.webpages}/urlrewrite.xml" tofile="${project.application.build.web}/urlrewrite.xml" overwrite="true" />
+
 		<copy file="${project.application.webpages}/faces-config.xml" tofile="${project.application.build.web}/faces-config.xml" overwrite="true" />
 		<copy file="${project.application.webpages}/index.jsp" tofile="${project.application.build}/index.jsp" overwrite="true" />
 		<copy file="${project.application.webpages}/deconnexion.jsp" tofile="${project.application.build}/deconnexion.jsp" overwrite="true" />

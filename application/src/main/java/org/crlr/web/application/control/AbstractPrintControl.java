@@ -1,9 +1,13 @@
 package org.crlr.web.application.control;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.faces.application.StateManager;
 import javax.faces.bean.ManagedProperty;
+import javax.faces.context.FacesContext;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -24,9 +28,11 @@ import org.crlr.services.ArchiveEnseignantService;
 import org.crlr.web.application.control.ClasseGroupeControl.ClasseGroupeListener;
 import org.crlr.web.application.control.EnseignantControl.EnseignantListener;
 import org.crlr.web.application.control.EnseignementControl.EnseignementListener;
+import org.crlr.web.application.control.seance.SeanceListControl;
 import org.crlr.web.application.form.AbstractPrintForm;
 import org.crlr.web.contexte.ContexteUtilisateur;
 import org.crlr.web.contexte.utils.ContexteUtils;
+import org.crlr.web.utils.FacesUtils;
 
 /**
  * 
@@ -57,6 +63,9 @@ public abstract class AbstractPrintControl<F extends AbstractPrintForm> extends
     @ManagedProperty(value="#{archiveEnseignantService}")
     private transient ArchiveEnseignantService archiveEnseignantService;
     
+    @ManagedProperty(value="#{listeSeances}")
+    private transient SeanceListControl seanceListeControl;
+    
     /**
      * indique si on est en edition d'archive
      */
@@ -67,6 +76,16 @@ public abstract class AbstractPrintControl<F extends AbstractPrintForm> extends
     
     abstract public DevoirDTO getDevoirSelectionne();
     
+    /*
+     * 
+     * POUR test
+     * Donne le nom du pdf pour les impression.
+     * Partie  non contextuel de l'url
+     * 
+     * @return String
+     *
+    abstract public String getPdfUrl();
+    */
     
     /**
      * si mode archive d'un enseignant: les données le concernant.
@@ -96,6 +115,19 @@ public abstract class AbstractPrintControl<F extends AbstractPrintForm> extends
         resetDonnees();
     }
     
+    /* POUR TEST
+    public  void printPdf() throws IOException {
+		final HttpServletRequest req = FacesUtils.getRequest();
+		final FacesContext fc = FacesContext.getCurrentInstance();
+		final StateManager sm = fc.getApplication().getStateManager();
+		sm.saveView(fc);
+		fc.responseComplete();  
+		final String urlAvecContexte = FacesUtils.getContextURL(getPdfUrl());
+		    
+		log.debug("url de forward = {}", urlAvecContexte);      
+		FacesContext.getCurrentInstance().getExternalContext().redirect(urlAvecContexte);
+    }
+*/
     
     /**
      * 
@@ -567,5 +599,15 @@ public abstract class AbstractPrintControl<F extends AbstractPrintForm> extends
 		this.enseignant = enseignant;
 	}
     
+	public SeanceListControl getSeanceListeControl() {
+		return seanceListeControl;
+	}
+
+
+
+	public void setSeanceListeControl(SeanceListControl seanceListeControl) {
+		this.seanceListeControl = seanceListeControl;
+	}
+
    
 }

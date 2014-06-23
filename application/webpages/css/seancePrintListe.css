@@ -1,0 +1,156 @@
+/*css pour la nouvelle présentation des listes de scéances */
+
+/*
+@page{
+	size: 21cm, 10cm;
+margin: 0.1cm; 
+-fs-flow-top: "header";
+-fs-flow-bottom: "footer";
+-fs-flow-left: "left";
+-fs-flow-right: "right";
+border: thin solid black;
+padding: 0.5em;
+}
+*/
+@page{
+	size: A4;
+margin-bottom: 1em;
+margin-top:0;
+margin-right:0;
+margin-left:0;
+-fs-flow-top: "header";
+-fs-flow-bottom: "footer";
+-fs-flow-left: "left";
+-fs-flow-right: "right";
+padding: 0;
+@bottom-right {
+    content: "Page " counter(page);
+  }
+@bottom-left { content: element(footer); }
+
+}
+
+
+body {
+	font-size: 10pt;
+}
+
+div.footer {
+    display: block;
+    position: running(footer);
+  }
+
+.panelSeance.panelSeanceList {
+	width:99%;
+}
+
+.seqSeanceDiv.panelSeanceList {
+	width:100%;
+}
+
+.panelSequence.panelSequenceList > .rf-p-hdr,
+.seqSeanceDiv.panelSeanceList > .rf-p-hdr,
+.panelSeance.panelSeanceList > .rf-p-hdr {
+	background-color: transparent;
+	background-image: none;
+	border: 1px none grey;
+}
+
+.panelSeanceDetail td.detailSeanceLeft {
+	border-right-style: solid ;
+	border-right-color: #E0E0E0;
+	width: 60%;
+}
+.panelSeanceDetail .detailSeanceRight > table {
+	width: 100%;
+}
+
+.panelSeanceDetail .detailSeanceRight > table div.rf-p-b > table {
+	padding-left: 2%;
+}
+
+
+img.iconInText {
+	padding-left: 1ex;
+}
+
+.fondRouge {
+	background-color: red; 
+}
+
+table.panelSequenceDetail, 
+table.panelSeanceDetail {
+	border: 0 hidden;
+	width: 98%;
+}
+
+
+.divTampon {
+	float:right;
+}
+ .detailSeanceLeft div.tamponImage {
+	transform: rotate(315deg);
+	font-size: 75%;	
+}
+/* position: static;
+	 
+	 */ 
+
+.panelDevoir.panelDevoirInList > .rf-p-hdr  {
+	background-color: #FFFFFF;
+	color: #000000;
+	background-image: none;
+	border:0;
+	
+}
+
+
+
+
+.panelSequenceDetail .description {
+	border:none;
+	width: 100%;
+}
+.panelDevoir.panelDevoirInList .description {
+	border:none;
+	width: 100%;
+	margin-top: -1em;
+	
+}
+
+.detailSeanceLeft > table.description {
+	width:100%;
+}
+
+.detailSeanceLeft > table .description {
+	border:none;
+	width:98%;
+	padding: 0px 1%;
+	word-wrap: normal;
+	vertical-align: initial;
+}
+.detailSeanceLeft > table .description sup {
+	
+}
+
+.seanceDevoirDivList .boutonResize {
+	float: left;
+	margin-right: 0.5ex;
+	margin-left: -0.5ex;
+	margin-top: -1em;
+	margin-bottom: 0px;
+}
+.panelDevoirInList .boutonResize {
+	margin-rigth: 1ex;
+	margin-left: 0px;
+	margin-top:0px;
+	margin-bottom: 0px;
+}
+
+.table.archive {
+	margin-top:1em;
+	margin-bottom:1em;
+}
+.table.archive label.libelle {
+	margin-left:2ex !important;
+}

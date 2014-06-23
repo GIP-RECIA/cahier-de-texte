@@ -59,7 +59,6 @@ public class SequencePrintControl extends
         usePopupGroupeClasse = true;
         usePopupSeance = false;
     }
-
     
     @Override
    	public PrintSeanceDTO getSeanceSelectionne() {
@@ -92,22 +91,25 @@ public class SequencePrintControl extends
     }
     
    
-
+    private void setListeSequences(List<PrintSequenceDTO> liste){
+    	form.setListeSequences(liste);
+    	getSeanceListeControl().setListSequences(liste);
+    }
   
 
     /**
      * Vide la liste des sequences après une modification de la classe/groupe
      * selectionner.
      */
-    public void resetListeSequence() {
-        form.getListeSequences().clear();
+    public void resetListeSequences() {
+        form.getListeSequences().clear();  
     }
 
     /**
      * @see org.crlr.web.application.control.AbstractPrintControl#resetDonnees()
      */
     public void resetDonnees() {
-        resetListeSequence();
+        resetListeSequences();
     }
 
     /**
@@ -250,7 +252,7 @@ public class SequencePrintControl extends
                 }
             }
             
-            form.setListeSequences(listeSequence);
+            setListeSequences(listeSequence);
             
             log.info("Liste seq, size {0}", listeSequence.size());
         } catch (MetierException e) {

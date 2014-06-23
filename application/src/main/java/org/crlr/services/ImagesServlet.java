@@ -99,9 +99,11 @@ public class ImagesServlet extends HttpServlet {
             
             log.debug("Latex executable {0} avec text {1}", exec, latexText);
 
+            /*
             ProcessBuilder pb = new ProcessBuilder(exec, "\"" + latexText
                     + "\"", "-d"); // outputs directement ver StdOut);
-
+*/
+            ProcessBuilder pb = new ProcessBuilder(exec, latexText, "-d"); // outputs directement ver StdOut);
             pb.redirectErrorStream(true);
 
             Process p = pb.start();

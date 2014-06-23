@@ -111,13 +111,16 @@ public class SeancePrintControl extends AbstractPrintControl<SeancePrintForm> {
     
    
     
-    
+    private void setListeSeances(List<PrintSeanceDTO> liste){
+    	form.setListeSeances(liste);
+    	getSeanceListeControl().setListSeances(liste);
+    }
     
     /**
      * Vide la liste des seances après une modification de la classe/groupe selectionner.
      */
     public void resetListeSeances(){
-        form.setListeSeances(new ArrayList<PrintSeanceDTO>());
+        setListeSeances(new ArrayList<PrintSeanceDTO>());
     }
     
     /**
@@ -130,7 +133,7 @@ public class SeancePrintControl extends AbstractPrintControl<SeancePrintForm> {
     
     /**
      * Appel métier pour l'impression pdf.
-     * 
+     *
      * @throws IOException l'exception potentielle.
      */
     public void print() throws IOException {
@@ -247,7 +250,7 @@ public class SeancePrintControl extends AbstractPrintControl<SeancePrintForm> {
         try {
             final ResultatDTO<List<PrintSeanceDTO>> res = seanceService.findListeSeanceEdition(rechercheSeancePrintQO);
             //on complete les recherches car il faut connaître tous les devoirs dès le debut
-            form.setListeSeances(res.getValeurDTO());
+            setListeSeances(res.getValeurDTO());
             
             
         } catch (MetierException e) {
@@ -402,5 +405,5 @@ public class SeancePrintControl extends AbstractPrintControl<SeancePrintForm> {
 		this.visaFacade = visaFacade;
 	}
 
-    
+
 }

@@ -39,11 +39,33 @@
                          oncomplete=""
                          render="listingSeances, outilRecherche, openToutIcone"
                          title="Réinitialiser" />
+                         
+     <ui:remove>
       <cr:lienClientJS idLienClientJS="editionPDF"
                        image="pdf.png"
                        onclick="#{rich:component('idPopupPrint')}.show();"
                        renderedFeinte="#{not empty printSeance.form.listeSeances}"
                        titre="Edition PDF" />
+                    
+      <cr:lienEdition bean="#{printSeance}"
+      				rendered="#{not empty printSeance.form.listeSeances}"
+                    cible="printPdf"
+                    id="printPDF2"
+                    image="pdf.png"
+                    desc="Edition PDF" 
+                    sansImage="false"/>
+    
+     </ui:remove> 
+      
+    <h:outputLink 	rendered="#{not empty printSeance.form.listeSeances}" 
+    				value="../printPdf/seanceListe.pdf" 
+    				id="printPDF" 
+    				title="Edition PDF"
+    				target="_blank"> 
+		<h:graphicImage  library="images/icones" name="pdf.png"/>
+	</h:outputLink>
+    
+    
     </cr:menuAction>
     
     <cr:lien id="refreshRecheche" bean="#{printSeance}"

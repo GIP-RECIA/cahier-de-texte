@@ -26,7 +26,8 @@
                         <c:when test="${empty node.listeSousAction}">
                             <rich:menuItem 
                                 value="idMenuAction#{node.action}" 
-                                mode="ajax"   onclick="idActionEnCours='idMenuAction#{node.action}';"
+                                mode="ajax"   
+                                onclick="idActionEnCours='idMenuAction#{node.action}';"
                                 styleClass="navigationPage" 
                                 icon="#{cr:concat('/resources/images/icones/', node.image)}" 
                                 title="#{node.libelle}">                 
@@ -49,7 +50,8 @@
                                         mode="ajax"                                      
                                         styleClass="navigationPage" 
                                         title="#{action.libelle}"
-                                        label="#{action.libelle}"  onclick="idActionEnCours='idMenuAction#{action.action}';"
+                                        label="#{action.libelle}"  
+                                        onclick="idActionEnCours='idMenuAction#{action.action}';"
                                         icon="#{cr:concat('/resources/images/icones/', action.image)}" />                                    
                                 </c:forEach>
                             </rich:dropDownMenu>   
