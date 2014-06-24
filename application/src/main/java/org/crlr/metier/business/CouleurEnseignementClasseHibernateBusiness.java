@@ -9,13 +9,13 @@ package org.crlr.metier.business;
 
 import java.util.List;
 
+import javax.persistence.NoResultException;
 import javax.persistence.Query;
 
 import org.apache.commons.lang.StringUtils;
 import org.crlr.dto.ResultatDTO;
 import org.crlr.dto.application.base.CouleurEnseignementClasseDTO;
 import org.crlr.dto.application.base.GroupesClassesDTO;
-import org.crlr.dto.application.base.TypeGroupe;
 import org.crlr.dto.application.sequence.RechercheCouleurEnseignementClasseQO;
 import org.crlr.dto.application.sequence.SaveCouleurEnseignementClasseQO;
 import org.crlr.exception.metier.MetierException;
@@ -23,7 +23,6 @@ import org.crlr.log.Log;
 import org.crlr.log.LogFactory;
 import org.crlr.metier.entity.CouleurEnseignementClasseBean;
 import org.crlr.utils.Assert;
-import org.crlr.web.dto.TypeCouleur;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 /**
@@ -129,8 +128,14 @@ public class CouleurEnseignementClasseHibernateBusiness extends AbstractBusiness
     					.setParameter("id_enseignement", idEnseignement)
     					.setParameter("id_groupe", idGroupe != null ? idGroupe : 0)
     					.setParameter("id_classe", idClasse != null ? idClasse : 0);
-    	
-        return (CouleurEnseignementClasseBean) query.getSingleResult();
+    	try {
+    		return (CouleurEnseignementClasseBean) query.getSingleResult();
+    	} catch (NoResultException e ) {
+    		return null;
+    	} catch (RuntimeException e) {
+    		log.error("DAO ERROR in CouleurEnseignementClasseBean {} " , e);
+    		throw e;
+    	}
     }
     
     
