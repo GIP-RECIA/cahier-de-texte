@@ -25,12 +25,12 @@ config.browserContextMenuOnCtrl = true;
    //'Scayt'   'iespell'
 config.toolbar_Custom = 
 		 [
-		 { name: 'theme_advanced_buttons1', items : [ 'NewPage', '-', 'Bold','Italic','Underline','Strike',
+		 { name: 'theme_advanced_buttons1', items : ['NewPage', '-', 'Bold','Italic','Underline','Strike',
 		 '-', 'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock', '-', 'Format', 'Font', 'FontSize', 'iespell'  ] },		
 		 '/',
 		 { name: 'theme_advanced_buttons2', items : [ 'BulletedList', 'NumberedList', '-',
 		 'Outdent', 'Indent', 'Blockquote', '-', 'Undo', 'Redo', '-', 'Link','Unlink', '-',
-		 'TextColor','BGColor', '-', 'HorizontalRule', 'RemoveFormat', '-', 'Superscript', 'Subscript',
+		 'TextColor','BGColor', '-', 'Table', 'HorizontalRule', 'RemoveFormat', '-', 'Superscript', 'Subscript',
 		 '-', 'SpecialChar', 'Dragmath', 'Maximize'
 		 ] }
 		 ];

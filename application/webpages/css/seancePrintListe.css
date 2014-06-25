@@ -40,6 +40,10 @@ div.footer {
     position: running(footer);
   }
 
+div.headerSequence {
+	text-align:center;
+}
+
 .panelSeance.panelSeanceList {
 	width:99%;
 }
