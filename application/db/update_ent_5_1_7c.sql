@@ -21,7 +21,8 @@ CREATE TABLE cahier_courant.cahier_couleur_enseignement_classe
   id_groupe integer,
   couleur varchar(10),
   CONSTRAINT id_couleur_enseignement_classe PRIMARY KEY (id ),
-  constraint unique_couleur_enseignement_classe UNIQUE(id_etablissement, id_enseignant, id_enseignement, id_classe, id_groupe),
+  constraint unique_couleur_enseignement_classe UNIQUE (id_etablissement, id_enseignant, id_enseignement, id_classe),
+  constraint unique_couleur_enseignement_groupe unique (id_etablissement, id_enseignant, id_enseignement, id_groupe),
   CONSTRAINT cahier_couleur_enseignant FOREIGN KEY (id_enseignant)
       REFERENCES cahier_courant.cahier_enseignant (id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE NO ACTION,
@@ -39,7 +40,6 @@ CREATE TABLE cahier_courant.cahier_couleur_enseignement_classe
 CREATE SEQUENCE cahier_couleur_enseignement MINVALUE 1;
 
 -- mise a jour des couleurs existante
--- attention il peut avoir des doublons
 insert into cahier_courant.cahier_couleur_enseignement_classe
 select nextval('cahier_couleur_enseignement'),
 id_etablissement,
@@ -47,8 +47,10 @@ id_enseignant,
 id_enseignement,
 id_classe,
 id_groupe,
-couleur_case
-from cahier_courant.cahier_emploi;
+max(couleur_case)
+from cahier_courant.cahier_emploi
+where couleur_case is not  null 
+group by id_etablissement, id_enseignant, id_enseignement, id_classe, id_groupe;
 
 COMMIT;
 

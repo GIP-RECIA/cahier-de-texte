@@ -408,7 +408,7 @@ public class EmploiHibernateBusiness extends AbstractBusiness implements
                     + " WHERE "
                     + "   e.typeSemaine = :typeSemaine AND "
                     +
-                    // Sous requête pour chercher la bonne période, la dérniere
+                    // Sous requête pour chercher la bonne période, la dernière
                     // période qui est moins ou égale de jourDate
                     "   p.id IN "
                     + "(Select pebOut.id FROM "
@@ -471,8 +471,7 @@ public class EmploiHibernateBusiness extends AbstractBusiness implements
             }
 
             // execution de la requete.
-            final List<Map<String, ?>> resultatQuery = queryObject
-                    .getResultList();
+            final List<Map<String, ?>> resultatQuery = queryObject.getResultList();
             final List<DetailJourEmploiDTO> celluleDetailJour = new ArrayList<DetailJourEmploiDTO>();
 
             if (!CollectionUtils.isEmpty(resultatQuery)) {
@@ -545,8 +544,9 @@ public class EmploiHibernateBusiness extends AbstractBusiness implements
             listeEvents.addAll(celluleDetailJour);
 
             queryCal.add(Calendar.DATE, 1);
-        	} catch (Exception e) {
+        	} catch (RuntimeException e) {
                   	log.error("Exception : {}", e);
+                  	throw e;
               }
         }
 

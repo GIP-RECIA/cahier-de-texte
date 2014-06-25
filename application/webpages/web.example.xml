@@ -131,6 +131,17 @@
         <param-value>false</param-value>
     </context-param>
 	
+	<filter>
+    	<filter-name>UrlRewriteFilter</filter-name>
+    	<filter-class>org.tuckey.web.filters.urlrewrite.UrlRewriteFilter</filter-class>
+	</filter>
+	<filter-mapping>
+    	<filter-name>UrlRewriteFilter</filter-name>
+    	<url-pattern>*.pdf</url-pattern>
+    	<dispatcher>REQUEST</dispatcher>
+    	<dispatcher>FORWARD</dispatcher>
+	</filter-mapping>
+	
 	<servlet>
 		<servlet-name>Faces Servlet</servlet-name>
 		<servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
@@ -391,6 +402,17 @@
         <url-pattern>*.xhtml</url-pattern>
     </filter-mapping>
      
+          	<filter>
+   <filter-name>PDF Filter</filter-name>
+   <filter-class>org.crlr.web.servlet.filter.Html2PdfFilter</filter-class>
+   
+</filter>
+  <filter-mapping>
+  	<filter-name>PDF Filter</filter-name>
+  	<url-pattern>/ecrans/application/printPdf/*</url-pattern>
+  <!--  dispatcher>REQUEST</dispatcher -->
+    <dispatcher>FORWARD</dispatcher>
+    </filter-mapping>
      
      <error-page>
         <exception-type>java.lang.Exception</exception-type>
