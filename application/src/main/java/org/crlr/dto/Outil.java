@@ -27,7 +27,7 @@ public enum Outil {
     /** Séances. */
     AJOUT_SEANCE, RECH_SEANCE, DELETE_SEANCE, CONSULTER_SEANCE, PRINT_SEANCE, SEANCE_SEMAINE, ARCHIVE_SEANCE,
     /** Carnet de bord (cycle). */
-    AJOUT_CYCLE, RECH_CYCLE, APPLY_CYCLE,
+    AJOUT_CYCLE, RECH_CYCLE, APPLY_CYCLE, GROUPES_COL_LOCAUX,
     /** Admin. */
     ADMIN,
     /** Inspection. */

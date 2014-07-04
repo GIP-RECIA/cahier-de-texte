@@ -31,6 +31,9 @@ public class GroupeDTO implements Serializable {
     /** Indique si le groupe est collaboratif ou non. */
     private Boolean groupeCollaboratif;
     
+    /** Indique si le groupe est collaboratif local ou non. */
+    private Boolean groupeCollaboratifLocal;
+    
     /** Indique si le groupe est selectionner. */
     private Boolean selectionner;
     
@@ -128,5 +131,13 @@ public class GroupeDTO implements Serializable {
     public void setGroupeCollaboratif(Boolean groupeCollaboratif) {
         this.groupeCollaboratif = groupeCollaboratif;
     }
+
+	public Boolean getGroupeCollaboratifLocal() {
+		return groupeCollaboratifLocal;
+	}
+
+	public void setGroupeCollaboratifLocal(Boolean groupeCollaboratifLocal) {
+		this.groupeCollaboratifLocal = groupeCollaboratifLocal;
+	}
     
 }

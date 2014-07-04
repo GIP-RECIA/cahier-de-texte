@@ -447,7 +447,8 @@ public class MenuControl extends AbstractControl<AbstractForm> {
             this.listeAction.add(new MenuAction("carnet.png", "", "Carnet de bord", listeSousMenu));
             listeSousMenu.add(new MenuAction("carnetAdd.png", Outil.AJOUT_CYCLE.name(), "Ajout d'une séquence pédagogique", null));
             listeSousMenu.add(new MenuAction("carnetFind.png", Outil.RECH_CYCLE.name(), "Recherche/Modification", null));
-               
+            listeSousMenu.add(new MenuAction("GestionGrp32.png", Outil.GROUPES_COL_LOCAUX.name(), "Groupes Collaboratifs Locaux", null));
+
             // 8. Mes pièces jointes
             this.listeAction.add(new MenuAction("monDepot.png", Outil.DEPOT.name(), "Mes pièces jointes", null));
             

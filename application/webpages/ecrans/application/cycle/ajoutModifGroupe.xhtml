@@ -1,0 +1,207 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:a4j="http://richfaces.org/a4j"
+      xmlns:cr="urn:crlr"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:rich="http://richfaces.org/rich">
+
+<cr:page titrePage="Recherche/Modification séance" >
+<h:outputStylesheet library="css" name="ajoutModifGroupe.css" target="head" />
+  <h:outputScript library="js" name="ajoutModifGroupe.js" target="head" />
+  
+    <cr:menuAction id="idMenuAction">
+    	
+    	<cr:liena4j 
+				idliena4j="idMenuSaveModif" 
+				bean="#{ajoutModifGroupe}"
+				cible="saveModifMembre"
+				oncomplete="if (showAlertSuppression()){ #{rich:component('idPopupAlertRmAll')}.show();}"
+				rendered="true" 
+				status="statuspop" 
+				render="idPanelSelection"
+				immediate="true"
+				styleClass="saveBoutonClass"
+				style="#{ajoutModifGroupe.form.membresChange ? '' : 'display: none'}">
+			<h:graphicImage 
+					id="idImageSaveModi" 
+					library="images/icones"
+					name="save.png" 
+					title="Sauvegarder" />
+		</cr:liena4j>
+      	<cr:elemMenuAction 
+	      		idaction="idRechercher"
+	      		styleClass="rechercherBouton"
+	            bean="#{ajoutModifGroupe}"
+	            cible="rechercher"
+	            image="binocular.png"
+	            title="Rechercher"
+	            render="idOutputPanel idPanelSelection idListeMembres" 
+	            oncomplete="hideSaveBouton();"/>
+		<cr:liena4j 
+				idliena4j="idAjouterGroupe" 
+				bean="#{ajoutModifGroupe}"
+				cible="ajouter"
+				oncomplete="#{rich:component('idPopupAjoutGroupe')}.show();"
+				rendered="true" 
+				status="statuspop" 
+				render="idPanelAjoutGroupe"
+				immediate="true">
+			<h:graphicImage 
+					id="idImageAjouterGroupe" 
+					library="images/icones"
+					name="groupCollAdd.png" 
+					title="Créer un groupe collaboratif local" />
+		</cr:liena4j>
+
+    </cr:menuAction>
+	
+	<rich:panel
+			header="voir/modifier un groupe collaboratif local"
+			id="idPanelCritere">
+		<h:panelGrid 
+				columns="2" 
+				class="table">
+			<h:outputLabel 
+					value="Groupe collaboratif local :"
+					styleClass="libelle"
+					title="Titre de la séquence pédagogique contenant" />
+			<rich:select 
+					enableManualInput="false"
+					defaultLabel="selectionner un groupe"
+					value="#{ajoutModifGroupe.form.selectedIdGroup}"
+					onselect="jQuery('.rechercherBouton').click();"
+					>
+				<f:selectItems 	value="#{ajoutModifGroupe.form.listeGroupe}" 
+								var="grp" 
+								itemValue="#{grp.id}"  
+								itemLabel="#{grp.intitule}"/>
+			</rich:select>
+		</h:panelGrid>
+	</rich:panel>
+	
+	 <a4j:outputPanel id="idOutputPanel" >
+		<rich:panel id="idPanelSelection" styleClass="pickSelector" rendered="#{not empty ajoutModifGroupe.form.selectedIdGroup}" >
+			<a4j:outputPanel layout="block" >
+			<h:outputLabel value="Selecteur d'enseignant:"
+				styleClass="pickSelector" />
+			<h:inputText value="#{ajoutModifGroupe.form.prefix}"
+				styleClass="pickSelector">
+				<a4j:ajax event="keyup" render="idListeMembres" />
+				<a4j:ajax event="focus" oncomplete="saveList()" />
+				
+			</h:inputText>
+			</a4j:outputPanel>
+			<a4j:region>
+				<rich:pickList 	id="idListeMembres" 
+								value="#{ajoutModifGroupe.form.membresUid}"
+								addAllText=""
+								removeText="⇐&emsp;Supprimer"
+								   addText="⇒&emsp;Ajouter"
+								removeAllText=""
+								sourceCaption="Enseignants de l'établissement " 
+								targetCaption="Enseignants du groupe "
+								styleClass="pickList"
+								columnClasses="c1 c2 c3"
+								
+								>
+					
+		
+					<f:selectItems 	value="#{ajoutModifGroupe.form.filteredList}"
+									var="ens"
+									itemValue="#{ens.uid}"
+									itemLabel="#{ens.nom} #{ens.prenom}"
+									/>
+				</rich:pickList>
+				<h:outputText styleClass="alertSuppressionTest" 
+				rendered="#{ajoutModifGroupe.form.alertSuppression}" 
+				values="#{ajoutModifGroupe.form.alertSuppression}"/>
+
+				
+			</a4j:region>
+			<a4j:jsFunction name="saveList" execute="idListeMembres" />
+		</rich:panel>	
+	</a4j:outputPanel>
+</cr:page>
+
+<cr:popupModifiable
+        idPopup="idPopupAlertRmAll" 
+        tailleAuto="true" 
+        domElementAttachment="form"
+         statusPopup="statuspop"
+        titrePopup="Alerte suppression du groupe">
+        <h:panelGroup >
+		<h:panelGroup id="idPopupAlertRmAllText"  styleClass="AlertRmAlltext" layout="block" >
+		           			Vous voulez enlever tous les enseignants du groupe.
+		           			Un groupe sans membre ne peut plus être administré.
+							Il faut donc le supprimer.
+							Confirmez-vous cette suppression ?
+		            </h:panelGroup>	
+					
+						<a4j:commandLink 
+								id="idDeleteGroupe" 
+								action="#{ajoutModifGroupe.deleteGroupe}"
+								title="Alert suppression du groupe"
+								oncomplete="#{rich:component('idPopupAlertRmAll')}.hide();"
+								render="idPanelCritere idOutputPanel">
+			        		Confirmer la suppression du groupe         
+			    		</a4j:commandLink>
+		</h:panelGroup>
+</cr:popupModifiable>
+
+
+
+<cr:popupModifiable
+        idPopup="idPopupAjoutGroupe" 
+        tailleAuto="true" 
+        domElementAttachment="form"
+         statusPopup="statuspop"
+        titrePopup="Création d'un groupe collaboratif local au cahier de texte">
+     
+     
+    <cr:menuAction 
+    		id="idMenuActionPopupGroupe" 
+    		surcharge="false" >
+    	<cr:elemMenuAction 
+    		id="idelemMenuSave"
+    		idaction="idSauverGroupe" 
+    		bean="#{ajoutModifGroupe}" 
+    		cible="saveGroup"
+    		image="save.png" 
+    		title="Sauvegarder/créer le groupe"
+    		oncomplete="
+				 if (#{facesContext.maximumSeverity == null or facesContext.maximumSeverity.ordinal le 0} ) {
+				   #{rich:component('idPopupAjoutGroupe')}.hide();
+				 }" 
+    	/>
+	</cr:menuAction>
+	<h:panelGroup id="idPanelAjoutGroupe"
+			layout="block" >
+			<t:aliasBeansScope> 
+				<t:aliasBean alias="#{groupe}" value="#{ajoutModifGroupe.form.groupEdited}" /> 
+        	 <h:panelGrid id="idSaisieGroup" columns="2">
+        	 	<h:outputLabel value="Code du groupe :"/>
+        	 	<h:inputText 
+        	 			value="#{groupe.code}" 
+        	 			maxlength="25" 
+        	 			required="true"
+        	 			requiredMessage="Le code est obligatoire"
+        	 			autocomplete="off"
+        	 	/>
+        	 	<h:outputLabel value="Nom du groupe :"/>
+        	 	<h:inputText 
+        	 			value="#{groupe.intitule}" 
+        	 			maxlength="255" 
+        	 			required="true" 
+        	 			requiredMessage="Le nom est obligatoire"
+        	 			autocomplete="off"
+        	 		/>
+        	 </h:panelGrid>
+        	</t:aliasBeansScope>
+	</h:panelGroup>
+</cr:popupModifiable>
+<cr:popupStatus idStatus="statuspop" />
+</html>

@@ -13,6 +13,7 @@ import java.util.Set;
 import org.crlr.alimentation.DTO.EnseignantDTO;
 import org.crlr.dto.ResultatDTO;
 import org.crlr.dto.UserDTO;
+import org.crlr.dto.application.base.AnneeScolaireDTO;
 import org.crlr.dto.application.base.EnseignantsClasseGroupeQO;
 import org.crlr.dto.application.base.GroupeDTO;
 import org.crlr.dto.application.base.GroupesClassesDTO;
@@ -259,4 +260,56 @@ public class GroupeClasseFacade implements GroupeClasseFacadeService {
     public List<GroupeDTO> findGroupesCollaboratifEnseignant(Integer idEnseignant) {
         return groupeHibernateBusinessService.findGroupesCollaboratifEnseignant(idEnseignant);
     }
+    
+    @Override
+    public GroupeDTO creerGroupeCollaboratif(
+    									GroupeDTO groupe, 
+    									AnneeScolaireDTO anneeScolaire,
+    									int idEtablissement, 
+    									Integer idEnseignant) throws MetierException {
+    	try {
+    		if (idEnseignant == null) {
+    			throw new MetierException("L'enseignant n'est pas identifié" );
+    		} else {
+				Integer idGroupe = groupeHibernateBusinessService.findByCode(groupe.getCode(), false, anneeScolaire.getExercice());
+				if (idGroupe != null ) {
+					
+					throw new MetierException("Le groupe de code '{0}' existe déjà.", groupe.getCode());
+				} else {
+					GroupeDTO groupRes = groupeHibernateBusinessService.creerGroupeCollaboratifLocal(
+														groupe.getCode(), 
+														groupe.getIntitule(), 
+														idEtablissement,
+														anneeScolaire.getId());
+					
+					groupeHibernateBusinessService.addEnseignantInGroupeCollaboratifLocal(groupRes, idEnseignant);
+					return groupRes;
+				}
+    		}
+		} catch (Exception e) {
+			
+			throw new MetierException("Échec de la création du groupe: {0}", e.getMessage());
+		}
+    	
+    }
+    
+   @Override
+    public  void updateGroupeCollaboratif( 	GroupeDTO groupe, Set<Integer> idsAsupprimer, Set<Integer> idsAajouter) throws MetierException{
+    	// on commence par les ajouts
+    	for (Integer id : idsAajouter) {
+    		// si la meme personne est a ajouter et a supprimer on ne fait rien
+ 			if (! idsAsupprimer.remove(id) ){
+ 				groupeHibernateBusinessService.addEnseignantInGroupeCollaboratifLocal(groupe, id);
+ 			} 
+		}
+    	
+    	for (Integer id : idsAsupprimer) {
+    		groupeHibernateBusinessService.delEnseignantInGroupeCollaboratifLocal(groupe, id);
+		}    	
+    }
+    										
+   @Override
+   public  void deleteGroupeCollaboratif( 	GroupeDTO groupe) throws MetierException{
+	   groupeHibernateBusinessService.deleteGroupeCollaboratifLocal(groupe);
+   }
 }

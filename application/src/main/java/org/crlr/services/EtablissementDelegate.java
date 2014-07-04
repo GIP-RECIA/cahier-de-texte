@@ -7,6 +7,9 @@
 
 package org.crlr.services;
 
+import java.util.List;
+
+import org.crlr.alimentation.DTO.EnseignantDTO;
 import org.crlr.dto.ResultatDTO;
 import org.crlr.dto.application.base.EtablissementComplementDTO;
 import org.crlr.dto.application.base.EtablissementDTO;
@@ -117,5 +120,13 @@ public class EtablissementDelegate implements EtablissementService {
             final Integer idEnseignant) {
         return etablissementFacadeService.checkSaisieSimplifieeEtablissement(idEtablissement, idEnseignant);
     }
+
+	@Override
+	public List<EnseignantDTO> findAllEnseignant(Integer idEtablissement) {
+		
+		return etablissementFacadeService.findAllEnseignant(idEtablissement);
+	}
+    
+    
 }
 

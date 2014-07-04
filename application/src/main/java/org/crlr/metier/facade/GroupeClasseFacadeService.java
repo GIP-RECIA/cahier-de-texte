@@ -13,6 +13,7 @@ import java.util.Set;
 import org.crlr.alimentation.DTO.EnseignantDTO;
 import org.crlr.dto.ResultatDTO;
 import org.crlr.dto.UserDTO;
+import org.crlr.dto.application.base.AnneeScolaireDTO;
 import org.crlr.dto.application.base.EnseignantsClasseGroupeQO;
 import org.crlr.dto.application.base.GroupeDTO;
 import org.crlr.dto.application.base.GroupesClassesDTO;
@@ -131,6 +132,36 @@ public interface GroupeClasseFacadeService {
      * @param idEnseignant l'identifiant de l'enseignant
      * @return Les groupes collaboratifs.
      */
-    public List<GroupeDTO> findGroupesCollaboratifEnseignant(Integer idEnseignant);    
+    public List<GroupeDTO> findGroupesCollaboratifEnseignant(Integer idEnseignant);
+
+    /**
+     * Creation d'un nouveau groupe collaboratif local.
+     * Pour un établissement et une année scolaire.
+     * @param groupe
+     * @param anneeScolaire
+     * @param idEtablissement
+     * @param idEnseignant TODO
+     * @return
+     * @throws MetierException 
+     */
+	GroupeDTO creerGroupeCollaboratif(GroupeDTO groupe,
+			AnneeScolaireDTO anneeScolaire, int idEtablissement, Integer idEnseignant) throws MetierException;
+	
+	/**
+	 * Mise a jour des membres d'un groupe collaboratif local
+	 * @param groupe
+	 * @param idsAsupprimer id des membres a supprimer
+	 * @param idsAajouter id des membres a ajouter
+	 * @throws MetierException
+	 */
+	void updateGroupeCollaboratif(GroupeDTO groupe, Set<Integer> idsAsupprimer,
+			Set<Integer> idsAajouter) throws MetierException;
+	
+	/**
+	 * Suppression d'un groupe collaboratif local et toutes entitées le référençant.
+	 * @param groupe
+	 * @throws MetierException
+	 */
+	void deleteGroupeCollaboratif(GroupeDTO groupe) throws MetierException;    
 }
 

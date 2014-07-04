@@ -7,8 +7,10 @@
 
 package org.crlr.metier.business;
 
+import java.util.List;
 import java.util.Map;
 
+import org.crlr.alimentation.DTO.EnseignantDTO;
 import org.crlr.exception.metier.MetierException;
 
 import org.crlr.metier.entity.EnseignantBean;
@@ -83,4 +85,11 @@ public interface EnseignantHibernateBusinessService {
      * @return vrai si la liaison est trouvé, faux sinon.
      */
     public boolean verifieEnseignantGroupe(Integer idEns, Integer idGroupe);
+
+    /**
+     * Rechercher de la liste des enseignants d'un établissement;
+     * @param idEtab
+     * @return list des enseignants triée sur le nom et prénom.
+     */
+	List<EnseignantDTO> findEnseignantsByEtab(Integer idEtab);
 }

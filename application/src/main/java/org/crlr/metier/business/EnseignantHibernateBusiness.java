@@ -7,6 +7,7 @@
 
 package org.crlr.metier.business;
 
+import org.crlr.alimentation.DTO.EnseignantDTO;
 import org.crlr.exception.metier.MetierException;
 
 import org.crlr.metier.entity.EnseignantBean;
@@ -140,4 +141,36 @@ public class EnseignantHibernateBusiness extends AbstractBusiness
         .setParameter("idGroupe", idGroupe).getSingleResult().toString()) ;
         return i > 0;
     }
+    
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<EnseignantDTO> findEnseignantsByEtab(Integer idEtab){
+      
+        final String requete = "SELECT E FROM " + EtablissementsEnseignantsBean.class.getName()+" F " 
+        + " INNER JOIN F.enseignant E " 
+        + " WHERE F.pk.idEtablissement = :idEtab " +
+        " order by e.nom, e.prenom ";
+        
+        List<EnseignantBean> enseignants =  getEntityManager().createQuery(requete).setParameter("idEtab", idEtab).getResultList();
+        if (enseignants != null) {
+        	
+        	List<EnseignantDTO> dtoList = new ArrayList<EnseignantDTO>(enseignants.size());
+        	
+        	for (EnseignantBean ens : enseignants) {
+				if (ens != null) {
+					EnseignantDTO ensDTO = new EnseignantDTO(ens.getCivilite(), ens.getPrenom(), ens.getNom());
+					ensDTO.setUid(ens.getUid());
+					ensDTO.setId(ens.getId());
+					dtoList.add(ensDTO);
+				}
+			}
+        	return dtoList;
+        }
+        return null;
+    }
+    
 }

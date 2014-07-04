@@ -18,6 +18,7 @@ import org.crlr.dto.application.base.GroupeDTO;
 import org.crlr.dto.application.base.GroupesClassesDTO;
 import org.crlr.dto.application.base.RechercheGroupeClassePopupQO;
 import org.crlr.dto.application.base.RechercheGroupeQO;
+import org.crlr.dto.application.base.UtilisateurDTO;
 import org.crlr.exception.metier.MetierException;
 
 /**
@@ -127,10 +128,47 @@ public interface GroupeClasseService {
     public List<GroupeDTO> findGroupesCollaboratifEnseignant(Integer idEnseignant);
     
     /**
+     * Recherche les groupes collaboratif locaux dans lesquels intervient un enseignant.
+     * @param idEnseignant l'identifiant de l'enseignant
+     * @return Les groupes collaboratifs locaux.
+     */
+    public List<GroupeDTO> findGroupesCollaboratifLocauxEnseignant(Integer idEnseignant);
+
+    
+    /**
      * Recherche les eleves qui font partie d'une classe ou d'un groupe.
      * @param rechercheGroupeQO contient l'id de la classe ou du groupe 
      * @return la liste des eleves
      */
     public List<UserDTO> findListeEleve(RechercheGroupeQO rechercheGroupeQO);
+
+    /**
+     * Sauvegarde de la création ou modification d'un Groupe Collaboratif Local
+     * La creation du groupe insert l'utilisateur dans le groupe.
+     * La modification verifie l'appartenance de l'utilisateur au groupe.
+     * 
+     * @param groupe
+     * @param user
+     * @return Le groupe creer ou modifier
+     */
+	ResultatDTO<GroupeDTO> saveGroupeCollaboratifLocal(GroupeDTO groupe,
+			UtilisateurDTO user);
+
+	/**
+	 * Modifie la liste des enseignants d'un groupe collaboratif Local.
+	 * @param groupe
+	 * @param aSupprimer
+	 * @param aAjouter
+	 * @throws MetierException 
+	 */
+	void modifieEnseignantGroupe(GroupeDTO groupe,
+			Set<Integer> aSupprimer, Set<Integer> aAjouter) throws MetierException;
+
+	/**
+	 * suppression du groupe collaboratif local .
+	 * @param groupe
+	 * @throws MetierException
+	 */
+	void deleteEnseignantGroupe(GroupeDTO groupe) throws MetierException;
     
 }

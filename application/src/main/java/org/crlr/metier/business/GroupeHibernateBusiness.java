@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
 import javax.persistence.Query;
 
 import org.apache.commons.lang.StringUtils;
@@ -26,6 +28,7 @@ import org.crlr.dto.application.base.RechercheGroupeClassePopupQO;
 import org.crlr.dto.application.base.RechercheGroupeQO;
 import org.crlr.dto.application.base.TypeGroupe;
 import org.crlr.exception.metier.MetierException;
+import org.crlr.metier.entity.CycleGroupeBean;
 import org.crlr.metier.entity.ElevesGroupesBean;
 import org.crlr.metier.entity.EnseignantsEnseignementsBean;
 import org.crlr.metier.entity.EnseignantsGroupesBean;
@@ -38,6 +41,8 @@ import org.crlr.utils.ComparateurUtils;
 import org.crlr.utils.ObjectUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
+
+
 
 /**
  * GroupeHibernateBusiness.
@@ -458,7 +463,7 @@ public class GroupeHibernateBusiness extends AbstractBusiness
         final String requete ;
         if (idInspecteur != null){
             requete = "SELECT " +
-            " new map(EG.pk.idEnseignant as idEnseignant, E.civilite as civ, E.nom as nom, E.prenom as prenom) " +
+            " new map(EG.pk.idEnseignant as idEnseignant, E.civilite as civ, E.nom as nom, E.prenom as prenom, E.uid as uid) " +
             " FROM " + EnseignantsGroupesBean.class.getName() +
             " EG INNER JOIN EG.enseignant E , " +
             OuvertureInspecteurBean.class.getName() + " OUV " +
@@ -469,7 +474,7 @@ public class GroupeHibernateBusiness extends AbstractBusiness
             " EG.pk.idGroupe = :idGroupe";
         } else {
             requete = "SELECT " +
-                " new map(EG.pk.idEnseignant as idEnseignant, E.civilite as civ, E.nom as nom, E.prenom as prenom) " +
+                " new map(EG.pk.idEnseignant as idEnseignant, E.civilite as civ, E.nom as nom, E.prenom as prenom, E.uid as uid) " +
             " FROM " +
                 EnseignantsGroupesBean.class.getName() + " EG INNER JOIN EG.enseignant E " +
             " WHERE " +
@@ -516,6 +521,8 @@ public class GroupeHibernateBusiness extends AbstractBusiness
                 enseignantDTO.setCivilite(StringUtils.trimToEmpty((String) result.get("civ")));
                 enseignantDTO.setNom(StringUtils.trimToEmpty((String) result.get("nom")));
                 enseignantDTO.setPrenom(StringUtils.trimToEmpty((String) result.get("prenom")));
+                enseignantDTO.setUid(StringUtils.trimToEmpty((String) result.get("uid")));
+
                 
                 
 
@@ -601,5 +608,124 @@ public class GroupeHibernateBusiness extends AbstractBusiness
             
         }
         return listeGroupe;        
+    }
+    
+    @Override
+    public GroupeDTO creerGroupeCollaboratifLocal(String code, String  nom, Integer idEtab, Integer idAnnee) {
+    	
+    	String queryText = 	"insert into cahier_courant.cahier_groupe " +
+    						"(id, code, designation, id_etablissement, id_annee_scolaire, groupe_collaboratif, groupe_collaboratif_local) values "+
+    						" ( nextval('cahier_groupe'), :code, :nom, :idEtab, :idAnnee, true, true)" +
+    						" returning id";
+    	
+    	Query query = getEntityManager().createNativeQuery(queryText);
+    	query.setParameter("code", code);
+    	query.setParameter("nom", nom);
+    	query.setParameter("idEtab", idEtab);
+    	query.setParameter("idAnnee", idAnnee);
+    	
+     	@SuppressWarnings("unchecked")
+		List<Object> tab = query.getResultList();
+     	
+     	
+     	if (tab != null && tab.size() == 1) {
+     		Integer id = (Integer) tab.get(0);
+     		GroupeDTO  res = new GroupeDTO();
+     		res.setId(id);
+     		res.setCode(code);
+     		res.setIntitule(nom);
+     		res.setGroupeCollaboratif(true);
+     		res.setGroupeCollaboratifLocal(true);
+     		return res;
+     	}
+    	
+    	return null;	
+    						
+    }
+    
+    @Override
+    public void addEnseignantInGroupeCollaboratifLocal(GroupeDTO groupe , Integer idEnseignant) throws MetierException{
+    	if (groupe.getGroupeCollaboratif() && groupe.getGroupeCollaboratifLocal()) {
+    	
+    		final EnseignantsGroupesBean enseignantsGroupesBean = new EnseignantsGroupesBean();
+            	enseignantsGroupesBean.setIdGroupe(groupe.getId());
+            	enseignantsGroupesBean.setIdEnseignant(idEnseignant);
+            	getEntityManager().persist(enseignantsGroupesBean);
+    	} else {
+    		throw new MetierException("Le groupe n'est pas du type collaboratif local {0}", groupe.getCode());
+    	}
+    }
+    
+    @Override
+    public void delEnseignantInGroupeCollaboratifLocal(GroupeDTO groupe ,Integer idEnseignant) throws MetierException {
+    	if (groupe.getGroupeCollaboratif() && groupe.getGroupeCollaboratifLocal()) {
+    		String querytext =  "delete from " +  EnseignantsGroupesBean.class.getName() + " eg " +
+    							" where eg.pk.idEnseignant = :idEns " +
+    							" and eg.pk.idGroupe = :idGrp ";
+    		Integer idGroupe = groupe.getId();
+    		try {
+    			
+	    		Query query = getEntityManager().createQuery(querytext);
+	    		query.setParameter("idEns", idEnseignant);
+	    		query.setParameter("idGrp", idGroupe);
+    		
+    		
+				query.executeUpdate();
+			} catch (Exception e) {
+			//	log.error("sql error : {}", e.getMessage());
+				throw new MetierException("La suppression de '{0}' du  groupe '{1}' a echoué" , idEnseignant, idGroupe);
+			}
+    	}
+    }
+    
+    @Override
+    public void deleteGroupeCollaboratifLocal(GroupeDTO groupe ) throws MetierException {
+    	if (groupe.getGroupeCollaboratif() && groupe.getGroupeCollaboratifLocal()) {
+    		
+    		
+    	
+    		
+    		String queryDelEns =  "delete from " +  EnseignantsGroupesBean.class.getName() + " eg " +
+								" where  eg.pk.idGroupe = :idGrp ";
+    		String queryDelCycle = 	"delete from " + CycleGroupeBean.class.getName() + " c " +
+									" where  c.pk.idGroupe = :idGrp ";
+    		
+    		String queryDelGroupe = "delete from " + GroupeBean.class.getName() + " g " +
+    								" where g.id = :idGrp " +
+    								" and g.groupeCollaboratifLocal = true "+
+    								" and g.groupeCollaboratif = true ";
+    		
+    		Integer idGroupe = groupe.getId();
+try {
+    			
+	    		Query query = getEntityManager().createQuery(queryDelEns);
+	    		
+	    		query.setParameter("idGrp", idGroupe);
+				query.executeUpdate();
+				
+				query = getEntityManager().createQuery(queryDelCycle);
+	    		
+	    		query.setParameter("idGrp", idGroupe);
+				query.executeUpdate();
+				
+				query = getEntityManager().createQuery(queryDelGroupe);
+	    		
+	    		query.setParameter("idGrp", idGroupe);
+				int nbdel = query.executeUpdate();
+				
+				if (nbdel != 1) {
+					
+					throw new MetierException("Echec suppression groupe : reslutat delete {0} != 1", nbdel);
+				}
+				
+				
+				
+			} catch (Exception e) {
+			//	log.error("sql error : {}", e.getMessage());
+				throw new MetierException("La suppression  du  groupe '{0}' a echoué: {1}" ,  idGroupe, e.getMessage());
+			}
+    	}
+    	
+    	
     }
 }

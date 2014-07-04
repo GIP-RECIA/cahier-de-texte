@@ -208,6 +208,42 @@ public interface GroupeHibernateBusinessService {
      * @param idEnseignant l'identifiant de l'enseignant
      * @return Les groupes collaboratifs.
      */
-    public List<GroupeDTO> findGroupesCollaboratifEnseignant(Integer idEnseignant);    
+    public List<GroupeDTO> findGroupesCollaboratifEnseignant(Integer idEnseignant);
+
+    /**
+     * Creation d'un groupe collaboratif local en base. 
+     * aucun control n'est effectué.
+     * @param code
+     * @param nom
+     * @param idEtab
+     * @param idAnnee
+     * @return GroupDTO du groupe créé
+     */
+	GroupeDTO creerGroupeCollaboratifLocal(String code, String nom,
+			Integer idEtab, Integer idAnnee);
+
+	/**
+	 * Ajout d'un enseignant dans un groupe a l'aide de leurs ids.
+	 * Ne doit être utilisée que pour ajouter des enseignants à des groupes collaboratif locaux
+	 * @param idGroupe
+	 * @param idEnseignant
+	 * @throws MetierException 
+	 */
+	void addEnseignantInGroupeCollaboratifLocal(GroupeDTO idGroupe, Integer idEnseignant) throws MetierException;
+
+	/**
+	 * Suppression d'un enseignant d'un groupe collaboratif.
+	 * @param groupe
+	 * @param idEnseignant
+	 * @throws MetierException
+	 */
+	void delEnseignantInGroupeCollaboratifLocal(GroupeDTO groupe, Integer idEnseignant) throws MetierException;
+	
+	/**
+	 * Suppression d'un groupe collaboratif local ainsi que des entitées le référençant.
+	 * @param groupe
+	 * @throws MetierException
+	 */
+	void deleteGroupeCollaboratifLocal(GroupeDTO groupe) throws MetierException;    
    
 }

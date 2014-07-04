@@ -7,11 +7,15 @@
 
 package org.crlr.services;
 
+import java.util.List;
+
+import org.crlr.alimentation.DTO.EnseignantDTO;
 import org.crlr.dto.ResultatDTO;
 import org.crlr.dto.application.base.EtablissementComplementDTO;
 import org.crlr.dto.application.base.EtablissementDTO;
 import org.crlr.dto.application.base.OuvertureQO;
 import org.crlr.exception.metier.MetierException;
+
 
 /**
  * EtablissementService.
@@ -136,4 +140,11 @@ public interface EtablissementService {
      */
     public ResultatDTO<Boolean> checkSaisieSimplifieeEtablissement(final Integer idEtablissement,
             final Integer idEnseignant);
+    
+    /**
+     * Recherche de tous les enseignants d'un établissement.
+     * @param idEtablissement
+     * @return les enseignants de l'établissement.
+     */
+    public List<EnseignantDTO> findAllEnseignant(Integer idEtablissement);
 }

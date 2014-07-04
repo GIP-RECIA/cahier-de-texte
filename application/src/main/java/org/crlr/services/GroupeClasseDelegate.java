@@ -7,6 +7,7 @@
 
 package org.crlr.services;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -18,6 +19,7 @@ import org.crlr.dto.application.base.GroupeDTO;
 import org.crlr.dto.application.base.GroupesClassesDTO;
 import org.crlr.dto.application.base.RechercheGroupeClassePopupQO;
 import org.crlr.dto.application.base.RechercheGroupeQO;
+import org.crlr.dto.application.base.UtilisateurDTO;
 import org.crlr.exception.metier.MetierException;
 import org.crlr.metier.facade.GroupeClasseFacadeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -139,10 +141,77 @@ public class GroupeClasseDelegate implements GroupeClasseService {
         return groupeClasseFacadeService.findListeEleve(rechercheGroupeQO);
     }
     
+    
+    
+    public List<GroupeDTO> findGroupesCollaboratifEnseignant(Integer idEnseignant) {
+    	return groupeClasseFacadeService.findGroupesCollaboratifEnseignant(idEnseignant);
+    }
+    
     /**
      * {@inheritDoc}
      */
-    public List<GroupeDTO> findGroupesCollaboratifEnseignant(Integer idEnseignant) {
-        return groupeClasseFacadeService.findGroupesCollaboratifEnseignant(idEnseignant);
+    public List<GroupeDTO> findGroupesCollaboratifLocauxEnseignant(Integer idEnseignant) {
+    	List<GroupeDTO> groupList = findGroupesCollaboratifEnseignant(idEnseignant);
+    	
+    	if (groupList != null && !groupList.isEmpty()) {
+
+    		List<GroupeDTO> onlyLocal = new ArrayList<GroupeDTO>(groupList.size());
+    		
+    		for (GroupeDTO groupe : groupList) {
+				if (groupe.getGroupeCollaboratifLocal() ) {
+					onlyLocal.add(groupe);
+				}
+			}
+    		
+    		return onlyLocal;
+    		
+    		
+    	}
+        return groupList;
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ResultatDTO<GroupeDTO> saveGroupeCollaboratifLocal(GroupeDTO groupe, UtilisateurDTO user){
+    	
+    	GroupeDTO resultat = null;
+    	
+    	if (groupe.getId() == null) {
+    		// c'est une création
+    		Integer idEnseignant = user.getUserDTO().getIdentifiant();
+    		
+    		try {
+				resultat = groupeClasseFacadeService.creerGroupeCollaboratif(
+												groupe, 
+												user.getAnneeScolaireDTO(), 
+												user.getIdEtablissement(), 
+												idEnseignant);
+				
+			} catch (MetierException e) {
+				return new ResultatDTO<GroupeDTO>(null, e.getConteneurMessage());
+			}
+    	} else {
+    		// c'est une modification du code ou de l'intitulé
+    	}
+    	return new ResultatDTO<GroupeDTO>(resultat, null);
+    }
+    
+    @Override
+    public void modifieEnseignantGroupe(GroupeDTO groupe, Set<Integer> aSupprimer, Set<Integer> aAjouter ) throws MetierException{
+    	if (groupe.getId() == null) {
+    		throw new MetierException("groupe avec identifiant null ({0})", groupe.getCode());
+    	}
+    	groupeClasseFacadeService.updateGroupeCollaboratif(groupe, aSupprimer, aAjouter); 
+    }
+    
+    @Override
+    public void deleteEnseignantGroupe(GroupeDTO groupe) throws MetierException {
+    	if (groupe.getId() == null) {
+    		throw new MetierException("groupe avec identifiant null ({0})", groupe.getCode());
+    	}
+    	groupeClasseFacadeService.deleteGroupeCollaboratif(groupe);
+    }
+    
 }

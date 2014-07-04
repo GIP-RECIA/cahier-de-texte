@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.crlr.alimentation.DTO.EnseignantDTO;
 import org.crlr.dto.ResultatDTO;
 import org.crlr.dto.application.admin.GenerateurDTO;
 import org.crlr.dto.application.base.EtablissementComplementDTO;
@@ -23,6 +24,7 @@ import org.crlr.exception.metier.MetierException;
 import org.crlr.message.ConteneurMessage;
 import org.crlr.message.Message;
 import org.crlr.message.Message.Nature;
+import org.crlr.metier.business.EnseignantHibernateBusinessService;
 import org.crlr.metier.business.EtablissementHibernateBusinessService;
 import org.crlr.utils.DateUtils;
 import org.crlr.web.dto.GrilleHoraireDTO;
@@ -46,6 +48,9 @@ public class EtablissementFacade implements EtablissementFacadeService {
     @Autowired
     private EtablissementHibernateBusinessService etablissementHibernateBusinessService;
 
+    @Autowired
+    private EnseignantHibernateBusinessService enseignantHibernateBusinessService;
+    
     /**
      * Mutateur de etablissementHibernateBusinessService.
      *
@@ -56,6 +61,17 @@ public class EtablissementFacade implements EtablissementFacadeService {
         this.etablissementHibernateBusinessService = etablissementHibernateBusinessService;
     }
 
+    
+    public EnseignantHibernateBusinessService getEnseignantHibernateBusinessService() {
+		return enseignantHibernateBusinessService;
+	}
+
+	public void setEnseignantHibernateBusinessService(
+			EnseignantHibernateBusinessService enseignantHibernateBusinessService) {
+		this.enseignantHibernateBusinessService = enseignantHibernateBusinessService;
+	}
+    
+    
     /**
      * {@inheritDoc}
      */
@@ -350,4 +366,12 @@ ADMIN_24 = La plage du {0} au {1} n'est pas comprise dans l'heure de début et l
         result.setValeurDTO(etablissementHibernateBusinessService.checkSaisieSimplifieeEtablissement(idEtablissement, idEnseignant));
         return result;
     }
+
+	@Override
+	public List<EnseignantDTO> findAllEnseignant(Integer idEtablissement) {
+		return 	enseignantHibernateBusinessService.findEnseignantsByEtab(idEtablissement);
+	}
+
+	
+    
 }

@@ -47,6 +47,12 @@ public class GroupeBean {
     @Column(name = "groupe_collaboratif", nullable = true)
     private Boolean groupeCollaboratif;
     
+    /** Indique s'il s'agit d'un groupe collaboratif local ou non. 
+     * 
+     * ne doit être vrais que si groupe_collaboratif est vrai.
+     * */
+    @Column(name = "groupe_collaboratif_local", nullable = true)
+    private Boolean groupeCollaboratifLocal;
     
     /** DOCUMENTATION INCOMPLETE! */
     @ManyToOne(cascade =  {
@@ -223,5 +229,14 @@ public class GroupeBean {
     public void setGroupeCollaboratif(Boolean groupeCollaboratif) {
         this.groupeCollaboratif = groupeCollaboratif;
     }
+
+	public Boolean getGroupeCollaboratifLocal() {
+		return groupeCollaboratifLocal;
+	}
+
+	public void setGroupeCollaboratifLocal(Boolean groupeCollaboratifLocal) {
+		this.groupeCollaboratifLocal = groupeCollaboratifLocal;
+	}
+
     
 }

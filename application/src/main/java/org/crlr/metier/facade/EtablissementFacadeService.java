@@ -7,6 +7,9 @@
 
 package org.crlr.metier.facade;
 
+import java.util.List;
+
+import org.crlr.alimentation.DTO.EnseignantDTO;
 import org.crlr.dto.ResultatDTO;
 import org.crlr.dto.application.base.EtablissementComplementDTO;
 import org.crlr.dto.application.base.EtablissementDTO;
@@ -134,4 +137,12 @@ public interface EtablissementFacadeService {
      */
     public ResultatDTO<Boolean> checkSaisieSimplifieeEtablissement(final Integer idEtablissement,
             final Integer idEnseignant);
+    
+    /**
+     * Donne tous les enseignants d'un établissement.
+     * @param idEtablissement
+     * @return
+     */
+    public List<EnseignantDTO> findAllEnseignant(Integer idEtablissement);
+    
 }

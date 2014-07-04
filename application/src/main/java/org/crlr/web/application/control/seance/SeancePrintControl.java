@@ -254,7 +254,7 @@ public class SeancePrintControl extends AbstractPrintControl<SeancePrintForm> {
             
             
         } catch (MetierException e) {
-            log.debug("{0}", e.getMessage());
+            log.debug("{}", e.getMessage());
         }
 
 
