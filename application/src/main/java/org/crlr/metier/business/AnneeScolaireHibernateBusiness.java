@@ -13,8 +13,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import javax.persistence.Query;
+
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.crlr.alimentation.Archive;
 import org.crlr.dto.ResultatDTO;
 import org.crlr.dto.application.base.AnneeScolaireDTO;
 import org.crlr.dto.application.base.DateAnneeScolaireQO;
@@ -32,6 +36,7 @@ import org.crlr.message.Message.Nature;
 import org.crlr.metier.entity.AnneeScolaireBean;
 import org.crlr.metier.entity.ClasseBean;
 import org.crlr.metier.entity.GroupeBean;
+import org.crlr.metier.utils.SchemaUtils;
 import org.crlr.utils.Assert;
 import org.crlr.utils.BooleanUtils;
 import org.crlr.utils.DateUtils;
@@ -252,7 +257,25 @@ public class AnneeScolaireHibernateBusiness extends AbstractBusiness
     }
 
     /**
-     * Trouver les anciens année scolaire
+     * recherche tout les shémas de base de donnée
+     * @return
+     */
+    public List<String> findAllArchiveSchemaNames (){
+    	String queryText = 	"SELECT schema_name " +
+    						"FROM information_schema.schemata " +
+    						"WHERE schema_name like '" + Archive.PREFIX_SCHEMA_ARCHIVE + "%'" ;
+    	
+    	Query query = getEntityManager().createNativeQuery(queryText);
+    	
+    	@SuppressWarnings("unchecked")
+		List<String> schemaList =  query.getResultList();
+    	return schemaList;
+    }
+    
+    
+    
+    /**
+     * Trouve les anciennes années scolaire
      * {@inheritDoc}
      */
     @SuppressWarnings("unchecked")
@@ -280,22 +303,34 @@ public class AnneeScolaireHibernateBusiness extends AbstractBusiness
             .setParameter("dateDuJour", dateDuJour)
             .getResultList();
         
-        for(Map<String, ?> result : liste) {
-            final AnneeScolaireDTO anneeScolaireDTO = new AnneeScolaireDTO();
-            anneeScolaireDTO.setId((Integer) result.get("idAnneeScolaire"));
-            anneeScolaireDTO.setDateRentree((Date) result.get("dateRentree"));
-            anneeScolaireDTO.setDateSortie((Date) result.get("dateSortie"));
-            anneeScolaireDTO.setExercice((String) result.get("exercice"));
-            listeAnneeScolaire.add(anneeScolaireDTO);
-        }        
-        
-        if (org.apache.commons.collections.CollectionUtils.isEmpty(listeAnneeScolaire) && BooleanUtils.isTrue(vraiOuFauxMessageBloquant)) {
-            final ConteneurMessage conteneurMessage = new ConteneurMessage();
-            conteneurMessage.add(new Message(TypeReglesCahierArchive.ARCHIVE_02.name()));
-            throw new MetierException(conteneurMessage, "Aucune archive disponible.");
-        }
-        
+        if (liste != null && ! liste.isEmpty()) {
+        	
+        	List<String> schemaList = findAllArchiveSchemaNames();
+        	if (schemaList != null && !schemaList.isEmpty()) {
+		        for(Map<String, ?> result : liste) {
+		        	String exercice = (String) result.get("exercice");
+		        	String schema = SchemaUtils.getSchemaCourantOuArchive(true, exercice);
+		        	
+		        	if (schemaList.contains(schema)) {
+			            final AnneeScolaireDTO anneeScolaireDTO = new AnneeScolaireDTO();
+			            anneeScolaireDTO.setId((Integer) result.get("idAnneeScolaire"));
+			            anneeScolaireDTO.setDateRentree((Date) result.get("dateRentree"));
+			            anneeScolaireDTO.setDateSortie((Date) result.get("dateSortie"));
+			            anneeScolaireDTO.setExercice(exercice);
+			            listeAnneeScolaire.add(anneeScolaireDTO);
+		        	}
+		        }        
+        	}
+	        if (org.apache.commons.collections.CollectionUtils.isEmpty(listeAnneeScolaire) && BooleanUtils.isTrue(vraiOuFauxMessageBloquant)) {
+	            final ConteneurMessage conteneurMessage = new ConteneurMessage();
+	            conteneurMessage.add(new Message(TypeReglesCahierArchive.ARCHIVE_02.name()));
+	            throw new MetierException(conteneurMessage, "Aucune archive disponible.");
+	        }
+	        
+	        }
         resultat.setValeurDTO(listeAnneeScolaire);
+        
         return resultat;
+        
     }
 }
