@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
 import javax.persistence.Query;
 
 import org.apache.commons.lang.StringUtils;
@@ -130,6 +128,7 @@ public class GroupeHibernateBusiness extends AbstractBusiness
                     " OUV.id_inspecteur =? AND" +
                     " G.id_etablissement =? AND " +
                     " G.id_annee_scolaire =? AND " +
+                    " G.groupe_collaboratif = false and" +
                     " EG.id_enseignant = OUV.id_enseignant ";
             if (idEnseignant != null) {
                 requete += 
@@ -146,7 +145,8 @@ public class GroupeHibernateBusiness extends AbstractBusiness
                 " G ON (G.id=EG.id_groupe)" +
                 " WHERE " +
                     " G.id_etablissement =? AND " +
-                    " G.id_annee_scolaire =? AND " +
+                    " G.id_annee_scolaire =? AND" +
+                    " G.groupe_collaboratif = false and " +
                     " EG.id_enseignant =? " +
                     " ORDER BY G.id ASC";
         } else {
@@ -155,7 +155,8 @@ public class GroupeHibernateBusiness extends AbstractBusiness
                 " FROM " + 
                     SchemaUtils.getTableAvecSchema(schema, "cahier_groupe") + " G " +
                 " WHERE " +
-                    " G.id_etablissement =? " +
+                    " G.id_etablissement =? and " +
+                    " G.groupe_collaboratif = false and " +
                     " ORDER BY G.id ASC";
         }
         
@@ -573,7 +574,7 @@ public class GroupeHibernateBusiness extends AbstractBusiness
      */
     @SuppressWarnings("unchecked")
     public List<Integer> findListeGroupePourEtab(Integer idEtab){
-        final String requete = "SELECT id FROM " + GroupeBean.class.getName() + " WHERE id_etablissement = :idEtab";
+        final String requete = "SELECT id FROM " + GroupeBean.class.getName() + " WHERE id_etablissement = :idEtab and groupe_collaboratif_local = false";
         final List<Integer> lesIdGroupe = getEntityManager().createQuery(requete)
             .setParameter("idEtab", idEtab).getResultList();
         return lesIdGroupe;
