@@ -19,7 +19,7 @@
 				idliena4j="idMenuSaveModif" 
 				bean="#{ajoutModifGroupe}"
 				cible="saveModifMembre"
-				oncomplete="if (showAlertSuppression()){ #{rich:component('idPopupAlertRmAll')}.show();}"
+				oncomplete="if (showAlertSuppression()){ #{rich:component('idPopupAlertRmAll')}.show();};hideSaveBouton();"
 				rendered="true" 
 				status="statuspop" 
 				render="idPanelSelection"

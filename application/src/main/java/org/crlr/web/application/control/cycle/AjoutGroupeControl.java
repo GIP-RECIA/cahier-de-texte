@@ -374,7 +374,12 @@ public class AjoutGroupeControl extends AbstractPopupControl<AjoutGroupeForm> im
     	if (membres == null) {
     		return;
     	}
-    	
+    	if ( membres.size() == 0 ){
+			//le groupe sera vide
+			log.debug("suppression de tout les membres du groupe");
+			form.setAlertSuppression(true);
+			return;
+		}
     	
     	Integer idGroupe = form.getSelectedIdGroup();
     	
@@ -382,6 +387,9 @@ public class AjoutGroupeControl extends AbstractPopupControl<AjoutGroupeForm> im
     	Set<Integer> supprim = new HashSet<Integer>(idMemberInbase);
 
     	log.debug("les membres {0}", membres);
+    	
+    	
+    	
     	
     	for (String uid : membres) {
     		Integer id = uid2id(uid);
@@ -393,14 +401,6 @@ public class AjoutGroupeControl extends AbstractPopupControl<AjoutGroupeForm> im
     			log.debug("membre a ajouter {0}", uid);
     			
     		}
-		}
-    	
-    	// test si le groupe restera vide
-		if (supprim.size() >= membres.size() + ajout.size() ){
-			//le groupe sera vide
-			log.debug("suppression de tout les membres du groupe");
-			form.setAlertSuppression(true);
-			return;
 		}
     	
     	if (supprim.size() > 0 || ajout.size() > 0) {
