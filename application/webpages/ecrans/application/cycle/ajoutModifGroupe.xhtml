@@ -9,10 +9,9 @@
       xmlns:t="http://myfaces.apache.org/tomahawk"
       xmlns:rich="http://richfaces.org/rich">
 
-<cr:page titrePage="Recherche/Modification séance" >
+<cr:page titrePage="Recherche/Modification séance" bean="#{ajoutModifGroupe}" form="#{ajoutModifGroupe.form}">
 <h:outputStylesheet library="css" name="ajoutModifGroupe.css" target="head" />
   <h:outputScript library="js" name="ajoutModifGroupe.js" target="head" />
-  
     <cr:menuAction id="idMenuAction">
     	
     	<cr:liena4j 
@@ -70,21 +69,29 @@
 					styleClass="libelle"
 					title="Titre de la séquence pédagogique contenant" />
 			<rich:select 
+					styleClass="selecteur"
 					enableManualInput="false"
 					defaultLabel="selectionner un groupe"
 					value="#{ajoutModifGroupe.form.selectedIdGroup}"
-					onselect="jQuery('.rechercherBouton').click();"
 					>
+			<a4j:ajax listener="#{ajoutModifGroupe.rechercher}" event="selectitem" render="idOutputPanel idPanelSelection idListeMembres"/>
 				<f:selectItems 	value="#{ajoutModifGroupe.form.listeGroupe}" 
 								var="grp" 
 								itemValue="#{grp.id}"  
 								itemLabel="#{grp.intitule}"/>
+				
 			</rich:select>
+			<script type="text/javascript"> 
+				 hideSaveBouton();
+				 
+			</script>
 		</h:panelGrid>
 	</rich:panel>
 	
 	 <a4j:outputPanel id="idOutputPanel" >
-		<rich:panel id="idPanelSelection" styleClass="pickSelector" rendered="#{not empty ajoutModifGroupe.form.selectedIdGroup}" >
+		<rich:panel id="idPanelSelection" 
+					styleClass="pickSelector" 
+					rendered="#{not empty ajoutModifGroupe.form.selectedIdGroup}" >
 			<a4j:outputPanel layout="block" >
 			<h:outputLabel value="Selecteur d'enseignant:"
 				styleClass="pickSelector" />
@@ -104,9 +111,8 @@
 								removeAllText=""
 								sourceCaption="Enseignants de l'établissement " 
 								targetCaption="Enseignants du groupe "
-								styleClass="pickList"
+								styleClass="pickList "
 								columnClasses="c1 c2 c3"
-								
 								>
 					
 		
@@ -119,12 +125,24 @@
 				<h:outputText styleClass="alertSuppressionTest" 
 				rendered="#{ajoutModifGroupe.form.alertSuppression}" 
 				values="#{ajoutModifGroupe.form.alertSuppression}"/>
-
+				 <script type="text/javascript"> 
+				 hideSaveBouton();
+				 </script>
 				
 			</a4j:region>
 			<a4j:jsFunction name="saveList" execute="idListeMembres" />
 		</rich:panel>	
 	</a4j:outputPanel>
+	
+	 <cr:popupConfirmSauvegardeModification 
+        libelleMessage="Voulez-vous enregistrer vos modifications avant de quitter cette page ?"
+        bean="#{ajoutModifGroupe}" 
+        cible="saveModifMembre"       
+        oncomplete="alert('oncomplete'); setModificationFormulaire(false);"
+        onErrorSauvegarde="alert('error sauvgarde' ); setModificationFormulaire(true);"
+        action="" 
+        render="idPanelSelection" />
+	
 </cr:page>
 
 <cr:popupModifiable
@@ -132,7 +150,8 @@
         tailleAuto="true" 
         domElementAttachment="form"
          statusPopup="statuspop"
-        titrePopup="Alerte suppression du groupe">
+        titrePopup="Alerte suppression du groupe"
+        onhide="rechercher();">
         <h:panelGroup >
 		<h:panelGroup id="idPopupAlertRmAllText"  styleClass="AlertRmAlltext" layout="block" >
 		           			Vous voulez enlever tous les enseignants du groupe.
@@ -145,7 +164,7 @@
 								id="idDeleteGroupe" 
 								action="#{ajoutModifGroupe.deleteGroupe}"
 								title="Alert suppression du groupe"
-								oncomplete="#{rich:component('idPopupAlertRmAll')}.hide();"
+								oncomplete="nosearch(); #{rich:component('idPopupAlertRmAll')}.hide();"
 								render="idPanelCritere idOutputPanel">
 			        		Confirmer la suppression du groupe         
 			    		</a4j:commandLink>
@@ -172,6 +191,7 @@
     		cible="saveGroup"
     		image="save.png" 
     		title="Sauvegarder/créer le groupe"
+    		render="idPanelCritere idOutputPanel" 
     		oncomplete="
 				 if (#{facesContext.maximumSeverity == null or facesContext.maximumSeverity.ordinal le 0} ) {
 				   #{rich:component('idPopupAjoutGroupe')}.hide();
@@ -183,6 +203,7 @@
 			<t:aliasBeansScope> 
 				<t:aliasBean alias="#{groupe}" value="#{ajoutModifGroupe.form.groupEdited}" /> 
         	 <h:panelGrid id="idSaisieGroup" columns="2">
+<ui:remove>
         	 	<h:outputLabel value="Code du groupe :"/>
         	 	<h:inputText 
         	 			value="#{groupe.code}" 
@@ -191,6 +212,7 @@
         	 			requiredMessage="Le code est obligatoire"
         	 			autocomplete="off"
         	 	/>
+</ui:remove>
         	 	<h:outputLabel value="Nom du groupe :"/>
         	 	<h:inputText 
         	 			value="#{groupe.intitule}" 

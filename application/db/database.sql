@@ -3,6 +3,12 @@ DROP SCHEMA IF EXISTS cahier_courant CASCADE;
 CREATE SCHEMA cahier_courant;
 
  
+drop table if exists cahier_courant.cahier_couleur_enseignement_classe;
+
+
+DROP SEQUENCE IF EXISTS cahier_couleur_enseignement cascade;
+
+
 DROP TABLE IF EXISTS cahier_courant.cahier_annee_scolaire CASCADE;
 DROP TABLE IF EXISTS cahier_courant.cahier_classe CASCADE;
 DROP TABLE IF EXISTS cahier_courant.cahier_type_devoir CASCADE;
@@ -67,6 +73,39 @@ CREATE TABLE cahier_courant.cahier_annee_scolaire
   periode_scolaire text,
   CONSTRAINT cahier_annee_scolaire_id PRIMARY KEY (id)
 );
+
+
+
+-- Table: cahier_courant.cahier_couleur_enseignement_classe
+
+
+CREATE TABLE cahier_courant.cahier_couleur_enseignement_classe
+(
+  id integer NOT NULL, 
+  id_etablissement integer not null,
+  id_enseignant integer not null,
+  id_enseignement integer not null,
+  id_classe integer, 
+  id_groupe integer,
+  couleur varchar(10),
+  CONSTRAINT id_couleur_enseignement_classe PRIMARY KEY (id ),
+  constraint unique_couleur_enseignement_classe UNIQUE (id_etablissement, id_enseignant, id_enseignement, id_classe),
+  constraint unique_couleur_enseignement_groupe unique (id_etablissement, id_enseignant, id_enseignement, id_groupe),
+  CONSTRAINT cahier_couleur_enseignant FOREIGN KEY (id_enseignant)
+      REFERENCES cahier_courant.cahier_enseignant (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT cahier_couleur_enseignement FOREIGN KEY (id_enseignement)
+      REFERENCES cahier_courant.cahier_enseignement (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT cahier_couleur_classe FOREIGN KEY (id_classe)
+      REFERENCES cahier_courant.cahier_classe (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT cahier_couleur_groupe FOREIGN KEY (id_groupe)
+      REFERENCES cahier_courant.cahier_groupe (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+CREATE SEQUENCE cahier_couleur_enseignement MINVALUE 1;
 
 
 -- Table: cahier_etablissement
@@ -196,6 +235,9 @@ CREATE TABLE cahier_courant.cahier_groupe
   id_etablissement Integer NOT NULL,
   id_annee_scolaire integer NOT NULL,
   groupe_collaboratif boolean DEFAULT false,
+  groupe_collaboratif_local boolean DEFAULT false,
+	
+  
   nom_long varchar(255) DEFAULT null,
   CONSTRAINT cahier_groupe_id PRIMARY KEY (id),
   CONSTRAINT id_etablissement_groupes FOREIGN KEY (id_etablissement)
@@ -203,7 +245,8 @@ CREATE TABLE cahier_courant.cahier_groupe
       ON UPDATE NO ACTION ON DELETE NO ACTION,
   CONSTRAINT id_annee_scolaire FOREIGN KEY (id_annee_scolaire)
       REFERENCES cahier_courant.cahier_annee_scolaire (id) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE NO ACTION
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  constraint is_collaboratif_local check (groupe_collaboratif = true or groupe_collaboratif_local = false or groupe_collaboratif_local is null)
 );
 -- Index: fki_id_annee_scolaire
 

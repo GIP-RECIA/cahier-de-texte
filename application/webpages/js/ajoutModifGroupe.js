@@ -1,12 +1,14 @@
 
 jQuery(document).ready(function () {
 	hideSaveBouton();
+	
 });
 
-
+var searchOk=true;
 
 function showSaveBouton(){
 	jQuery("a.saveBoutonClass").show();
+	setModificationFormulaire(true);
 }
 
 function hideSaveBouton() {
@@ -14,6 +16,7 @@ function hideSaveBouton() {
    jQuery(".pickList td > button").click(function(){
 	   showSaveBouton();
    });
+	setModificationFormulaire(false);
 }
 
 function showAlertSuppression(){
@@ -24,4 +27,18 @@ function showAlertSuppression(){
 	return false;
 }
 
+function rechercher(){
+	var b = jQuery('.rechercherBouton');
+	if (b && searchOk) {
+		b.click();
+	}
+	searchOk = true;
+}
+
+
+
+function nosearch(){
+	searchOk=false;
+	true;
+}
 

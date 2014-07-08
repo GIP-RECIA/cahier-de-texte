@@ -1,7 +1,10 @@
 package org.crlr.web.application.control.cycle;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -133,7 +136,10 @@ public class AjoutGroupeControl extends AbstractPopupControl<AjoutGroupeForm> im
         final List<GroupeDTO> listeGroupe = groupeClasseService.findGroupesCollaboratifLocauxEnseignant(utilisateurDTO.getUserDTO().getIdentifiant());
         form.setListeGroupe(listeGroupe);
       
-        id2groupe = new HashMap<Integer, GroupeDTO>(listeGroupe.size());
+        int size = listeGroupe.size();
+        id2groupe = new HashMap<Integer, GroupeDTO>(size);
+        
+        log.debug("nb groupe collaboratif = {0}", size);
         
         for (GroupeDTO grp : listeGroupe) {
 			if (grp != null) {
@@ -320,14 +326,24 @@ public class AjoutGroupeControl extends AbstractPopupControl<AjoutGroupeForm> im
     	log.debug("annee scolaire {0}" ,user.getAnneeScolaireDTO());
     	log.debug("etablissement {1} {0} ", user.getDesignationEtablissement(), user.getIdEtablissement());
     	
+    	String code = user.getUserDTO().getUid();
+    	
+    	SimpleDateFormat dateFormat = new SimpleDateFormat("yyMMddhhmmss");
+    	code += dateFormat.format(new Date());
+    	
+    	groupe.setCode(code);
     	
     	ResultatDTO<GroupeDTO> resultat = groupeClasseService.saveGroupeCollaboratifLocal(groupe, user);
+    	
+    	
+    	initialiseListeGroupe(user);
     	
     	if (resultat != null) {
     		groupe = resultat.getValeurDTO();
 	    	 if (groupe != null) {
 	    		 log.debug("new groupe id = {0}", groupe.getId());
-	    		 
+	    		 form.setSelectedIdGroup(groupe.getId());
+	    		 rechercher();
 	    	 }
     	}
     }
@@ -367,7 +383,7 @@ public class AjoutGroupeControl extends AbstractPopupControl<AjoutGroupeForm> im
     	return null;
     }
     
-    public void saveModifMembre() {
+    public void saveModifMembre() throws MetierException {
     	List<String> membres =  form.getMembresUid();
     	
     	form.setAlertSuppression(false);
