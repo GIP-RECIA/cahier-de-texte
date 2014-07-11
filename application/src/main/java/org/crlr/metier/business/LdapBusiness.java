@@ -590,8 +590,6 @@ public class LdapBusiness implements LdapBusinessService, InitializingBean {
                     final String profilName = (String) attributProfil.get(i);
                     for (Entry<String, Profil> entry : mapProfil.entrySet()) {
                         if (profilName.equals(entry.getKey())) {
-                        	// on fixe par defaut au dernier profile 
-                            utilisateurDTO.setProfil(entry.getValue());
                         	log.debug("TEST gestionProfilCRC : profil add : " + entry.getValue());
                         	// on complete la liste des profiles
                             utilisateurDTO.addProfilDisponible(entry.getValue());
@@ -599,9 +597,19 @@ public class LdapBusiness implements LdapBusinessService, InitializingBean {
                     }
                 }
                 ContexteUtilisateur contexteUtilisateur = ContexteUtils.getContexteUtilisateur();
+                
                 if(contexteUtilisateur.getProfilPrefere() == null) {
-					 contexteUtilisateur.setProfilPrefere(utilisateurDTO.getProfil());
-                    log.debug("TEST gestionProfilCRC : profil prefere set : " + utilisateurDTO.getProfil());
+                	Set<Profil> profilPosible = utilisateurDTO.getProfilsDisponibles();
+                	
+                	for (Profil profil : Profil.values()) {
+						if (profilPosible.contains(profil)) {
+							utilisateurDTO.setProfil(profil);
+							contexteUtilisateur.setProfilPrefere(profil);
+		                    log.debug("TEST gestionProfilCRC : profil prefere set : " + profil);
+		                    break; // on fixe par defaut le premier dans l'enum Profil
+						}
+					}
+              
                 } else {
                     utilisateurDTO.setProfil(contexteUtilisateur.getProfilPrefere());
                     log.debug("TEST gestionProfilCRC : profil set with profil prefere : " + utilisateurDTO.getProfil());

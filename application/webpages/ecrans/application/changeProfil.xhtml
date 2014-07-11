@@ -16,17 +16,17 @@
     <cr:menuAction id="idMenuAction" autreAction="false" />
         
 
-    <rich:panel rendered="#{contexteUtilisateur.utilisateurDTO.profil eq 'DIRECTION_ETABLISSEMENT' or contexteUtilisateur.utilisateurDTO.profil eq 'ENSEIGNANT'}" 
+    <rich:panel rendered="#{changeProfil.form.multiProfil}" 
         header="Choix de rôle utilisateur" id="prefProfilUser">
 
         <p style="text-align:center;">Sélectionnez un rôle parmi les rôles utilisateurs disponibles</p>
         <center>
         <p>
             <h:panelGroup>
-                <h:selectOneRadio id="selectionProfil" value="#{changeProfil.form.typeProfil}">
-                 <f:selectItem itemLabel="Direction établissement" itemValue="DIRECTION_ETABLISSEMENT" />
-                 <f:selectItem itemLabel="Enseignant" itemValue="ENSEIGNANT" />
-                </h:selectOneRadio>
+                <h:selectOneRadio id="selectionProfil" value="#{changeProfil.form.profil}">
+                 <f:selectItems value="#{changeProfil.form.profilList}" />
+                 
+               </h:selectOneRadio>
             </h:panelGroup> 
         </p>
     </center>

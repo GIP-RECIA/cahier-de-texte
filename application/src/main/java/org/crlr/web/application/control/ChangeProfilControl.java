@@ -1,9 +1,14 @@
 package org.crlr.web.application.control;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
+import javax.faces.model.SelectItem;
 
 import org.crlr.dto.Outil;
 import org.crlr.dto.application.base.AnneeScolaireDTO;
@@ -47,7 +52,19 @@ public class ChangeProfilControl extends AbstractControl<ChangeProfilForm> {
         // Charge les preference de l'utilisateur
         final UtilisateurDTO utilisateurDTO =
             ContexteUtils.getContexteUtilisateur().getUtilisateurDTO();
-        form.setTypeProfil(utilisateurDTO.getProfil().toString());
+    
+        form.setProfil(utilisateurDTO.getProfil());
+        
+        List<SelectItem> listRoles = new ArrayList<SelectItem>();
+        
+        Set<Profil> profilsDisponibles = utilisateurDTO.getProfilsDisponibles();
+        
+        for (Profil profil : profilsDisponibles) {
+			SelectItem item = new SelectItem(profil, profil.getRole());
+			listRoles.add(item);
+		}
+        
+        form.setProfilList(listRoles);
     }
             
     /**
@@ -57,18 +74,12 @@ public class ChangeProfilControl extends AbstractControl<ChangeProfilForm> {
     public String saveProfil() {
         ContexteUtilisateur contexteUtilisateur = ContexteUtils.getContexteUtilisateur();
         UtilisateurDTO utilisateurDTO = contexteUtilisateur.getUtilisateurDTO();
-        String profilSelectionne = form.getTypeProfil();
-        log.debug("TEST CHANGEMENT PROFIL : {0}", form.getTypeProfil());
-        Profil profilFinal = null;
-        if("ENSEIGNANT".equals(profilSelectionne)) {
-            profilFinal = Profil.ENSEIGNANT;
-        } else if("DIRECTION_ETABLISSEMENT".equals(profilSelectionne)) {
-            profilFinal = Profil.DIRECTION_ETABLISSEMENT;
-        }
-        
-        if(profilFinal != null) {
-            utilisateurDTO.setProfil(profilFinal);
-            contexteUtilisateur.setProfilPrefere(profilFinal);
+        Profil profil = form.getProfil();
+        log.debug("TEST CHANGEMENT PROFIL : {0}", profil.name());
+      
+        if(profil != null) {
+            utilisateurDTO.setProfil(profil);
+            contexteUtilisateur.setProfilPrefere(profil);
         }
         log.debug("NOUVEAU PROFIL : {0}", utilisateurDTO.getProfil().toString());
         log.debug("NOUVEAU PROFIL PREFERE : {0}", contexteUtilisateur.getProfilPrefere());
