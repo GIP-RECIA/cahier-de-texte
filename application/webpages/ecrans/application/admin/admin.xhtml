@@ -562,6 +562,26 @@ Onglet : GESTION des LIBELLES et des TYPES DE DEVOIRS
                 </h:panelGrid>
             </rich:tab>
 
+			<rich:tab id="PREFERENCES" name ="PREFERENCES" header="Préférences" 
+				rendered="#{admin.form.mapAccesOnglet['PREFERENCES']}"
+				styleClass="navigationOnglet"
+				>
+				<fieldset><legend style="font-weight: bold;">Choix des préferences 
+                du module cahier de texte pour l'établissement.</legend>
+                <h:outputLabel
+                        value="Permettre aux enseignants de lire les séances de leurs collègues pour les classes qu'ils ont en commun. "
+                        styleClass="libelle" />
+     				<h:selectBooleanCheckbox 
+     						value="#{admin.form.prefSeancePartage}"
+                        	id="checkboxSeancePartage" 
+                        	onclick="lancerLienAjax('idSavePrefEtab');" />
+                    <cr:lien id="idSavePrefEtab" bean="#{admin}"
+                            cible="savePrefEtab" 
+                            render="PREFERENCES"
+                     />
+                  </fieldset>
+			</rich:tab>	
+			
             <rich:tab id="OUVERTURE" header="Ouverture"
                 rendered="#{admin.form.mapAccesOnglet['OUVERTURE']}"
                 disabled="#{not admin.form.vraiOuFauxOuvertEntSource}"

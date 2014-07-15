@@ -8,6 +8,21 @@
 --     cahier_groupe : ajout de la colonne groupe_collaboratif_local (o/n) pour distinguer les groupes 
 --                     collaboratif externe des groupes collaboratifs locaux.     
 -- ----------------------------------------------------------------------------------------------
+
+begin;
+drop table if exists  cahier_courant.cahier_preferences_etab;
+
+-- Table: cahier_preferences_etab
+CREATE TABLE cahier_courant.cahier_preferences_etab
+(
+	 id_etablissement integer NOT NULL,
+  preferences character varying(200),
+  CONSTRAINT pk_pref_etab PRIMARY KEY (id_etablissement)
+);
+
+commit ;
+
+
 BEGIN;
 
 ALTER TABLE cahier_courant.cahier_groupe 

@@ -7,9 +7,12 @@
 
 package org.crlr.metier.business;
 
+import java.util.Set;
+
 import org.crlr.dto.ResultatDTO;
 import org.crlr.dto.application.base.PreferencesQO;
 import org.crlr.exception.metier.MetierException;
+import org.crlr.web.dto.TypePreferencesEtab;
 
 /**
  * PreferenceHibernateBusinessService.
@@ -40,4 +43,21 @@ public interface PreferencesHibernateBusinessService {
      */
     public ResultatDTO<Integer> savePreferences(PreferencesQO preferencesQO)
                                          throws MetierException;
+
+    
+    /**
+     * Cherche les preferences de niveau établissement.
+     * @param idEtab
+     * @return
+     */
+    Set<TypePreferencesEtab> findEtabPreferences(Integer idEtab);
+    
+    /**
+     * Sauvegarde les préferences de niveau établissement.
+     * @param idEtab
+     * @param preferences
+     */
+	void saveEtabPreferences(Integer idEtab, Set<TypePreferencesEtab> preferences);
+
+	
 }

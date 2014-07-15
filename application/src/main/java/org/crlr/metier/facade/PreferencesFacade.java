@@ -7,11 +7,14 @@
 
 package org.crlr.metier.facade;
 
+import java.util.Set;
+
 import org.crlr.dto.ResultatDTO;
 import org.crlr.dto.application.base.PreferencesQO;
 import org.crlr.exception.metier.MetierException;
 import org.crlr.metier.business.PreferencesHibernateBusinessService;
 import org.crlr.utils.Assert;
+import org.crlr.web.dto.TypePreferencesEtab;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
@@ -57,5 +60,15 @@ public class PreferencesFacade implements PreferencesFacadeService {
         Assert.isNotNull("uid", uid);
         return preferencesHibernateBusinessService.findUtilisateurPreferences(uid);
     }
+
+    @Override
+	public Set<TypePreferencesEtab> findEtabPreferences(Integer idEtab) {
+		return preferencesHibernateBusinessService.findEtabPreferences(idEtab);
+	}
+
+    @Override
+	public void saveEtabPreferences(Integer idEtab, Set<TypePreferencesEtab> preferences) {
+		preferencesHibernateBusinessService.saveEtabPreferences(idEtab, preferences);
+	}
     
 }

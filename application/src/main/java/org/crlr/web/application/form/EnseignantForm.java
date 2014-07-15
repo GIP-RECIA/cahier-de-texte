@@ -46,6 +46,8 @@ public class EnseignantForm extends AbstractForm {
     private String filtreEnseignant;
     
     private Profil profil;
+    
+    private boolean seancePartage;
 
     public EnseignantForm() {
         reset();
@@ -159,5 +161,15 @@ public class EnseignantForm extends AbstractForm {
     public void setProfil(Profil profile) {
         this.profil = profile;
     }
+
+
+	public boolean isSeancePartage() {
+		return seancePartage;
+	}
+
+
+	public void setSeancePartage(boolean seancePartage) {
+		this.seancePartage = seancePartage;
+	}
 
 }

@@ -12,5 +12,5 @@ package org.crlr.web.dto;
  * @author breytond.
  *
  */
-public enum TypeOngletAdmin { ANNEE_SCOLAIRE, GRILLE_HORAIRE, JOURS_OUVRES , LIBELLES, OUVERTURE;
+public enum TypeOngletAdmin { ANNEE_SCOLAIRE, GRILLE_HORAIRE, JOURS_OUVRES , LIBELLES, OUVERTURE, PREFERENCES;
 }

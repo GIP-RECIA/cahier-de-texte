@@ -7,9 +7,12 @@
 
 package org.crlr.metier.facade;
 
+import java.util.Set;
+
 import org.crlr.dto.ResultatDTO;
 import org.crlr.dto.application.base.PreferencesQO;
 import org.crlr.exception.metier.MetierException;
+import org.crlr.web.dto.TypePreferencesEtab;
 
 
 /**
@@ -36,4 +39,18 @@ public interface PreferencesFacadeService {
      * @return une chaine contenant les préférences
      */
     public String findUtilisateurPreferences(final String uid);
+
+    /**
+     * Recherche les préferences de l'établissement.
+     * @param idEtab
+     * @return
+     */
+	Set<TypePreferencesEtab> findEtabPreferences(Integer idEtab);
+
+	/**
+	 * Sauvegarde des préferences de l'établissement.
+	 * @param idEtab
+	 * @param preferences
+	 */
+	void saveEtabPreferences(Integer idEtab, Set<TypePreferencesEtab> preferences);
 }

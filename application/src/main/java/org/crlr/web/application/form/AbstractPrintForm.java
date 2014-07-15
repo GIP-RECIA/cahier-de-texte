@@ -7,6 +7,7 @@ package org.crlr.web.application.form;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.crlr.dto.application.base.AnneeScolaireDTO;
 import org.crlr.dto.application.base.EtablissementDTO;
@@ -15,6 +16,7 @@ import org.crlr.dto.application.base.TypeAffichage;
 import org.crlr.report.Report;
 import org.crlr.utils.DateUtils;
 import org.crlr.web.contexte.utils.ContexteUtils;
+import org.crlr.web.dto.TypePreferencesEtab;
 
 /**
  * 
@@ -29,7 +31,9 @@ public abstract class AbstractPrintForm extends AbstractPopupForm {
     
     //Profile d'utilisateur connécté
     private Profil profil;
-
+   
+    private Set<TypePreferencesEtab> preferencesEtabs;
+   
     /** La date du jour. */
     private Date dateCourante;
 
@@ -69,6 +73,7 @@ public abstract class AbstractPrintForm extends AbstractPopupForm {
     private Integer idEtablissement;
     
     private List<EtablissementDTO> listeEtablissement;
+    
     /**
      * reset.
      */
@@ -319,4 +324,19 @@ public abstract class AbstractPrintForm extends AbstractPopupForm {
 	}
 
 
+	public boolean isSeancePartage (){
+		return preferencesEtabs != null && preferencesEtabs.contains(TypePreferencesEtab.SeancePartage);
+	}
+
+
+	public Set<TypePreferencesEtab> getPreferencesEtabs() {
+		return preferencesEtabs;
+	}
+
+
+
+	public void setPreferencesEtabs(Set<TypePreferencesEtab> preferencesEtabs) {
+		this.preferencesEtabs = preferencesEtabs;
+	}
+	
 }

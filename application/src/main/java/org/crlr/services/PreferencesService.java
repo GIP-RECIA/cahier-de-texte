@@ -7,10 +7,13 @@
 
 package org.crlr.services;
 
+import java.util.Set;
+
 import org.crlr.dto.ResultatDTO;
 import org.crlr.dto.application.base.PreferencesQO;
 
 import org.crlr.exception.metier.MetierException;
+import org.crlr.web.dto.TypePreferencesEtab;
 
 /**
  * DOCUMENTATION INCOMPLETE!
@@ -37,4 +40,18 @@ public interface PreferencesService {
     * @return une chaine contenant les préférences
     */
     public String findUtilisateurPreferences(final String uid);
+
+    /**
+     * Cherche le préferences établissement.
+     * @param idEtab
+     * @return
+     */
+	Set<TypePreferencesEtab> findEtabPreferences(Integer idEtab);
+
+	/**
+	 * sauve les préferences établissement.
+	 * @param idEtab
+	 * @param preferences
+	 */
+	void saveEtabPreferences(Integer idEtab, Set<TypePreferencesEtab> preferences);
 }

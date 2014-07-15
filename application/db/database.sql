@@ -4,7 +4,7 @@ CREATE SCHEMA cahier_courant;
 
  
 drop table if exists cahier_courant.cahier_couleur_enseignement_classe;
-
+drop table if exists  cahier_courant.cahier_preferences_etab;
 
 DROP SEQUENCE IF EXISTS cahier_couleur_enseignement cascade;
 
@@ -734,6 +734,16 @@ CREATE TABLE cahier_courant.cahier_preferences_utilisateur
   preferences character varying(200),
   CONSTRAINT pk_pref PRIMARY KEY (uid)
 );
+
+
+-- Table: cahier_preferences_etab
+CREATE TABLE cahier_courant.cahier_preferences_etab
+(
+	 id_etablissement integer NOT NULL,
+  preferences character varying(200),
+  CONSTRAINT pk_pref_etab PRIMARY KEY (id_etablissement)
+);
+
 
 --Création de la table inspecteur
 CREATE TABLE cahier_courant.cahier_inspecteur

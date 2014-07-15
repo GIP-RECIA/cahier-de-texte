@@ -189,6 +189,10 @@ public class AdminForm extends AbstractForm {
     /** Le filtre sur le libelle cout de l'enseignement. */
     private String filtreEnseignementCourt;
     
+    
+    private boolean prefSeancePartage;
+    
+    
     /**
      * Constructeur.
      */
@@ -1073,5 +1077,13 @@ public class AdminForm extends AbstractForm {
     public String getCouleurSemaineImpair() {
         return TypeCouleurJour.IMPAIR.getId();
     }
+
+	public boolean isPrefSeancePartage() {
+		return prefSeancePartage;
+	}
+
+	public void setPrefSeancePartage(boolean prefSeancePartage) {
+		this.prefSeancePartage = prefSeancePartage;
+	}
 
 }

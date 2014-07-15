@@ -65,6 +65,7 @@
         <class>org.crlr.metier.entity.PiecesJointesSeancesBean</class>
         
         <class>org.crlr.metier.entity.PreferencesBean</class>
+        <class>org.crlr.metier.entity.PreferencesEtabBean</class>
         <class>org.crlr.metier.entity.RemplacementBean</class>
         
         <class>org.crlr.metier.entity.SeanceBean</class>

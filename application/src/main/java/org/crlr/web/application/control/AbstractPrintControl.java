@@ -3,6 +3,7 @@ package org.crlr.web.application.control;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.faces.application.StateManager;
 import javax.faces.bean.ManagedProperty;
@@ -11,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
+import org.crlr.alimentation.DTO.EnseignantDTO;
 import org.crlr.dto.ResultatDTO;
 import org.crlr.dto.UserDTO;
 import org.crlr.dto.application.base.AnneeScolaireDTO;
@@ -25,13 +27,16 @@ import org.crlr.exception.metier.MetierException;
 import org.crlr.metier.facade.SeanceFacadeService;
 import org.crlr.services.AnneeScolaireService;
 import org.crlr.services.ArchiveEnseignantService;
+import org.crlr.services.PreferencesService;
 import org.crlr.web.application.control.ClasseGroupeControl.ClasseGroupeListener;
 import org.crlr.web.application.control.EnseignantControl.EnseignantListener;
 import org.crlr.web.application.control.EnseignementControl.EnseignementListener;
 import org.crlr.web.application.control.seance.SeanceListControl;
 import org.crlr.web.application.form.AbstractPrintForm;
+import org.crlr.web.application.form.EnseignantForm;
 import org.crlr.web.contexte.ContexteUtilisateur;
 import org.crlr.web.contexte.utils.ContexteUtils;
+import org.crlr.web.dto.TypePreferencesEtab;
 import org.crlr.web.utils.FacesUtils;
 
 /**
@@ -65,6 +70,10 @@ public abstract class AbstractPrintControl<F extends AbstractPrintForm> extends
     
     @ManagedProperty(value="#{listeSeances}")
     private transient SeanceListControl seanceListeControl;
+    
+    /** service des préférences. */
+    @ManagedProperty(value="#{preferencesService}")
+    private transient PreferencesService preferencesService;
     
     /**
      * indique si on est en edition d'archive
@@ -158,19 +167,30 @@ public abstract class AbstractPrintControl<F extends AbstractPrintForm> extends
         
     }
     
+  
+    public ContexteUtilisateur getContexteUtilisateur(){
+    	return ContexteUtils.getContexteUtilisateur();
+    }
+    
+    public UtilisateurDTO getUtilisateurDTO(){
+    	return getContexteUtilisateur().getUtilisateurDTO();
+    }
+    
+    public UserDTO getUserDTO(){
+    	return getUtilisateurDTO().getUserDTO();
+    }
     
     /**
      * @see org.crlr.web.application.control.AbstractControl#onLoad()
      */
     public void onLoad() {
     	
-    	ContexteUtilisateur ctx = ContexteUtils.getContexteUtilisateur();
-        final UtilisateurDTO utilisateurDTO =
-                ctx.getUtilisateurDTO();
+    	ContexteUtilisateur ctx = getContexteUtilisateur();
+        final UtilisateurDTO utilisateurDTO = getUtilisateurDTO();
      
         boolean isArchive = ctx.isOutilArchive();
         setArchive(isArchive);
-        UserDTO user = utilisateurDTO.getUserDTO();
+        UserDTO user = getUserDTO();
         Profil profil = utilisateurDTO.getProfil() ;
         boolean isEnseignant = profil == Profil.ENSEIGNANT;
         setEnseignant(isEnseignant);
@@ -179,6 +199,12 @@ public abstract class AbstractPrintControl<F extends AbstractPrintForm> extends
         
         
         form.setProfil(profil);
+        
+        Integer idEtab = utilisateurDTO.getIdEtablissement();
+        Set<TypePreferencesEtab> prefs = preferencesService.findEtabPreferences(idEtab);
+        form.setPreferencesEtabs(prefs);
+        
+        enseignantControl.form.setSeancePartage(prefs.contains(TypePreferencesEtab.SeancePartage));
         
         classeGroupeControl.setListener(this);
         enseignementControl.setListener(this);
@@ -191,9 +217,9 @@ public abstract class AbstractPrintControl<F extends AbstractPrintForm> extends
         rechercherClassGroup(isArchive, isEnseignant ? user.getIdentifiant() : null);
         
         //par défaut une recherche unitaire à lieu pour les enseignants
-        if (!BooleanUtils.isTrue(form.getAffichageParentEleve())) {
+        if (!form.getAffichageParentEleve()) {
             enseignantControl.getForm().setFiltreParEnseignant(true);
-            enseignementControl.getForm().setFiltreParEnseignement(true);
+            enseignementControl.getForm().setFiltreParEnseignement(!isEnseignant);
             
         } else {
             enseignantControl.getForm().setFiltreParEnseignant(false);
@@ -201,6 +227,7 @@ public abstract class AbstractPrintControl<F extends AbstractPrintForm> extends
         }
         
         chargerListeEnseignant();
+      
         rechercherEnseignement(false);
         
     }
@@ -424,10 +451,11 @@ public abstract class AbstractPrintControl<F extends AbstractPrintForm> extends
                 classeGroupeControl.getForm().getListeGroupe());
         enseignementControl.filtreParEnseignementSelectionne(null);
         
-        if (! isEnseignant()) {
+        if (! isEnseignant() || form.isSeancePartage()) {
+        	
         	chargerListeEnseignant();        
         	enseignantControl.filtreParEnseignantSelectionne(null);   
-        }
+        } 
         resetDonnees();
         
     }
@@ -607,6 +635,14 @@ public abstract class AbstractPrintControl<F extends AbstractPrintForm> extends
 
 	public void setSeanceListeControl(SeanceListControl seanceListeControl) {
 		this.seanceListeControl = seanceListeControl;
+	}
+
+	public PreferencesService getPreferencesService() {
+		return preferencesService;
+	}
+
+	public void setPreferencesService(PreferencesService preferencesService) {
+		this.preferencesService = preferencesService;
 	}
 
    

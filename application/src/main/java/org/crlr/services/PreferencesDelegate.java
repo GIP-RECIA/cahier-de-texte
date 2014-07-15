@@ -7,10 +7,13 @@
 
 package org.crlr.services;
 
+import java.util.Set;
+
 import org.crlr.dto.ResultatDTO;
 import org.crlr.dto.application.base.PreferencesQO;
 import org.crlr.exception.metier.MetierException;
 import org.crlr.metier.facade.PreferencesFacadeService;
+import org.crlr.web.dto.TypePreferencesEtab;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -50,5 +53,17 @@ public class PreferencesDelegate implements PreferencesService {
     public String findUtilisateurPreferences(final String uid){
         return preferencesFacadeService.findUtilisateurPreferences(uid);
     }
+
+    @Override
+	public Set<TypePreferencesEtab> findEtabPreferences(Integer idEtab) {
+		return preferencesFacadeService.findEtabPreferences(idEtab);
+	}
+
+    @Override
+    public void saveEtabPreferences(Integer idEtab, Set<TypePreferencesEtab> preferences) {
+		preferencesFacadeService.saveEtabPreferences(idEtab, preferences);
+	}
+    
+    
 
 }

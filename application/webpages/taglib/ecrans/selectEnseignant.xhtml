@@ -12,10 +12,10 @@
   <c:set var="choixTousOuUn" value="${empty choixTousOuUn ? true : choixTousOuUn}"/>
   <c:set var="labelControlEnseignant" value="${empty labelControlEnseignant ? 'Enseignant' : labelControlEnseignant}"/>
   <c:set var="modifiable" value="${empty readOnly ? true : not readOnly}"/>
-  
+  <!--   and enseignant.form.profil != 'ENSEIGNANT'-->
     <h:panelGrid class="table"
                  columns="4"
-                 rendered="#{toujoursVisible or (not empty classeGroupe.form.groupeClasseSelectionne.intitule and enseignant.form.profil != 'ENSEIGNANT')}"
+                 rendered="#{toujoursVisible or (not empty classeGroupe.form.groupeClasseSelectionne.intitule and ((enseignant.form.profil != 'ENSEIGNANT') or (enseignant.form.seancePartage)))}"
                  style="vertical-align : middle;">
       <h:outputLabel styleClass="libelle"
                      value="#{labelControlEnseignant}" />

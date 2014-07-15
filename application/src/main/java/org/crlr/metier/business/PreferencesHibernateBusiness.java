@@ -7,8 +7,11 @@
 
 package org.crlr.metier.business;
 
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.crlr.dto.ResultatDTO;
 import org.crlr.dto.application.base.PreferencesQO;
 import org.crlr.dto.application.base.TypeReglesAcquittement;
@@ -17,6 +20,8 @@ import org.crlr.message.ConteneurMessage;
 import org.crlr.message.Message;
 import org.crlr.message.Message.Nature;
 import org.crlr.metier.entity.PreferencesBean;
+import org.crlr.metier.entity.PreferencesEtabBean;
+import org.crlr.web.dto.TypePreferencesEtab;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 
@@ -71,7 +76,7 @@ public class PreferencesHibernateBusiness extends AbstractBusiness
             final PreferencesBean preferencesBean = new PreferencesBean();
             preferencesBean.setPreferences(preferencesQO.getPreferences());
             preferencesBean.setUid(preferencesQO.getUid());
-            getEntityManager().persist(preferencesBean);
+			getEntityManager().persist(preferencesBean);
             getEntityManager().flush();
         }
 
@@ -84,4 +89,59 @@ public class PreferencesHibernateBusiness extends AbstractBusiness
         result.setConteneurMessage(conteneurMessage);
         return result;
     }
+    
+    private PreferencesEtabBean getEtabPreferences(Integer idEtab){
+    	PreferencesEtabBean bean = null;
+    	if (idEtab != null) {
+    		try {
+        		bean = getEntityManager().find(PreferencesEtabBean.class, idEtab);    			
+    		} catch (Exception e) {
+    			log.debug("exception {}" , e.getClass());
+    		}
+    	}
+    	return bean;
+    }
+    
+    @Override
+    public Set<TypePreferencesEtab> findEtabPreferences(Integer idEtab){
+    	EnumSet<TypePreferencesEtab> res = EnumSet.noneOf(TypePreferencesEtab.class);
+    	
+    	PreferencesEtabBean bean = getEtabPreferences(idEtab);
+    	
+    	if (bean != null) {
+    		String prefText = bean.getPreferences();
+    		String [] preferences = prefText.split("\\s+");
+    		for (String pref : preferences) {
+				if (!StringUtils.isBlank(pref)) {
+					log.debug("Add preference :{}" , pref);
+					res.add(TypePreferencesEtab.valueOf(pref));
+				}
+			}
+    	}
+    	return res;
+    }
+   
+    @Override
+    public void saveEtabPreferences(Integer idEtab , Set<TypePreferencesEtab> preferences) {
+    	
+    	if (idEtab != null && preferences != null) {
+	    	PreferencesEtabBean bean = getEtabPreferences(idEtab);
+	    	
+	    	String pref = StringUtils.join(preferences, " ");
+	    	log.debug("sauvegarde des preferences : {}", pref);
+	    	if (bean == null) {
+	    		log.debug("creation des préferences pour l'etablissement ");
+	    		bean = new PreferencesEtabBean();
+	    		bean.setIdEtab(idEtab);
+	    		bean.setPreferences(pref);
+	    		
+	    		getEntityManager().persist(bean);
+	    	} else {
+	    		
+	    		bean.setPreferences(pref);
+	    	}
+	    	getEntityManager().flush();
+    	}
+    }
+    
 }
