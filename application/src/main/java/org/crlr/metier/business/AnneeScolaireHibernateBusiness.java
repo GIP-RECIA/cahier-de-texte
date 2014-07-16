@@ -207,6 +207,7 @@ public class AnneeScolaireHibernateBusiness extends AbstractBusiness
         Assert.isNotNull("dateFin", dateFin);
         boolean checkResult = false;
 
+        log.debug("210 checkDateAnneeScolaire idAnneeScolaire {}, dateDebut {}, dateFin {}",idAnneeScolaire,  dateDebut, dateFin );
         final String requete =
             " SELECT 1 FROM " + AnneeScolaireBean.class.getName() +
             " ANNEE " + " WHERE " + " ANNEE.dateRentree <= :dateDebut AND " +

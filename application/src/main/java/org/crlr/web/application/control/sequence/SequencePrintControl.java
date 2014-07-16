@@ -198,7 +198,7 @@ public class SequencePrintControl extends
         if (isArchive && profil == Profil.ENSEIGNANT && archive != null) {
         		rechercheSeancePrintQO.setInArchive(true);
         		rechercheSeancePrintQO.setAnneeScolaireDTO(archive.getAnneeScolaire());
-        		rechercheSeancePrintQO.setIdUtilisateur(archive.getIdEnseigantSelected());
+        		rechercheSeancePrintQO.setIdUtilisateur(archive.getIdEnseignantSelected());
                 rechercheSeancePrintQO.setIdEtablissement(archive.getIdEtablissementSelected());
                 
         } else {

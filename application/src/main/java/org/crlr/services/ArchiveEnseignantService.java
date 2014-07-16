@@ -17,4 +17,6 @@ public interface ArchiveEnseignantService {
 	 */
 	public ResultatDTO<List<ArchiveEnseignantDTO>> findAllEtabByUid(ArchiveEnseignantQO archiveEnseignantQO) throws MetierException;
 
+	
+	
 }

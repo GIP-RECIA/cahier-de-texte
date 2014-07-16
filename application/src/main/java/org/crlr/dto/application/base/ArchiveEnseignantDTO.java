@@ -72,7 +72,7 @@ public class ArchiveEnseignantDTO implements Serializable {
 	 * Identifiant de l'enseignant pour l'etablissement sélectionné
 	 * @return
 	 */
-	public Integer getIdEnseigantSelected () {
+	public Integer getIdEnseignantSelected () {
 		return (idEnsList == null || idEnsList.isEmpty()) ? null : idEnsList.get(idxSelectedEtab);
 	}
 	

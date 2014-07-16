@@ -413,9 +413,9 @@ public class GroupeHibernateBusiness extends AbstractBusiness
         final Integer idClasse = rechercheGroupeQO.getIdClasse();
         
         final List<Map<String, ?>> resultatQuery = new ArrayList<Map<String,?>>();
-        String requete = "";
-
-        requete =
+        
+        log.debug("418 findGroupeByClasse: idClasse= {}", idClasse);
+        String requete =
             " SELECT " +
             " new map( " +
             " G.id as idGroupe, " +

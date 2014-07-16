@@ -78,7 +78,7 @@ public class EnseignantControl extends AbstractControl<EnseignantForm> {
      * @param ev ev
      */
     public void filtreParEnseignantSelectionne(javax.faces.event.AjaxBehaviorEvent ev) {
-        log.info("filtreParEnseignantSelectionne {0}", form.getFiltreParEnseignant());
+        log.info("filtreParEnseignantSelectionne {}", form.getFiltreParEnseignant());
         
         if (BooleanUtils.isFalse(getForm().getFiltreParEnseignant())) {
             //Tous

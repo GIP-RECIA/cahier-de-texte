@@ -162,6 +162,7 @@ public class ClasseGroupeControl extends AbstractControl<ClasseGroupeForm> {
      *            e
      */
     public void classeGroupeTypeSelectionne(AjaxBehaviorEvent event) {
+    	
         this.form.setGroupeClasseSelectionne(null);
         this.form.setFiltreClasseGroupe("");
 
@@ -260,9 +261,11 @@ public class ClasseGroupeControl extends AbstractControl<ClasseGroupeForm> {
              */
 
             try {
+            	log.debug("RECHERCHE DES GROUPES DE LA CLASSE 264 >");
                 final List<GroupeDTO> listeGroupes = groupeClasseService
                         .findGroupeByClasse(rechercheGroupeQO);
                 form.setListeGroupe(ObjectUtils.clone(listeGroupes));
+                log.debug("< RECHERCHE DES GROUPES DE LA CLASSE 268 ");
             } catch (final MetierException e) {
                 log.debug("{0}", e.getMessage());
             }
@@ -305,9 +308,10 @@ public class ClasseGroupeControl extends AbstractControl<ClasseGroupeForm> {
                 rechercheGroupeClassePopupQO.setIdAnneeScolaire(utilisateurDTO
                         .getAnneeScolaireDTO().getId());
             }
-
+            log.debug("RECHERCHE des GROUPES ou CLASSE 309>");
             final ResultatDTO<List<GroupesClassesDTO>> listeGroupeClasseDTO = groupeClasseService.findGroupeClassePopup(rechercheGroupeClassePopupQO);
             liste = ObjectUtils.clone(listeGroupeClasseDTO.getValeurDTO());
+            log.debug("< RECHERCHE des GROUPES ou CLASSE 312");
         } catch (MetierException e) {
             log.debug("{0}", e.getMessage());
         }

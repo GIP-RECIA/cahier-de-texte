@@ -21,19 +21,24 @@ import org.crlr.dto.application.base.RechercheGroupeClassePopupQO;
 import org.crlr.dto.application.base.RechercheGroupeQO;
 import org.crlr.dto.application.base.TypeGroupe;
 import org.crlr.dto.application.base.TypeReglesClasse;
+import org.crlr.dto.application.sequence.PrintSeanceOuSequenceQO;
 import org.crlr.exception.metier.MetierException;
+import org.crlr.intercepteur.hibernate.SchemaInterceptorImpl;
 import org.crlr.message.ConteneurMessage;
 import org.crlr.message.Message;
 import org.crlr.message.Message.Nature;
 import org.crlr.metier.business.ClasseHibernateBusinessService;
 import org.crlr.metier.business.EleveHibernateBusinessService;
 import org.crlr.metier.business.GroupeHibernateBusinessService;
+import org.crlr.metier.utils.SchemaUtils;
 import org.crlr.utils.Assert;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import sun.util.logging.resources.logging;
 
 /**
  * GroupeClasseFacade.
@@ -134,11 +139,33 @@ public class GroupeClasseFacade implements GroupeClasseFacadeService {
         return groupeHibernateBusinessService.findGroupe(idGroupe);
     }
 
+    
+    
+    /** 
+     * si la requette porte sur les archives  
+     * on change le schema base de données pour toutes les requettes de la transaction.
+     * 
+     * @param rechercheGroupeQO
+     */
+    private void initSchemaInterceptor(RechercheGroupeQO rechercheGroupeQO){
+    	
+    	if (rechercheGroupeQO != null) {
+    		Boolean isArchive = rechercheGroupeQO.getArchive();
+    		if (isArchive != null && isArchive) {
+    			String exercice = rechercheGroupeQO.getExercice();
+    			final String schema = SchemaUtils.getSchemaCourantOuArchive(isArchive, exercice);
+    			SchemaInterceptorImpl.setSchema(schema);
+    		}
+    	}
+    }
+    
     /**
      * {@inheritDoc}
      */
     public List<GroupeDTO> findGroupeByClasse(final RechercheGroupeQO rechercheGroupeQO)
                                        throws MetierException {
+    	initSchemaInterceptor(rechercheGroupeQO);
+    	
         Assert.isNotNull("rechercheGroupeQO", rechercheGroupeQO);
         final String codeClasse =
             StringUtils.trimToNull(rechercheGroupeQO.getCodeClasse());
@@ -171,6 +198,7 @@ public class GroupeClasseFacade implements GroupeClasseFacadeService {
             }
         }
 
+        
         return groupeHibernateBusinessService.findGroupeByClasse(rechercheGroupeQO);
     }
 

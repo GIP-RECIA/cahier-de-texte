@@ -203,14 +203,17 @@ public class SeancePrintControl extends AbstractPrintControl<SeancePrintForm> {
         final boolean isArchive = ctx.isOutilArchive();
         final Profil profil = utilisateurDTO.getProfil();
         final ArchiveEnseignantDTO archive = getArchiveEnseignantDTO();
+        
+        boolean archiveEns = false;
 
         rechercheSeancePrintQO.setProfil(profil);
         
         if (isArchive && profil == Profil.ENSEIGNANT && archive != null) {
         		rechercheSeancePrintQO.setInArchive(true);
         		rechercheSeancePrintQO.setAnneeScolaireDTO(archive.getAnneeScolaire());
-        		rechercheSeancePrintQO.setIdUtilisateur(archive.getIdEnseigantSelected());
+        		rechercheSeancePrintQO.setIdUtilisateur(archive.getIdEnseignantSelected());
                 rechercheSeancePrintQO.setIdEtablissement(archive.getIdEtablissementSelected());
+                archiveEns = true;
                 
         } else {
         	rechercheSeancePrintQO.setAnneeScolaireDTO(utilisateurDTO.getAnneeScolaireDTO());
@@ -227,7 +230,7 @@ public class SeancePrintControl extends AbstractPrintControl<SeancePrintForm> {
             rechercheSeancePrintQO.setEnseignement(enseignementControl.getForm().getEnseignementSelectionne());
         }
         
-        if (null != enseignantControl.getForm().getEnseignantSelectionne()) {
+        if (null != enseignantControl.getForm().getEnseignantSelectionne() && !archiveEns) {
             rechercheSeancePrintQO.setEnseignant(enseignantControl.getForm().getEnseignantSelectionne());
         }
 

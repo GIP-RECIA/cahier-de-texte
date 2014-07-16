@@ -96,7 +96,7 @@ public class ClasseHibernateBusiness extends AbstractBusiness
         final Integer idEtablissement = rechercheGroupeClassePopupQO.getIdEtablissement();
          Integer idAnneeScolaire = rechercheGroupeClassePopupQO.getIdAnneeScolaire();
         final String exercice = rechercheGroupeClassePopupQO.getExerciceScolaire();
-        boolean inArchive = false;
+     
         
         final String schema =
             SchemaUtils.getSchemaCourantOuArchive(rechercheGroupeClassePopupQO.getArchive(),
@@ -104,7 +104,7 @@ public class ClasseHibernateBusiness extends AbstractBusiness
         
         if (!StringUtils.isBlank(exercice)) {
         	idAnneeScolaire = AnneeScolaireDTO.id(exercice);
-        	inArchive = true;
+        	
         }
         
         String requete = "";
@@ -159,6 +159,7 @@ public class ClasseHibernateBusiness extends AbstractBusiness
             query.setParameter(1, idEtablissement);
         }
 
+        log.debug("schema = {} , idEtablissement = {}", schema, idEtablissement);
         final List<Object[]> liste = query.getResultList();
         final List<GroupesClassesDTO> resultat = new ArrayList<GroupesClassesDTO>();
 
@@ -235,6 +236,7 @@ public class ClasseHibernateBusiness extends AbstractBusiness
 
         final String schema = SchemaUtils.getSchemaCourantOuArchive(archive, exercice);
 
+        log.debug("239 findByCode: code={},  schema={}",code ,schema );
         final String query =
             "SELECT c.id FROM " +
             SchemaUtils.getTableAvecSchema(schema, "cahier_classe") +
@@ -261,10 +263,13 @@ public class ClasseHibernateBusiness extends AbstractBusiness
                                     final Boolean archive, final String exercice)
                              throws MetierException {
         boolean verif = false;
-
+        
+        
         final String schema = SchemaUtils.getSchemaCourantOuArchive(archive, exercice);
         Session o = (Session) getEntityManager().getDelegate() ;
         String className = o.getClass().getCanonicalName();
+        log.debug("271 checkDroitClasse idEnseignant={}, idClasse={} , archive={}, exercice={} ",idEnseignant, idClasse, archive, exercice );
+        
         final String query =
             "SELECT 1 FROM " +
             SchemaUtils.getTableAvecSchema(schema, "cahier_enseignant_classe") + " EC " +

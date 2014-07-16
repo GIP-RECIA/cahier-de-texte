@@ -17,6 +17,7 @@ import javax.faces.bean.ViewScoped;
 
 import org.apache.commons.lang.BooleanUtils;
 import org.crlr.dto.ResultatDTO;
+import org.crlr.dto.application.base.ArchiveEnseignantDTO;
 import org.crlr.dto.application.base.EnseignementDTO;
 import org.crlr.dto.application.base.GroupeDTO;
 import org.crlr.dto.application.base.GroupesClassesDTO;
@@ -25,6 +26,7 @@ import org.crlr.dto.application.base.RechercheEnseignementPopupQO;
 import org.crlr.dto.application.base.TypeGroupe;
 import org.crlr.dto.application.base.UtilisateurDTO;
 import org.crlr.exception.metier.MetierException;
+import org.crlr.services.ArchiveEnseignantService;
 import org.crlr.services.EnseignementService;
 import org.crlr.services.SequenceService;
 import org.crlr.utils.ObjectUtils;
@@ -46,6 +48,9 @@ public class EnseignementControl extends AbstractControl<EnseignementForm> {
     @ManagedProperty(value="#{enseignementService}")
     protected transient EnseignementService enseignementService;
     
+   
+    
+    private ArchiveEnseignantDTO archiveEnseignantDTO;
     /**
      * 
      */
@@ -85,7 +90,7 @@ public class EnseignementControl extends AbstractControl<EnseignementForm> {
      * @param ev ev
      */
     public void filtreParEnseignementSelectionne(javax.faces.event.AjaxBehaviorEvent ev) {
-        log.info("filtreParEnseignementSelectionne {0}", form.getFiltreParEnseignement());
+        log.info("filtreParEnseignementSelectionne {}", form.getFiltreParEnseignement());
         
         if (BooleanUtils.isFalse(getForm().getFiltreParEnseignement())) {
             //Tous
@@ -162,18 +167,39 @@ public class EnseignementControl extends AbstractControl<EnseignementForm> {
             final UtilisateurDTO utilisateurDTO =
                 ContexteUtils.getContexteUtilisateur().getUtilisateurDTO();
             
+            
             //On set l'id pour les enseignants uniquement.
             if (Profil.ENSEIGNANT.equals(utilisateurDTO.getProfil())) {
-               rechercheEnseignementPopupQO.setIdEnseignant(utilisateurDTO.getUserDTO().getIdentifiant());
-            }      
-    
+            	
+            	Integer idEns = null;
+              
+               if (modeArchive) {
+            	   idEns = archiveEnseignantDTO.getIdEnseignantSelected();
+               } else {
+            	   idEns = utilisateurDTO.getUserDTO().getIdentifiant();
+               }
+              
+            	   rechercheEnseignementPopupQO.setIdEnseignant(idEns);
+              
+            }
             rechercheEnseignementPopupQO.setIdEtablissement(utilisateurDTO.getIdEtablissement());
             rechercheEnseignementPopupQO.setTypeGroupeSelectionne(typeGroupeSelectionne);
             rechercheEnseignementPopupQO.setGroupeClasseSelectionne(groupeClasseSelectionne);
     
             if (modeArchive) {
-                rechercheEnseignementPopupQO.setArchive(true);
+            	rechercheEnseignementPopupQO.setArchive(true);
                 rechercheEnseignementPopupQO.setExercice(exercice);
+                log.debug("idEtablissement = {}" ,rechercheEnseignementPopupQO.getIdEtablissement() );
+                if (archiveEnseignantDTO == null) {
+                	//archiveEnseignantDTO = archiveEnseignantService.
+                	
+                	log.debug("archiveEnseignantDTO est null");
+                	
+                } 
+               // findIdEtablissementParCode
+                else {
+                	rechercheEnseignementPopupQO.setIdEtablissement(archiveEnseignantDTO.getIdEtablissementSelected());
+                }
             }
             
             liste = this.getListeEnseignementPopup(rechercheEnseignementPopupQO);      
@@ -214,12 +240,13 @@ public class EnseignementControl extends AbstractControl<EnseignementForm> {
                 if (utilisateurDTO.getProfil().equals(Profil.INSPECTION_ACADEMIQUE)){
                     rechercheEnseignementPopupQO.setIdInspecteur(utilisateurDTO.getUserDTO().getIdentifiant());
                 } 
-                
+                log.debug("243 getListeEnseignementPopup >");
                 final ResultatDTO<List<EnseignementDTO>> listeEnseignementDTO =
                     this.enseignementService.findEnseignementPopup(rechercheEnseignementPopupQO);
                 liste = ObjectUtils.clone(listeEnseignementDTO.getValeurDTO());
+                log.debug("< 247 getListeEnseignementPopup ");
             } catch (MetierException e) {
-                log.debug("{0}", e.getMessage());
+                log.debug("{}", e.getMessage());
             }
         
         return liste;
@@ -278,5 +305,13 @@ public class EnseignementControl extends AbstractControl<EnseignementForm> {
     public void setEnseignementService(EnseignementService enseignementService) {
         this.enseignementService = enseignementService;
     }
+
+	public ArchiveEnseignantDTO getArchiveEnseignantDTO() {
+		return archiveEnseignantDTO;
+	}
+
+	public void setArchiveEnseignantDTO(ArchiveEnseignantDTO archiveEnseignantDTO) {
+		this.archiveEnseignantDTO = archiveEnseignantDTO;
+	}
 
 }

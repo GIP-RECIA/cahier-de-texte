@@ -1,18 +1,12 @@
 package org.crlr.web.application.control;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import javax.faces.application.StateManager;
 import javax.faces.bean.ManagedProperty;
-import javax.faces.context.FacesContext;
-import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
-import org.crlr.alimentation.DTO.EnseignantDTO;
 import org.crlr.dto.ResultatDTO;
 import org.crlr.dto.UserDTO;
 import org.crlr.dto.application.base.AnneeScolaireDTO;
@@ -33,11 +27,9 @@ import org.crlr.web.application.control.EnseignantControl.EnseignantListener;
 import org.crlr.web.application.control.EnseignementControl.EnseignementListener;
 import org.crlr.web.application.control.seance.SeanceListControl;
 import org.crlr.web.application.form.AbstractPrintForm;
-import org.crlr.web.application.form.EnseignantForm;
 import org.crlr.web.contexte.ContexteUtilisateur;
 import org.crlr.web.contexte.utils.ContexteUtils;
 import org.crlr.web.dto.TypePreferencesEtab;
-import org.crlr.web.utils.FacesUtils;
 
 /**
  * 
@@ -79,6 +71,8 @@ public abstract class AbstractPrintControl<F extends AbstractPrintForm> extends
      * indique si on est en edition d'archive
      */
     public boolean archive = false;
+  
+    
     public boolean enseignant = false;
     
     abstract public PrintSeanceDTO getSeanceSelectionne();
@@ -214,21 +208,24 @@ public abstract class AbstractPrintControl<F extends AbstractPrintForm> extends
         
         rechercherAnneeScolaire(isArchive, uid);
 
-        rechercherClassGroup(isArchive, isEnseignant ? user.getIdentifiant() : null);
+       
         
         //par défaut une recherche unitaire à lieu pour les enseignants
         if (!form.getAffichageParentEleve()) {
             enseignantControl.getForm().setFiltreParEnseignant(true);
             enseignementControl.getForm().setFiltreParEnseignement(!isEnseignant);
+            rechercherClassGroup(isArchive, isEnseignant ? user.getIdentifiant() : null);
             
         } else {
             enseignantControl.getForm().setFiltreParEnseignant(false);
             enseignementControl.getForm().setFiltreParEnseignement(false);
+            chargerListeEnseignant();
+            rechercherEnseignement(false);
         }
         
-        chargerListeEnseignant();
+     //  
       
-        rechercherEnseignement(false);
+     //  
         
     }
     
@@ -295,10 +292,17 @@ public abstract class AbstractPrintControl<F extends AbstractPrintForm> extends
     	return null;
     }
     
+    /**
+     * cherche les info archivé  de l'enseignant connecté pour l'annee scolaire selectionnée
+     * @return
+     */
     protected ArchiveEnseignantDTO getArchiveEnseignantDTO () {
     	Integer idAnnee = form.getIdAnneeScolaire();
-    	Integer idEtab = form.getIdEtablissement();
-    	if (listArchiveEnseignantDTO != null && idAnnee != null && idEtab != null) {
+    	return getArchiveEnseignantDTO (idAnnee); 
+    }
+    
+    private ArchiveEnseignantDTO getArchiveEnseignantDTO (Integer idAnnee) {
+    	if (listArchiveEnseignantDTO != null && idAnnee != null ) {
     		for (ArchiveEnseignantDTO archive : listArchiveEnseignantDTO) {
 				AnneeScolaireDTO annee = archive.getAnneeScolaire();
 				if (idAnnee.equals(annee.getId())){
@@ -312,15 +316,11 @@ public abstract class AbstractPrintControl<F extends AbstractPrintForm> extends
     void rechercherEtablissement(Integer idAnnee) {
     	form.setListeEtablissement(null);
     	form.setIdEtablissement(null);
-    	if (idAnnee == null || listArchiveEnseignantDTO == null ) return;
-    	 for (ArchiveEnseignantDTO aeDTO : listArchiveEnseignantDTO) {
-			if (idAnnee.equals(aeDTO.getAnneeScolaire().getId())) {
-				List<EtablissementDTO> etabList = aeDTO.getEtabList();
-				form.setListeEtablissement(etabList);
-				form.setIdEtablissement(aeDTO.getIdEtablissementSelected());
-				break;
-			}
-		}
+    	ArchiveEnseignantDTO aeDTO = getArchiveEnseignantDTO(idAnnee);
+    	if (aeDTO != null) {
+    		form.setListeEtablissement(aeDTO.getEtabList());
+    		form.setIdEtablissement(aeDTO.getIdEtablissementSelected());
+    	}
     }
     
     
@@ -343,22 +343,17 @@ public abstract class AbstractPrintControl<F extends AbstractPrintForm> extends
             	Integer idEtab = form.getIdEtablissement();
             	classeGroupeControl.getForm().setIdEtablissementFiltre(idEtab);
             	
-            	if (idAnnee != null && idEtab != null && listArchiveEnseignantDTO!= null ) {
-            		for (ArchiveEnseignantDTO aeDTO : listArchiveEnseignantDTO) {
-            			if (aeDTO.getAnneeScolaire().getId() == idAnnee) {
-            				Integer cpt = 0;
-            				List<EtablissementDTO> etabList = aeDTO.getEtabList();
-            				for (EtablissementDTO etab : etabList) {
-								if (etab.getId() == idEtab) {
-									break;
-								}
-								cpt++;
-							}
-            				Integer idEns = aeDTO.getIdEnsList().get(cpt);
-            				classeGroupeControl.getForm().setIdEnseignantFiltre(idEns);
-            				break;
-            			}
-            		}
+            	ArchiveEnseignantDTO aeDTO = getArchiveEnseignantDTO(idAnnee);
+            	if (aeDTO != null) {
+            		Integer cpt = 0;
+    				for (EtablissementDTO etab : aeDTO.getEtabList()) {
+						if (etab.getId() == idEtab) {
+							Integer idEns = aeDTO.getIdEnsList().get(cpt);
+		    				classeGroupeControl.getForm().setIdEnseignantFiltre(idEns);
+							break;
+						}
+						cpt++;
+					}
             	}
             }
             
@@ -377,6 +372,10 @@ public abstract class AbstractPrintControl<F extends AbstractPrintForm> extends
      */
     
     private void rechercherEnseignement(boolean inArchive) {
+    	
+    	if (inArchive) {
+    		enseignementControl.setArchiveEnseignantDTO(getArchiveEnseignantDTO());
+    	}
         enseignementControl.chargerListeEnseignement(classeGroupeControl
                 .getForm().getGroupeClasseSelectionne(), classeGroupeControl
                 .getForm().getTypeGroupeSelectionne(), false, inArchive, 
@@ -406,11 +405,21 @@ public abstract class AbstractPrintControl<F extends AbstractPrintForm> extends
      * 
      */
     protected void chargerListeEnseignant() {
-        
-        enseignantControl.chargerListeEnseignant(classeGroupeControl
-                .getForm(),  
-                enseignementControl.getForm().getEnseignementSelectionne()
-                );
+    	
+    	
+    	boolean onCharge = !isEnseignant();
+    	
+    	if (!onCharge && !isArchive()) {
+    		Set<TypePreferencesEtab> prefs = form.getPreferencesEtabs();
+    		onCharge = prefs != null && prefs.contains(TypePreferencesEtab.SeancePartage);
+    	//	onCharge=true;
+    	}
+    	
+    	if (onCharge) {  	
+    		enseignantControl.chargerListeEnseignant(classeGroupeControl.getForm(),  
+    				enseignementControl.getForm().getEnseignementSelectionne()
+             );
+    	}
     }
     
     /**
@@ -444,10 +453,15 @@ public abstract class AbstractPrintControl<F extends AbstractPrintForm> extends
     @Override
     public void classeGroupeSelectionnee() {
        
+    	String exercice = null;
+    	if (isArchive()) {
+    		exercice = form.getExercice();
+    		enseignementControl.setArchiveEnseignantDTO(getArchiveEnseignantDTO());
+    	}
         
         enseignementControl.chargerListeEnseignement(classeGroupeControl.getForm().getGroupeClasseSelectionne(),
                 classeGroupeControl.getForm().getTypeGroupeSelectionne(),
-                form.getAffichageParentEleve(), false, null, 
+                form.getAffichageParentEleve(), isArchive(), exercice , 
                 classeGroupeControl.getForm().getListeGroupe());
         enseignementControl.filtreParEnseignementSelectionne(null);
         
@@ -565,6 +579,8 @@ public abstract class AbstractPrintControl<F extends AbstractPrintForm> extends
         	
         	rechercherEtablissement(form.getIdAnneeScolaire());
         	initDate();
+        	
+        	rechercherClassGroup(isArchive, isEnseignant() ? ctxUtilisateur.getUtilisateurDTO().getUserDTO().getIdentifiant() : null);
         }
         
         // Charge la liste de enseignements proposes dans le filtre
@@ -645,5 +661,4 @@ public abstract class AbstractPrintControl<F extends AbstractPrintForm> extends
 		this.preferencesService = preferencesService;
 	}
 
-   
 }

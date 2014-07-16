@@ -1852,10 +1852,10 @@ throw new MetierException(conteneurMessage,
      * @param rechercheSeancePrintQO
      */
     private void initSchemaInterceptor(PrintSeanceOuSequenceQO rechercheSeancePrintQO){
-    	boolean  isArchive  = rechercheSeancePrintQO.isInArchive();
-    	if (isArchive) {
+    	
+    	if (rechercheSeancePrintQO != null && rechercheSeancePrintQO.isInArchive()) {
     		String exercice = rechercheSeancePrintQO.getAnneeScolaireDTO().getExercice();
-    		final String schema = SchemaUtils.getSchemaCourantOuArchive(isArchive, exercice);
+    		final String schema = SchemaUtils.getSchemaCourantOuArchive(true, exercice);
     		SchemaInterceptorImpl.setSchema(schema);
     	}
     }
