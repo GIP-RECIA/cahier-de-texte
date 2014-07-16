@@ -193,6 +193,8 @@ public class SequencePrintControl extends
         final Profil profil = utilisateurDTO.getProfil();
         final ArchiveEnseignantDTO archive = getArchiveEnseignantDTO();
 
+        boolean archiveEns = false;
+        
         rechercheSeancePrintQO.setProfil(profil);
         
         if (isArchive && profil == Profil.ENSEIGNANT && archive != null) {
@@ -200,7 +202,7 @@ public class SequencePrintControl extends
         		rechercheSeancePrintQO.setAnneeScolaireDTO(archive.getAnneeScolaire());
         		rechercheSeancePrintQO.setIdUtilisateur(archive.getIdEnseignantSelected());
                 rechercheSeancePrintQO.setIdEtablissement(archive.getIdEtablissementSelected());
-                
+                archiveEns = true;
         } else {
         	rechercheSeancePrintQO.setAnneeScolaireDTO(utilisateurDTO.getAnneeScolaireDTO());
             rechercheSeancePrintQO.setIdUtilisateur(utilisateurDTO.getUserDTO().getIdentifiant());
@@ -220,7 +222,7 @@ public class SequencePrintControl extends
             rechercheSeancePrintQO.setEnseignement(enseignementControl.getForm().getEnseignementSelectionne());
         }
         
-        if (null != enseignantControl.getForm().getEnseignantSelectionne()) {
+        if (null != enseignantControl.getForm().getEnseignantSelectionne()&& !archiveEns) {
             rechercheSeancePrintQO.setEnseignant(enseignantControl.getForm().getEnseignantSelectionne());
         }
         

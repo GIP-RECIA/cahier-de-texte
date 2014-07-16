@@ -26,8 +26,8 @@ import org.crlr.dto.application.base.RechercheEnseignementPopupQO;
 import org.crlr.dto.application.base.TypeGroupe;
 import org.crlr.dto.application.base.UtilisateurDTO;
 import org.crlr.exception.metier.MetierException;
-import org.crlr.services.ArchiveEnseignantService;
 import org.crlr.services.EnseignementService;
+import org.crlr.services.EtablissementService;
 import org.crlr.services.SequenceService;
 import org.crlr.utils.ObjectUtils;
 import org.crlr.web.application.form.EnseignementForm;
@@ -48,7 +48,10 @@ public class EnseignementControl extends AbstractControl<EnseignementForm> {
     @ManagedProperty(value="#{enseignementService}")
     protected transient EnseignementService enseignementService;
     
-   
+    /** Service etablissement. */
+    @ManagedProperty(value="#{etablissementService}")
+    private transient EtablissementService etablissementService; 
+    
     
     private ArchiveEnseignantDTO archiveEnseignantDTO;
     /**
@@ -195,15 +198,14 @@ public class EnseignementControl extends AbstractControl<EnseignementForm> {
                 	
                 	log.debug("archiveEnseignantDTO est null");
                 	
-                } 
-               // findIdEtablissementParCode
-                else {
+                	etablissementService.findIdEtablissementParCode(utilisateurDTO.getSirenEtablissement(), true, exercice);
+                }  else {
                 	rechercheEnseignementPopupQO.setIdEtablissement(archiveEnseignantDTO.getIdEtablissementSelected());
                 }
             }
-            
+            log.debug("204 chargerListeEnseignement > modearchive=", modeArchive);
             liste = this.getListeEnseignementPopup(rechercheEnseignementPopupQO);      
-    
+            log.debug("< 206 chargerListeEnseignement ");
             form.setListeEnseignement(liste);
         }
     
@@ -312,6 +314,14 @@ public class EnseignementControl extends AbstractControl<EnseignementForm> {
 
 	public void setArchiveEnseignantDTO(ArchiveEnseignantDTO archiveEnseignantDTO) {
 		this.archiveEnseignantDTO = archiveEnseignantDTO;
+	}
+
+	public EtablissementService getEtablissementService() {
+		return etablissementService;
+	}
+
+	public void setEtablissementService(EtablissementService etablissementService) {
+		this.etablissementService = etablissementService;
 	}
 
 }

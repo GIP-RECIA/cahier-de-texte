@@ -2897,11 +2897,20 @@ public class SeanceHibernateBusiness extends AbstractBusiness
 
         final Date dateCourante = DateUtils.getAujourdhui();
 
-        final Integer idEnseignant = rechercheSeancePrintQO.getEnseignant().getId();
+         Integer idEnseignant = rechercheSeancePrintQO.getEnseignant().getId();
+       
+        
         final Boolean vraiOufauxClasse =
             rechercheSeancePrintQO.getGroupeClasseSelectionne().getVraiOuFauxClasse();
         final Integer idEnseignement = rechercheSeancePrintQO.getEnseignement().getId();        
 
+        if (idEnseignant == null) {
+        	if (rechercheSeancePrintQO.isInArchive() && rechercheSeancePrintQO.getProfil() == Profil.ENSEIGNANT) {
+        		idEnseignant = rechercheSeancePrintQO.getIdUtilisateur();
+        	}
+        }
+        
+        
         //Filtre sur un enseignement
         String strWhereRequete = "";
         if (idEnseignement != null) {

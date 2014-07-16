@@ -356,7 +356,8 @@ public class EnseignementHibernateBusiness extends AbstractBusiness
     public ResultatDTO<List<EnseignementDTO>> findEnseignementPopup(
             RechercheEnseignementPopupQO rechercheEnseignementPopupQO)
             throws MetierException {
-
+    	
+    	log.debug("360 findEnseignementPopup >");
         // En mode archive, on fait appelle a cette methode
         if (rechercheEnseignementPopupQO.getArchive() != null
                 && rechercheEnseignementPopupQO.getArchive()) {
@@ -407,6 +408,8 @@ public class EnseignementHibernateBusiness extends AbstractBusiness
         String query = "";
         List<Object[]> resultatQuery = new ArrayList<Object[]>();
 
+        log.debug("411 findEnseignementArchivePopup > idEnseignant = {}, idEtablissement={}, idClasseGroupe={}, schema={}", idEnseignant, idEtablissement, idClasseGroupe, schema );
+        
         // Si la classe/groupe est renseignee
         if (idClasseGroupe != null) {
             strWhereRequete = " CG.id = " + idClasseGroupe + " AND CG.id_Etablissement = EE.id_etablissement AND ";
@@ -478,6 +481,7 @@ public class EnseignementHibernateBusiness extends AbstractBusiness
             resultat.add(enseignementDTO);
         }
         enseignementPopup.setValeurDTO(resultat);
+        log.debug("< 484 findEnseignementArchivePopup : #resultar = {}",resultat.size() );
         return enseignementPopup;
     }
     
