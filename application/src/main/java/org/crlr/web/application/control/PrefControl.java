@@ -46,6 +46,9 @@ public class PrefControl extends AbstractControl<PrefForm> {
     @ManagedProperty(value="#{preferencesService}")
     private transient PreferencesService preferencesService;
     
+    @ManagedProperty(value="#{changeProfil}")
+    private transient ChangeProfilControl changerProfileCrontrol;
+    
     /**
      * Mutateur de sequenceService.
      *
@@ -97,7 +100,7 @@ public class PrefControl extends AbstractControl<PrefForm> {
             }
         }
         form.setTypePreferences(userPreferences); 
-    
+    //    getChangerProfileCrontrol().onLoad();
     }
 
      /**
@@ -194,4 +197,12 @@ public class PrefControl extends AbstractControl<PrefForm> {
             log.debug("Erreur de suppression des sequence vides : {0}", e.getMessage());
         }  
     }
+
+	public ChangeProfilControl getChangerProfileCrontrol() {
+		return changerProfileCrontrol;
+	}
+
+	public void setChangerProfileCrontrol(ChangeProfilControl changerProfileCrontrol) {
+		this.changerProfileCrontrol = changerProfileCrontrol;
+	}
 }

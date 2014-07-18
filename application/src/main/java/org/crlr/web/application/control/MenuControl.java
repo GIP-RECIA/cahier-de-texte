@@ -56,7 +56,12 @@ public class MenuControl extends AbstractControl<AbstractForm> {
     }
 
     /** Liste des actions habilite pour l'utilisateur. */
-    private List<MenuAction> listeAction = new ArrayList<MenuAction>(); 
+    private List<MenuAction> listeAction = new ArrayList<MenuAction>();
+
+    /**
+     * Indique si on ne doit pas actionner le changement d'utilisateur
+     */
+	private boolean changementProfilDisabled; 
 
     /**
      * Instantiates a new menu control.
@@ -102,8 +107,10 @@ public class MenuControl extends AbstractControl<AbstractForm> {
         final ContexteUtilisateur contexteUtilisateur = ContexteUtils.getContexteUtilisateur();
         final UtilisateurDTO utilisateurDTOOrigine = contexteUtilisateur.getUtilisateurDTOOrigine();
         
+        changementProfilDisabled = false;
         //En mode remplaçant ou simulation éleve, nous pouvons pas modifier les préfèrences
         if (utilisateurDTOOrigine != null) {
+        	changementProfilDisabled = true;
             return;
         }
         
@@ -112,6 +119,7 @@ public class MenuControl extends AbstractControl<AbstractForm> {
                 || Profil.ELEVE.equals(utilisateurDTO.getProfil())) {
             this.listeAction.add(new MenuAction("preferences.png",
                     Outil.PREFERENCE.name(), "Mes préférences", null));
+            changementProfilDisabled = true;
         }
     }
     
@@ -226,8 +234,10 @@ public class MenuControl extends AbstractControl<AbstractForm> {
         Set<Profil> profilsDisponibles = utilisateurDTO.getProfilsDisponibles();
         
         /* modif pl */
-        if (profilsDisponibles != null && profilsDisponibles.size() > 1) {
-        	this.listeAction.add(new MenuAction("changeRole.png",
+        if (!changementProfilDisabled && profilsDisponibles != null && profilsDisponibles.size() > 1) {
+        	
+        	//this.listeAction.add(new MenuAction("changeRole.png",
+            this.listeAction.add(new MenuAction("preferences.png",
 					Outil.CHANGE_PROFIL.name(),
 					"Changer de rôle utilisateur", null));
         }

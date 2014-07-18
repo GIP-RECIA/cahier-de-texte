@@ -86,17 +86,7 @@
                  />
         </p>
     </rich:panel>
-
-<ui:remove>    
-     <cr:popupConfirm idPopupConfirm="idPopupConfirmSaisieSimp"
-        libelleMessage="Etes-vous sûr de vouloir #{pref.form.vraiOuFauxSaisieSimplifiee ? 'activer' : 'désactiver'} la génération automatique des séquences ?"
-        libelleMessage2="#{not pref.form.vraiOuFauxSaisieSimplifiee ? 'Attention, si vous confirmez, il vous sera ensuite impossible de réactiver la génération automatique des séquences' : 'Si vous confirmez, il vous sera ensuite impossible d\'ajouter manuellement de nouvelles séquences'}"
-        libelleMessage3="#{not pref.form.vraiOuFauxSaisieSimplifiee ? '(à moins de supprimer manuellement et unitairement l\'ensemble des séquences et séances existant)' : ''}"
-        bean="#{pref}" 
-        cible="saveSaisieSimplifiee"
-        render="prefCahier,zoneMenu" />
-</ui:remove>        
-        
+ 
     <cr:popup idPopup="idPopupConfirmSaisieSimp" tailleAuto="true" 
         titrePopup="Changement du mode saisie simplifiée">
         
@@ -165,6 +155,11 @@
 	    </t:div>
 		
     </cr:popup>
+<ui:remove> Changer de profile : fait appele a un autre controleur
+  
+    </ui:remove>
+    <ui:include src="changeProfilSeul.xhtml" />
+    
 </cr:page>    
 
 <cr:popupStatus idStatus="statuspop" />
