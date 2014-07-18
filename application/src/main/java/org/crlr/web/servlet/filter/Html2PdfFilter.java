@@ -51,7 +51,7 @@ public class Html2PdfFilter extends GenericFilter {
 		/* la reponse org est en xhtml */
 		String org = wrapper.toString();
 
-		log.debug("avant conversion {0}", org);
+	
 
 		/* creation du convertiseur xhtml -> pdf */
 		ITextRenderer renderer = new ITextRenderer();
@@ -61,6 +61,7 @@ public class Html2PdfFilter extends GenericFilter {
 		 
 		 /* pour trouver les css :  on remplace les appels a la servlet ressources de jsf par un lien direct relatif au context */
 		 Pattern pattern = Pattern.compile(iref.getAppliName() + "/javax.faces.resource/([^/]+)\\.xhtml\\?ln=css");
+		 log.debug("css patern  : {0}" , pattern.pattern());
 		 Matcher m = pattern.matcher(org);
 		 org = m.replaceAll("file:" + iref.getRealAppliPath() + "/resources/css/$1");
 		 
@@ -69,17 +70,27 @@ public class Html2PdfFilter extends GenericFilter {
 		  m = pattern.matcher(org);
 		 org = m.replaceAll("url(file:"+ iref.getRealAppliPath() + "/resources/");
 		 
-		 /* on supprime les tags de style mal interpretés par ITextRenderer */
+		 /* on supprime les tags de style mal interpretés par ITextRenderer */ 
 		 pattern = Pattern.compile("<style [^<]+</style>");
 		 m = pattern.matcher(org);
 		 org = m.replaceAll("");
 		 
+		 /* on supprime les tags link de style ecss mal interpretés par ItextRenderer */
+		 pattern = Pattern.compile(
+				 		"<link type=\"text/css\" rel=\"stylesheet\" href=\"" +
+				 		iref.getAppliName() + "/rfRes/[^/]+/>"); 
 		 
+		 m = pattern.matcher(org);
+		 org = m.replaceAll("");
 	//	 ChainedReplacedElementFactory cef = new ChainedReplacedElementFactory();
 		 
 		 /* on initialise le convertissuer avec notre gestionaire de remplacement*/
 		 renderer.getSharedContext().setReplacedElementFactory(iref);
 		
+		 
+			log.debug("avant conversion {0}", org);
+		 
+		 
 		 /* on lui fournis le .xhtml a convertir */
 		 renderer.setDocumentFromString(org);
 		 
@@ -110,7 +121,9 @@ public class Html2PdfFilter extends GenericFilter {
 
 		try {
 			/* on lance la conversion en pdf  dans le flux de sortie  */
+			log.debug("debut de conversion :");
 			renderer.createPDF(out);
+			log.debug("fin de conversion");
 		} catch (DocumentException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

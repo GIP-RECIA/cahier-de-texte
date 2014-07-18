@@ -143,7 +143,10 @@
       </h:panelGrid>
       <cr:selectEnseignement bean="#{printSeance}" render="listingSeances :idPopupEnseignant_form:idPopupEnseignantRegion outilRecherche">
       </cr:selectEnseignement>
-      <cr:selectEnseignant bean="#{printSeance}" render="listingSeances outilRecherche" toujoursVisible="false" >
+      <cr:selectEnseignant 	bean="#{printSeance}" 
+      						render="listingSeances outilRecherche" 
+      						toujoursVisible="false"
+      						>
       </cr:selectEnseignant>
     </rich:panel>
     <cr:saisieDate rendered="false" id="saisieDateInvisible" valeur="" titre="Date bidon qui permet de faire marcher dans le composant cr:saisieSeance les champs de saisie de date" />  

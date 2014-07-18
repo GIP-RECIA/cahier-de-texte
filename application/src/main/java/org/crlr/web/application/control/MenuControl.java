@@ -427,9 +427,9 @@ public class MenuControl extends AbstractControl<AbstractForm> {
             // 5. Séquence
             if (org.apache.commons.lang.BooleanUtils.isFalse(utilisateurDTO.getVraiOuFauxEtabSaisieSimplifiee())) {
                listeSousMenu = new ArrayList<MenuAction>();
-               this.listeAction.add(new MenuAction("sequence.png", "", "Séquence", listeSousMenu));
+               this.listeAction.add(new MenuAction("sequence.png", "", "Séquences", listeSousMenu));
                listeSousMenu.add(new MenuAction("sequenceAjout.png", Outil.AJOUT_SEQUENCE.name(), "Ajout de séquence", null));
-               listeSousMenu.add(new MenuAction("sequenceRecherche.png", Outil.RECH_SEQUENCE.name(), "Recherche", null));
+               listeSousMenu.add(new MenuAction("sequenceRecherche.png", Outil.RECH_SEQUENCE.name(), "Recherche/Modification", null));
             } /*
             inutile pour les utilisateurs qui utilisent les séquences automatiques. cd le 18/06/2014
             else {
@@ -458,9 +458,9 @@ public class MenuControl extends AbstractControl<AbstractForm> {
             // Archives
        //     this.listeAction.add(new MenuAction("archive.png", Outil.CAHIER_ARCHIVE.name(), "Archives", null));  
             listeSousMenu = new ArrayList<MenuAction>();
-            this.listeAction.add(new MenuAction("archive.png","", "Archives",listeSousMenu));
-            listeSousMenu.add(new MenuAction("cahierTexteEditionSeance.png", Outil.ARCHIVE_SEANCE.name(), "Séances par classe", null));
-            listeSousMenu.add(new MenuAction("cahierTexteEditionSequence.png", Outil.ARCHIVE_SEQUENCE.name(), "Séquences par classe",null));
+            this.listeAction.add(new MenuAction("archiveMenu.png","", "Archives",listeSousMenu));
+            listeSousMenu.add(new MenuAction("cahierTexteEditionSeance.png", Outil.ARCHIVE_SEANCE.name(), "Détail/PDF des séances par classe", null));
+            listeSousMenu.add(new MenuAction("cahierTexteEditionSequence.png", Outil.ARCHIVE_SEQUENCE.name(), "Détail/PDF des séquences par classe",null));
          }
     }
 

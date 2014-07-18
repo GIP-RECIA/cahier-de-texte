@@ -198,7 +198,11 @@ public abstract class AbstractPrintControl<F extends AbstractPrintForm> extends
         Set<TypePreferencesEtab> prefs = preferencesService.findEtabPreferences(idEtab);
         form.setPreferencesEtabs(prefs);
         
-        enseignantControl.form.setSeancePartage(prefs.contains(TypePreferencesEtab.SeancePartage));
+        if (isArchive) {
+        	enseignantControl.form.setSeancePartage(false);
+        } else {
+        	enseignantControl.form.setSeancePartage(prefs.contains(TypePreferencesEtab.SeancePartage));
+        }
         
         classeGroupeControl.setListener(this);
         enseignementControl.setListener(this);
