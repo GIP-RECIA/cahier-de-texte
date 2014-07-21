@@ -79,6 +79,11 @@
               rendered="#{empty contexteUtilisateur.utilisateurDTOOrigine and not empty ajoutCycle.form.cycle.id}"
               oncomplete=""
               status="statuspop"  />
+     <h:graphicImage
+      			library="images/icones" name="aide.png" 
+      			title="Aide contextuelle"
+                id="idAide"
+                onclick="#{rich:component('idPopupAide')}.show();" /> 
               
     </cr:menuAction>
     
@@ -227,7 +232,20 @@
 		    </a4j:outputPanel>
 		    </t:div>            
         </t:div>
-    </cr:popup>        
+    </cr:popup>       
+    
+     <cr:popup 
+	  		idPopup="idPopupAide" 
+	  		titrePopup="Aide"
+			largeurPopup="820" 
+			tailleAuto="true" 
+			popupUseRichEditor="false">
+		<div style="overflow: auto; width: 100%; height: 600px;" > 
+			<span style="word-wrap: break-word; width:780px;display: block;float:left;white-space:normal;">
+				<h:outputText value="#{ajoutCycle.form.texteAide}" escape="false" />
+			</span>
+		</div>
+      </cr:popup> 
     
 </cr:page>
 

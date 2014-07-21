@@ -8,7 +8,9 @@
 package org.crlr.services;
 
 import java.util.List;
+import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.crlr.dto.ResultatDTO;
 import org.crlr.dto.application.cycle.CycleDTO;
 import org.crlr.dto.application.cycle.CycleSeanceDTO;
@@ -18,6 +20,7 @@ import org.crlr.dto.application.cycle.RechercheCycleQO;
 import org.crlr.dto.application.cycle.RechercheCycleSeanceQO;
 import org.crlr.exception.metier.MetierException;
 import org.crlr.metier.facade.CycleFacadeService;
+import org.crlr.utils.PropertiesUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +36,7 @@ public class CycleDelegate implements CycleService {
     /** Injection spring automatique de la seanceFacade. */
     @Autowired
     private CycleFacadeService cycleFacadeService;
+	private static String aideContextuelle;
 
     /**
      * Mutateur cycleFacadeService.
@@ -108,5 +112,17 @@ public class CycleDelegate implements CycleService {
         return cycleFacadeService.findListeEmploiDTO(rechercheCycleEmploiQO);
     }
     
+    /**
+     * Accesseur de aideContextuelle.
+     * @return le aideContextuelle
+     */
+    @Override
+    public String getAideContextuelle() {
+        if (StringUtils.isEmpty(aideContextuelle)){
+            final Properties properties= PropertiesUtils.load("/aideContextuelle.properties");
+            aideContextuelle =properties.getProperty("ajoutCycle.aide"); 
+        }
+        return aideContextuelle;
+    }
 
 }

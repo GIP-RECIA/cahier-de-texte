@@ -55,7 +55,12 @@
 					name="groupCollAdd.png" 
 					title="Créer un groupe collaboratif local" />
 		</cr:liena4j>
-
+  <h:graphicImage
+      			library="images/icones" name="aide.png" 
+      			title="Aide contextuelle"
+                id="idAide"
+                onclick="#{rich:component('idPopupAide')}.show();" /> 
+              
     </cr:menuAction>
 	
 	<rich:panel
@@ -133,6 +138,21 @@
 			<a4j:jsFunction name="saveList" execute="idListeMembres" />
 		</rich:panel>	
 	</a4j:outputPanel>
+	
+	  <cr:popup 
+	  		idPopup="idPopupAide" 
+	  		titrePopup="Aide"
+			largeurPopup="820" 
+			tailleAuto="true" 
+			popupUseRichEditor="false">
+		<div style="overflow: auto; width: 100%; height: 600px;" > 
+			<span style="word-wrap: break-word; width:780px;display: block;float:left;white-space:normal;">
+				<h:outputText value="#{ajoutCycle.form.texteAide}" escape="false" />
+			</span>
+		</div>
+      </cr:popup> 
+    
+	
 	
 	 <cr:popupConfirmSauvegardeModification 
         libelleMessage="Voulez-vous enregistrer vos modifications avant de quitter cette page ?"

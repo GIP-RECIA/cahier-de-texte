@@ -23,7 +23,13 @@
                          image="eraser.png"
                          title="Réinitialiser"
                          render="idListeCycle,idPanelCritere" />
-    </cr:menuAction>
+   <h:graphicImage
+      			library="images/icones" name="aide.png" 
+      			title="Aide contextuelle"
+                id="idAide"
+                onclick="#{rich:component('idPopupAide')}.show();" /> 
+              
+               </cr:menuAction>
     
     <cr:lien id="refreshRecheche" bean="#{rechCycle}"
             cible="resetListeCycle"
@@ -83,6 +89,21 @@
             </cr:table>
         </rich:panel>
     </rich:panel>
+    
+     <cr:popup 
+	  		idPopup="idPopupAide" 
+	  		titrePopup="Aide"
+			largeurPopup="820" 
+			tailleAuto="true" 
+			popupUseRichEditor="false">
+		<div style="overflow: auto; width: 100%; height: 600px;" > 
+			<span style="word-wrap: break-word; width:780px;display: block;float:left;white-space:normal;">
+				<h:outputText value="#{ajoutCycle.form.texteAide}" escape="false" />
+			</span>
+		</div>
+      </cr:popup> 
+    
+    
 </cr:page>
 
 <cr:popupStatus idStatus="statuspop" />

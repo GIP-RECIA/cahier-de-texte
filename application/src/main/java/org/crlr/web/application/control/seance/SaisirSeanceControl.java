@@ -139,6 +139,7 @@ public class SaisirSeanceControl extends AbstractControl<SaisirSeanceForm> {
     public void onLoad() {
         
         form.reset();
+        form.setTexteAide(seanceService.getAideContextuelle());
         try {
             
             // Gere l'acces depuis l'ecran des visa : l'idEnseignant n'est pas l'utilisateur connecte.

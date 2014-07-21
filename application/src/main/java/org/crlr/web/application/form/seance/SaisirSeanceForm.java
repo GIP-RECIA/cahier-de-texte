@@ -129,6 +129,10 @@ public class SaisirSeanceForm extends AbstractForm {
 	/** Type couleur sélectionné. */
     private TypeCouleur typeCouleur;    
     
+    /**
+     * la doc 
+     */
+    private String texteAide;
     /** Reinitialise les donnees du formulaire. */
     public void reset() {
         listeBarreSemaine = new ArrayList<BarreSemaineDTO>();
@@ -743,6 +747,14 @@ public class SaisirSeanceForm extends AbstractForm {
 
 	public void setTypeCouleur(TypeCouleur typeCouleur) {
 		this.typeCouleur = typeCouleur;
+	}
+
+	public String getTexteAide() {
+		return texteAide;
+	}
+
+	public void setTexteAide(String texteAide) {
+		this.texteAide = texteAide;
 	}
     
     

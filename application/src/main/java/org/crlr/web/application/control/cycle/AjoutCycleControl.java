@@ -120,7 +120,9 @@ public class AjoutCycleControl extends AbstractPopupControl<AjoutCycleForm> {
     @PostConstruct
     public void onLoad() {
         
-       // Gestion du retour depuis un sous ecran
+    	form.setTexteAide(cycleService.getAideContextuelle());
+
+    	// Gestion du retour depuis un sous ecran
         final AjoutCycleForm formSave =
             (AjoutCycleForm) ContexteUtils.getContexteOutilControl()
                                                .recupererEtSupprimerObjet(IDFORM);

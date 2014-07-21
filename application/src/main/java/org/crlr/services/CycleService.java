@@ -97,6 +97,8 @@ public interface CycleService {
      * @return une liste de seance.
      */
     public ResultatDTO<List<CycleSeanceFinalDTO>> findListeEmploiDTO(RechercheCycleEmploiQO rechercheCycleEmploiQO);
+
+	public String getAideContextuelle();
     
     
 }

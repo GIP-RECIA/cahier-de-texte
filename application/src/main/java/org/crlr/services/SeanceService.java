@@ -237,4 +237,10 @@ public interface SeanceService {
     public ResultatDTO<List<SeanceDTO>> findSeanceForPlanning (
             RechercheSeanceQO rechercheSeanceQO) throws MetierException;
 
+    /**
+     * donne l'aide de l'ecran saisir seance
+     * @return
+     */
+	public String getAideContextuelle();
+
 }

@@ -8,7 +8,9 @@
 package org.crlr.services;
 
 import java.util.List;
+import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.crlr.dto.ResultatDTO;
 import org.crlr.dto.application.base.EtablissementSchemaQO;
 import org.crlr.dto.application.base.SeanceDTO;
@@ -23,9 +25,11 @@ import org.crlr.dto.application.sequence.PrintSeanceOuSequenceQO;
 import org.crlr.exception.metier.MetierException;
 import org.crlr.metier.facade.SeanceFacadeService;
 import org.crlr.report.Report;
+import org.crlr.utils.PropertiesUtils;
 import org.crlr.web.dto.FileUploadDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 
 /**
  * SeanceDelegate.
@@ -38,7 +42,9 @@ public class SeanceDelegate implements SeanceService {
     /** Injection spring automatique de la seanceFacade. */
     @Autowired
     private SeanceFacadeService seanceFacadeService;
-
+    
+    private static String aideContextuelle;
+    
     /**
      * Mutateur seanceFacadeService.
      *
@@ -193,6 +199,17 @@ public class SeanceDelegate implements SeanceService {
         return seanceFacadeService.findPieceJointeDevoir(idDevoir);
     }
 
-    
+    /**
+     * Accesseur de aideContextuelle.
+     * @return le aideContextuelle
+     */
+    @Override
+    public String getAideContextuelle() {
+        if (StringUtils.isEmpty(aideContextuelle)){
+            final Properties properties= PropertiesUtils.load("/aideContextuelle.properties");
+            aideContextuelle =properties.getProperty("saisirSeance.aide"); 
+        }
+        return aideContextuelle;
+    }
 
 }

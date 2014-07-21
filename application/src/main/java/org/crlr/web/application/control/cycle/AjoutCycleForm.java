@@ -78,6 +78,11 @@ public class AjoutCycleForm extends AbstractPopupForm {
     private List<TypeDateRemise> listeDateRemise;
     
     /**
+     * la doc 
+     */
+    private String texteAide;
+    
+    /**
      * Reset les champ du formulaire.
      */
     public void reset() {
@@ -402,6 +407,14 @@ public class AjoutCycleForm extends AbstractPopupForm {
     public void setListeEnseignant(List<EnseignantDTO> listeEnseignant) {
         this.listeEnseignant = listeEnseignant;
     }
+
+	public String getTexteAide() {
+		return texteAide;
+	}
+
+	public void setTexteAide(String texteAide) {
+		this.texteAide = texteAide;
+	}
 
     
 }
