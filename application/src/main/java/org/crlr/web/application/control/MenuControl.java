@@ -344,7 +344,9 @@ public class MenuControl extends AbstractControl<AbstractForm> {
         this.listeAction.add(new MenuAction("emploiTempsClasse.png", Outil.CONSOLIDER_EMP.name(), "Emploi du temps", null));
         
         // Travail a faire / Devoirs
+        /* suppresion sur demande de CD le 26/08/2014 
         this.listeAction.add(new MenuAction("devoir.png", Outil.DEVOIRS.name(), "Travail à faire / Devoirs", null));
+        */
     }
     
     /**

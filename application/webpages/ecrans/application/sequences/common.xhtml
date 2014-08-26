@@ -57,20 +57,7 @@
                    valeur="#{consulterSequence.form.groupeClasseSelectionne.intitule}"  />
         </h:panelGrid>
         
-    <ui:remove >
-        Supression pour duplication
-        <h:panelGrid  columns="4" class="table">           
-            <cr:saisiePopup id="idEtablissements" titre="Etablissement cible"  uniquementPopup="true"
-                    idPopup="idPopupEtablissements" bean="#{consulterSequence}" decalageTitreGauche="60"                    
-                    rendered="#{not empty consulterSequence.form.listeEtablissement}" largeur="100"
-                    valeur="#{consulterSequence.form.etablissementCible.code}" >
-            </cr:saisiePopup>                
-             <cr:saisieTexte id="idEtablissementLibelle" modifiable="false" titre=""
-                    decalageTitreGauche="5" largeur="310" decalageTitreDroite="0"
-                    rendered="#{not empty consulterSequence.form.listeEtablissement}"
-                    valeur="#{consulterSequence.form.etablissementCible.designation}" />        
-        </h:panelGrid>
-    </ui:remove>
+    
  <h:panelGrid columns="5" class="table" style="padding-right: 220px;">
           <h:outputLabel rendered="true"
                          style="padding-right: 5px; padding-left: 5px;"
@@ -113,44 +100,8 @@
 
     </rich:panel>
     
-        <ui:remove >
-    <cr:popup idPopup="idPopupEtablissements" tailleAuto="true"
-        largeurPopup="500"
-        rendered="#{not empty consulterSequence.form.listeEtablissement}"
-        titrePopup="Liste des établissements">
-        <cr:tableSaisiePopup bean="#{consulterSequence}" cible="empty"
-            liste="#{consulterSequence.form.listeEtablissement}" largeur="475"
-            render="consulterSequence"
-            valeur="#{consulterSequence.form.etablissementCible}">
-            <cr:colonne taille="30" libelleColonne="Id" id="">
-                <h:outputText value="#{ligne.id}" />
-            </cr:colonne>
-            <cr:colonne taille="30" libelleColonne="Siren" id="">
-                <h:outputText value="#{ligne.code}" />
-            </cr:colonne>
-            <cr:colonne taille="405" libelleColonne="Nom" id="">
-                <h:outputText value="#{ligne.designation}" />
-            </cr:colonne>
-        </cr:tableSaisiePopup>
-    </cr:popup>
-        </ui:remove >
+        
     
-    <ui:remove>
-    supression pour duplication
-    <cr:popup idPopup="idPopupEnseignement" tailleAuto="true"
-        largeurPopup="300"
-        titrePopup="Liste des enseignements">
-        <cr:tableSaisiePopup bean="#{rechSequence}"         
-            liste="#{consulterSequence.form.listeEnseignement}" render="consulterSequence"
-            valeur="#{consulterSequence.form.enseignementSelectionne}">
-            <cr:colonne taille="30" libelleColonne="Code" id="">
-                <h:outputText value="#{ligne.code}" />
-            </cr:colonne>
-            <cr:colonne  taille="350" libelleColonne="Intitulé" id="">
-                <h:outputText value="#{ligne.intitule}" />
-            </cr:colonne>
-        </cr:tableSaisiePopup>
-    </cr:popup>
-    </ui:remove>
+
        
 </html>
