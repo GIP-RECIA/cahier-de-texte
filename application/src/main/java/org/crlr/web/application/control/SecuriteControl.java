@@ -233,7 +233,7 @@ public class SecuriteControl extends AbstractControl<SecuriteForm> {
             final ContexteUtilisateur contexteUtilisateur = ContexteUtils.getContexteUtilisateur();
             final UtilisateurDTO utilisateurDTO = contexteUtilisateur.getUtilisateurDTO();
             
-            if(contexteUtilisateur.getProfilPrefere() != null) {
+            if(contexteUtilisateur.getProfilPrefere() != null && utilisateurDTO.getProfil() == null) {
             	                utilisateurDTO.setProfil(contexteUtilisateur.getProfilPrefere());
             	                log.debug("TEST : initialiseEtRedirige : profil <= profil prefere");
             }
