@@ -427,7 +427,7 @@
 			<delete dir="${deploy.home}/${application.name}/images" />
 			<delete dir="${deploy.home}/${application.name}/js" />
 			<delete dir="${deploy.home}/${application.name}/WEB-INF" />
-			<delete dir="${deploy.home}/${application.name}/importEDT" />
+			<!-- <delete dir="${deploy.home}/${application.name}/importEDT" /> -->
 			<delete file="${deploy.home}/${application.name}/deconnexion.jsp" />
 			<delete file="${deploy.home}/${application.name}/deconnexionCas.jsp" />
 			<delete file="${deploy.home}/${application.name}/edition" />
