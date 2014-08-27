@@ -141,7 +141,7 @@ public class MenuControl extends AbstractControl<AbstractForm> {
         if (!CollectionUtils.isEmpty(listeEnfant)) {
             if (listeEnfant.size() > 1) {
                 this.listeAction.add(new MenuAction("changeEleve.png", 
-                        Outil.PREFERENCE_CAHIER.name(), "Changer l'enfant courant", null));
+                        Outil.PREFERENCE_CAHIER.name(), "Sélection de l'élève", null));
             }
         }
     
