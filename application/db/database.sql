@@ -6,9 +6,6 @@ CREATE SCHEMA cahier_courant;
 drop table if exists cahier_courant.cahier_couleur_enseignement_classe;
 drop table if exists  cahier_courant.cahier_preferences_etab;
 
-DROP SEQUENCE IF EXISTS cahier_couleur_enseignement cascade;
-
-
 DROP TABLE IF EXISTS cahier_courant.cahier_annee_scolaire CASCADE;
 DROP TABLE IF EXISTS cahier_courant.cahier_classe CASCADE;
 DROP TABLE IF EXISTS cahier_courant.cahier_type_devoir CASCADE;
@@ -75,37 +72,6 @@ CREATE TABLE cahier_courant.cahier_annee_scolaire
 );
 
 
-
--- Table: cahier_courant.cahier_couleur_enseignement_classe
-
-
-CREATE TABLE cahier_courant.cahier_couleur_enseignement_classe
-(
-  id integer NOT NULL, 
-  id_etablissement integer not null,
-  id_enseignant integer not null,
-  id_enseignement integer not null,
-  id_classe integer, 
-  id_groupe integer,
-  couleur varchar(10),
-  CONSTRAINT id_couleur_enseignement_classe PRIMARY KEY (id ),
-  constraint unique_couleur_enseignement_classe UNIQUE (id_etablissement, id_enseignant, id_enseignement, id_classe),
-  constraint unique_couleur_enseignement_groupe unique (id_etablissement, id_enseignant, id_enseignement, id_groupe),
-  CONSTRAINT cahier_couleur_enseignant FOREIGN KEY (id_enseignant)
-      REFERENCES cahier_courant.cahier_enseignant (id) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE NO ACTION,
-  CONSTRAINT cahier_couleur_enseignement FOREIGN KEY (id_enseignement)
-      REFERENCES cahier_courant.cahier_enseignement (id) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE NO ACTION,
-  CONSTRAINT cahier_couleur_classe FOREIGN KEY (id_classe)
-      REFERENCES cahier_courant.cahier_classe (id) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE NO ACTION,
-  CONSTRAINT cahier_couleur_groupe FOREIGN KEY (id_groupe)
-      REFERENCES cahier_courant.cahier_groupe (id) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE NO ACTION
-);
-
-CREATE SEQUENCE cahier_couleur_enseignement MINVALUE 1;
 
 
 -- Table: cahier_etablissement
@@ -736,15 +702,6 @@ CREATE TABLE cahier_courant.cahier_preferences_utilisateur
 );
 
 
--- Table: cahier_preferences_etab
-CREATE TABLE cahier_courant.cahier_preferences_etab
-(
-	 id_etablissement integer NOT NULL,
-  preferences character varying(200),
-  CONSTRAINT pk_pref_etab PRIMARY KEY (id_etablissement)
-);
-
-
 --Création de la table inspecteur
 CREATE TABLE cahier_courant.cahier_inspecteur
 (
@@ -1278,6 +1235,44 @@ create table cahier_courant.cahier_piece_jointe_cycle_devoir (
       ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
+
+-- Table: cahier_courant.cahier_couleur_enseignement_classe
+
+
+CREATE TABLE cahier_courant.cahier_couleur_enseignement_classe
+(
+  id integer NOT NULL, 
+  id_etablissement integer not null,
+  id_enseignant integer not null,
+  id_enseignement integer not null,
+  id_classe integer, 
+  id_groupe integer,
+  couleur varchar(10),
+  CONSTRAINT id_couleur_enseignement_classe PRIMARY KEY (id ),
+  constraint unique_couleur_enseignement_classe UNIQUE (id_etablissement, id_enseignant, id_enseignement, id_classe),
+  constraint unique_couleur_enseignement_groupe unique (id_etablissement, id_enseignant, id_enseignement, id_groupe),
+  CONSTRAINT cahier_couleur_enseignant FOREIGN KEY (id_enseignant)
+      REFERENCES cahier_courant.cahier_enseignant (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT cahier_couleur_enseignement FOREIGN KEY (id_enseignement)
+      REFERENCES cahier_courant.cahier_enseignement (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT cahier_couleur_classe FOREIGN KEY (id_classe)
+      REFERENCES cahier_courant.cahier_classe (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT cahier_couleur_groupe FOREIGN KEY (id_groupe)
+      REFERENCES cahier_courant.cahier_groupe (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+-- Table: cahier_preferences_etab
+CREATE TABLE cahier_courant.cahier_preferences_etab
+(
+	 id_etablissement integer NOT NULL,
+  preferences character varying(200),
+  CONSTRAINT pk_pref_etab PRIMARY KEY (id_etablissement)
+);
+
 --ALTER TABLE cahier_courant.cahier_groupe ADD COLUMN groupe_collaboratif boolean DEFAULT false;
 --ALTER TABLE cahier_courant.cahier_groupe ADD COLUMN nom_long varchar(255) DEFAULT null;
 
@@ -1290,4 +1285,6 @@ CREATE SEQUENCE cahier_cycle_seance MINVALUE 1;
 DROP SEQUENCE IF EXISTS cahier_cycle_devoir;
 CREATE SEQUENCE cahier_cycle_devoir MINVALUE 1;
 
+DROP SEQUENCE IF EXISTS cahier_couleur_enseignement cascade;
+CREATE SEQUENCE cahier_couleur_enseignement MINVALUE 1;
   

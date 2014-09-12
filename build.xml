@@ -632,6 +632,21 @@
      </sql>
   </target>
 
+  <target name="ent5-1-7c-update-database" description="Mise à jour de la base de données pour la prise en compte des couleurs">
+	   <sql
+        driver="${db.driver}"
+        url="${db.url}"
+        userid="${db.user}"
+        password="${db.password}"
+        src="${project.application.db}/update_ent_5_1_7c.sql"
+        print="yes" >
+    
+        <classpath>
+	         <pathelement location="${project.application.lib}/${db.jar}"/>
+        </classpath>
+     </sql>
+  </target>
+
   <target name="ent5-2-update-database" description="Mise à jour de la base de données pour l' ent 5.2.">
 	   <sql
         driver="${db.driver}"
@@ -682,6 +697,21 @@
      </sql>
   </target>
   
+  <target name="ent5-4c-update-database" description="Mise à jour de la base de données pour la prise en compte des couleurs">
+	   <sql
+        driver="${db.driver}"
+        url="${db.url}"
+        userid="${db.user}"
+        password="${db.password}"
+        src="${project.application.db}/update_ent_5_4c.sql"
+        print="yes" >
+    
+        <classpath>
+	         <pathelement location="${project.application.lib}/${db.jar}"/>
+        </classpath>
+     </sql>
+  </target>
+
   <target name="switchEnv" description="Changer l'environment">
     <copy file="build.properties.${targetEnv}" 
               tofile="build.properties" overwrite="true"/>
