@@ -208,5 +208,15 @@ public interface SequenceFacadeService {
      * @throws MetierException ex
      */
     public void verifierClasseGroupeSaisieAvecType(ConteneurMessage conteneurMessage, GroupesClassesDTO groupesClassesDTO) throws MetierException;
+
+    /**
+     * pour ajouter les sequences manquantes pour le mode saisie simplifée.
+     * @param saveSequenceSimplifieeQO
+     * @return
+     * @throws MetierException
+     */
+	ResultatDTO<Integer> ajoutSequenceManquanteSaisieSimplifiee(
+			SaveSequenceSimplifieeQO saveSequenceSimplifieeQO)
+			throws MetierException;
         
 }

@@ -9,6 +9,7 @@ package org.crlr.metier.facade;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -986,6 +987,166 @@ public class SequenceFacade implements SequenceFacadeService {
             
             conteneurMessage.add(new Message(TypeReglesAcquittement.ACQUITTEMENT_00.name(),
                     Nature.INFORMATIF, "La désactivation de la génération automatique des séquences", "prise en compte"));
+        }
+        
+        resultatDTO.setConteneurMessage(conteneurMessage);
+        
+        return resultatDTO;
+    }
+    
+    
+    /**
+     * Ajout des sequences manquantes en cas de gestion automatique (simplifié) .
+     * ne modifie pas le flag SaisieSimplifiee de l'enseignant.
+     * @param saveSequenceSimplifieeQO
+     * @return
+     * @throws MetierException
+     */
+    @Override
+    public ResultatDTO<Integer> ajoutSequenceManquanteSaisieSimplifiee(final SaveSequenceSimplifieeQO saveSequenceSimplifieeQO) throws MetierException {
+        Assert.isNotNull("saveSequenceSimplifieeQO", saveSequenceSimplifieeQO);
+        
+        final AnneeScolaireDTO anneeScolaireDTO = saveSequenceSimplifieeQO.getAnneeScolaireDTO();
+        final Integer idAnneeSco = anneeScolaireDTO.getId();
+        final Integer idEnseignant = saveSequenceSimplifieeQO.getIdEnseignant();
+        final Integer idEtablissement = saveSequenceSimplifieeQO.getIdEtablissement();
+        final Boolean vraiOuFauxSaisieSimplifiee = BooleanUtils.isTrue(saveSequenceSimplifieeQO.getVraiOuFauxSaisieSimplifiee());
+        Assert.isNotNull("idEnseignant", idEnseignant);
+        Assert.isNotNull("idEtablissement", idEtablissement);
+        //Il faut à minima ces deux dates pour les périodes.
+        Assert.isNotNull("dateRentree", anneeScolaireDTO.getDateRentree());
+        Assert.isNotNull("dateSortie", anneeScolaireDTO.getDateSortie());
+        final List<GenericDTO<Date, Date>> periodes = GenerateurDTO.generatePeriodes(anneeScolaireDTO);
+        
+        final ResultatDTO<Integer> resultatDTO = new ResultatDTO<Integer>();
+        final ConteneurMessage conteneurMessage = new ConteneurMessage();
+        
+        
+        if (vraiOuFauxSaisieSimplifiee) {            
+           
+        		// recherche des sequences deja existantes pour l'enseignant dans l'établissement
+         	Set<SequenceDTO> sequencesExistantes = sequenceHibernateBusinessService.findSequenceEnseignant(idEnseignant, idEtablissement);
+         		// creattion des  maps enseignement => classes et enseignement => groupes
+         	
+         	
+         	HashMap<Integer, Set<Integer>> enseignement2classes = new HashMap<Integer, Set<Integer>>();
+         	HashMap<Integer, Set<Integer>> enseignement2groupes = new HashMap<Integer, Set<Integer>>();
+         	
+         	for (SequenceDTO sequenceDTO : sequencesExistantes) {
+         		if (sequenceDTO != null) {
+         			Integer idEnseignement = sequenceDTO.getIdEnseignement();
+         			GroupesClassesDTO gcDto = sequenceDTO.getGroupesClassesDTO();
+         			if (idEnseignement != null && gcDto != null) {
+         				
+         				Integer idGroupOrClass =  gcDto.getId();
+         				
+         				Set<Integer> idSet;
+         				
+         				HashMap<Integer, Set<Integer>> ens2GroupOrClasse;
+         				
+         				if (gcDto.getTypeGroupe() == TypeGroupe.CLASSE) {
+         					ens2GroupOrClasse = enseignement2classes;
+         				} else {
+         					ens2GroupOrClasse = enseignement2groupes;
+         				}
+         				
+         				idSet = ens2GroupOrClasse.get(idEnseignement);
+         				
+         				if (idSet == null) {
+         					idSet = new HashSet<Integer>();
+         					ens2GroupOrClasse.put(idEnseignement, idSet);
+         				}
+         				
+         				idSet.add(idGroupOrClass);
+         			}
+         		}
+			}
+         	
+            //recherche des classes de l'enseignant
+            final RechercheGroupeClassePopupQO rechercheGroupeClassePopupQO = new RechercheGroupeClassePopupQO();
+            rechercheGroupeClassePopupQO.setIdAnneeScolaire(idAnneeSco);
+            rechercheGroupeClassePopupQO.setExerciceScolaire(anneeScolaireDTO.getExercice());
+            rechercheGroupeClassePopupQO.setIdEnseignant(idEnseignant);        
+            rechercheGroupeClassePopupQO.setIdEtablissement(idEtablissement);
+            rechercheGroupeClassePopupQO.setArchive(false);
+            final ResultatDTO<List<GroupesClassesDTO>> resultatClasse = classeHibernateBusinessService.findClassePopup(rechercheGroupeClassePopupQO);
+            //recherche des groupes de l'enseignant        
+            final ResultatDTO<List<GroupesClassesDTO>> resultatGroupe = groupeHibernateBusinessService.findGroupePopup(rechercheGroupeClassePopupQO);
+            //recherche des enseignements
+            final RechercheEnseignementPopupQO rechercheEnseignementPopupQO = new RechercheEnseignementPopupQO();
+            rechercheEnseignementPopupQO.setIdEnseignant(idEnseignant);
+            rechercheEnseignementPopupQO.setIdEtablissement(idEtablissement);
+
+            final ResultatDTO<List<EnseignementDTO>> resultatEnseignement = 
+                enseignementHibernateBusinessService.findEnseignementPopup(rechercheEnseignementPopupQO);
+
+            int compteurSequence = 0;
+            
+            for (GenericDTO<Date, Date> dates : periodes){
+                final SaveSequenceQO saveSequenceQO = new SaveSequenceQO();
+                saveSequenceQO.setDateDebut(dates.getValeur1());
+                saveSequenceQO.setDateFin(dates.getValeur2());
+                saveSequenceQO.setIdEnseignant(idEnseignant);
+                saveSequenceQO.setIdEtablissement(idEtablissement);
+                
+                final String prefixDescSequ = "Séquence automatique - ";
+
+                for (final EnseignementDTO enseignementDTO : resultatEnseignement.getValeurDTO()) {
+                    saveSequenceQO.setEnseignementSelectionne(enseignementDTO);
+                    final String prefixSequ =  StringUtils.abbreviate(enseignementDTO.getIntitule(), 25);
+                    
+                     // l'ensemble des classes avec une sequence déjà existante pour cette enseignement.
+                    Set<Integer> classeWithSequence = enseignement2classes.get(enseignementDTO.getId());
+                    
+                    //création d'une séquence sur l'enseignement en cours pour chaque classe de l'enseignant.
+                    for (final GroupesClassesDTO classe : resultatClasse.getValeurDTO()) {   
+                    	
+                    	// test si il existe déjà une sequence pour  cette classe
+                    	
+                    	if (classeWithSequence == null || !classeWithSequence.contains(classe.getId())) {
+                    	
+	                        String desc = prefixDescSequ + enseignementDTO.getIntitule(); 
+	                        saveSequenceQO.setIntitule(prefixSequ + " / " + StringUtils.abbreviate(classe.getIntitule(),22));
+	                      
+	                        desc += " - Classe ";
+	                     
+	                        desc += classe.getIntitule();
+	                        saveSequenceQO.setDescription(desc);
+	                        saveSequenceQO.setClasseGroupeSelectionne(classe);
+	                        sequenceHibernateBusinessService.saveSequence(saveSequenceQO);
+
+	                        compteurSequence++;
+                    	}
+                    }          
+                    	// l'ensemble des classes avec une sequence déjà existante pour cette enseignement.
+                    Set<Integer> groupeWithSequence = enseignement2groupes.get(enseignementDTO.getId());
+                    
+                    //création d'une séquence sur l'enseignement en cours pour chaque groupe de l'enseignant.
+                    for (final GroupesClassesDTO groupe : resultatGroupe.getValeurDTO()) {                
+                    	if (groupeWithSequence == null || !groupeWithSequence.contains(groupe.getId())) {
+	
+	                    	saveSequenceQO.setIntitule(prefixSequ + " / " + StringUtils.abbreviate(groupe.getIntitule(),22));
+	                        saveSequenceQO.setDescription(prefixDescSequ + enseignementDTO.getIntitule() + " et le groupe " + groupe.getIntitule());
+	                        saveSequenceQO.setClasseGroupeSelectionne(groupe);
+	                        sequenceHibernateBusinessService.saveSequence(saveSequenceQO);
+	
+	                        compteurSequence++;
+	                    }
+                    }
+                }
+            }
+            
+            if (compteurSequence == 0){
+                conteneurMessage.add(new Message(TypeReglesAdmin.ADMIN_21.name()));
+                /*throw new MetierException(conteneurMessage, 
+                        "Aucune séquence n'a pu être généré car l'enseignant n'a pas d'enseignement ou de classe/groupe.");*/
+            } else {
+                conteneurMessage.add(new Message(TypeReglesAcquittement.ACQUITTEMENT_01.name(),
+                        Nature.INFORMATIF, compteurSequence + " séquences", "créées"));
+            }
+
+        } else {
+        	conteneurMessage.add(new Message(TypeReglesAdmin.ADMIN_21.name()));
         }
         
         resultatDTO.setConteneurMessage(conteneurMessage);

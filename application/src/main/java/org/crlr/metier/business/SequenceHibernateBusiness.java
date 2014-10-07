@@ -796,6 +796,58 @@ public class SequenceHibernateBusiness extends AbstractBusiness
         return vraiOuFauxSequence;
     }
     
+    @Override
+    public Set<SequenceDTO> findSequenceEnseignant (final Integer idEnseignant, final Integer idEtablissement){
+    	  Assert.isNotNull("idEtablissement", idEtablissement);
+          final String queryTxt = 
+              "select SEQ FROM " + 
+              SequenceBean.class.getName() + " SEQ "+
+              " WHERE " +
+              " SEQ.idEtablissement = :idEtablissement AND SEQ.idEnseignant=:idEnseignant ";
+          
+          final Query query = getEntityManager().createQuery(queryTxt);
+          
+          query.setParameter("idEtablissement", idEtablissement);
+          query.setParameter("idEnseignant", idEnseignant);
+          
+          @SuppressWarnings("unchecked")
+          List<SequenceBean> listeSequenceResult = query.getResultList();
+          
+          final HashSet<SequenceDTO> listeSequenceDTO = new HashSet<SequenceDTO>();
+          for (final SequenceBean sequence : listeSequenceResult) {
+              final SequenceDTO sequenceDTO = new SequenceDTO();
+              sequenceDTO.setCode(sequence.getCode());
+              sequenceDTO.setId(sequence.getId());
+              sequenceDTO.setDateDebut(sequence.getDateDebut());
+              sequenceDTO.setDateFin(sequence.getDateFin());
+              sequenceDTO.setDescription(sequence.getDescription());
+              sequenceDTO.setIntitule(sequence.getIntitule());
+              sequenceDTO.setIdEnseignant(sequence.getIdEnseignant());
+              sequenceDTO.setIdEtablissement(sequence.getIdEtablissement());
+              
+              ClasseBean classe = sequence.getClasse(); 
+              GroupeBean groupe = sequence.getGroupe();
+              GroupesClassesDTO groupeClasse = new GroupesClassesDTO();
+              if (classe != null) {
+            	  groupeClasse.setCode(classe.getCode());
+            	  groupeClasse.setId(classe.getId());
+            	  groupeClasse.setDesignation(classe.getDesignation());
+            	  groupeClasse.setIdAnneeScolaire(classe.getIdAnneeScolaire());
+            	  groupeClasse.setTypeGroupe(TypeGroupe.CLASSE);
+              } else {
+            	  groupeClasse.setCode(groupe.getCode());
+            	  groupeClasse.setId(groupe.getId());
+            	  groupeClasse.setDesignation(groupe.getDesignation());
+            	  groupeClasse.setIdAnneeScolaire(groupe.getIdAnneeScolaire());
+            	  groupeClasse.setTypeGroupe(TypeGroupe.GROUPE);
+              }
+              sequenceDTO.setIdEnseignement(sequence.getIdEnseignement());
+              sequenceDTO.setDesignationEnseignement(sequence.getEnseignementLibelle().getLibelle());
+       
+              listeSequenceDTO.add(sequenceDTO);
+          }
+          return listeSequenceDTO;
+    }
     /**
      * {@inheritDoc}
      */

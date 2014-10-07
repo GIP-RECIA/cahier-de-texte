@@ -200,5 +200,13 @@ public interface SequenceHibernateBusinessService {
      * @return l'id de la séquence.
      */
     public Integer findIdSequenceByEnsEtClasseGroupe(int idEns, int idClasseGroupe);
+
+    /**
+     * Trouve toutes les sequences d'un enseignant dans un établissement.
+     * @param idEnseignant
+     * @param idEtablissement
+     * @return l'ensemble des séquences de l'enseignant dans l'étab.
+     */
+	Set<SequenceDTO> findSequenceEnseignant(Integer idEnseignant, Integer idEtablissement);
    
 }

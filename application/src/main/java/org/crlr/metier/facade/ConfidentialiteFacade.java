@@ -417,22 +417,27 @@ public class ConfidentialiteFacade implements ConfidentialiteFacadeService {
         Boolean vraiOuFauxSaisieSimplifiee = etablissementHibernateBusinessService.checkSaisieSimplifieeEtablissement( idEtablissement, idEnseignant );
         // si l'établissemzent est accessible.
         if (vraiOuFauxEtabAccessible) {
-            // si la valeur vaut null il faut initialiser la saisie simplifiée à
-            // active
-            if (vraiOuFauxSaisieSimplifiee == null) {
-                vraiOuFauxSaisieSimplifiee = true;
-                // vérification que les séquences n'existent pas déjà
-
-                final SaveSequenceSimplifieeQO saveSequenceSimplifieeQO = new SaveSequenceSimplifieeQO();
-                saveSequenceSimplifieeQO.setAnneeScolaireDTO( anneeScolaireDTO );
-                saveSequenceSimplifieeQO.setIdEnseignant( idEnseignant );
-                saveSequenceSimplifieeQO.setIdEtablissement( idEtablissement );
-                saveSequenceSimplifieeQO.setVraiOuFauxSaisieSimplifiee( vraiOuFauxSaisieSimplifiee );
-
-                if (!sequenceFacadeService.checkExistenceSequenceEnseignant( idEnseignant, idEtablissement )) {
-                    sequenceFacadeService.saveSequenceSaisieSimplifiee( saveSequenceSimplifieeQO );
-                }
-            }
+        	
+        	if (vraiOuFauxSaisieSimplifiee != false ) {
+        		 final SaveSequenceSimplifieeQO saveSequenceSimplifieeQO = new SaveSequenceSimplifieeQO();
+                 saveSequenceSimplifieeQO.setAnneeScolaireDTO( anneeScolaireDTO );
+                 saveSequenceSimplifieeQO.setIdEnseignant( idEnseignant );
+                 saveSequenceSimplifieeQO.setIdEtablissement( idEtablissement );
+	            // si la valeur vaut null il faut initialiser la saisie simplifiée à
+	            // active
+	            if (vraiOuFauxSaisieSimplifiee == null) {
+	                vraiOuFauxSaisieSimplifiee = true;
+	                // vérification que les séquences n'existent pas déjà
+	                saveSequenceSimplifieeQO.setVraiOuFauxSaisieSimplifiee( vraiOuFauxSaisieSimplifiee );
+	                if (!sequenceFacadeService.checkExistenceSequenceEnseignant( idEnseignant, idEtablissement )) {
+	                    sequenceFacadeService.saveSequenceSaisieSimplifiee( saveSequenceSimplifieeQO );
+	                }
+	            } else  {
+	            	// si on est en mode simplifier il faut compléter les sequences pour les nouveaux groupes (ou classes)
+	                saveSequenceSimplifieeQO.setVraiOuFauxSaisieSimplifiee( vraiOuFauxSaisieSimplifiee );
+	                sequenceFacadeService.ajoutSequenceManquanteSaisieSimplifiee(saveSequenceSimplifieeQO);
+	            }
+        	}
         } else {
             vraiOuFauxSaisieSimplifiee = BooleanUtils.isTrue( vraiOuFauxSaisieSimplifiee );
         }
