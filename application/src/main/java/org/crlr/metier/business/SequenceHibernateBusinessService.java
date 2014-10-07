@@ -203,10 +203,21 @@ public interface SequenceHibernateBusinessService {
 
     /**
      * Trouve toutes les sequences d'un enseignant dans un établissement.
+     * On ne recupere que les ids des groupes ou classes sans les autres infos 
      * @param idEnseignant
      * @param idEtablissement
+     * @param withIdOnly
      * @return l'ensemble des séquences de l'enseignant dans l'étab.
      */
+	Set<SequenceDTO> findSequenceEnseignant4idOnly(
+								Integer idEnseignant, 
+								Integer idEtablissement);
+	/**
+	 * Trouve toutes les sequences d'un enseignant dans un établissement.
+	 * @param idEnseignant
+	 * @param idEtablissement
+	 * @return
+	 */
 	Set<SequenceDTO> findSequenceEnseignant(Integer idEnseignant, Integer idEtablissement);
    
 }

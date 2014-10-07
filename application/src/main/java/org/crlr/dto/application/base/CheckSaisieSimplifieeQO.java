@@ -34,6 +34,9 @@ public class CheckSaisieSimplifieeQO implements Serializable {
     /** environnement CRLR. */
     final Boolean vraiOuFauxEnvironnementCRLR;
     
+    
+    private boolean forceAjoutSequence = false;
+    
     /**
      * Constructeur.
      * @param idEtablissement l'id de l'établissement.
@@ -114,6 +117,14 @@ public class CheckSaisieSimplifieeQO implements Serializable {
     public Boolean getVraiOuFauxEnvironnementCRLR() {
         return vraiOuFauxEnvironnementCRLR;
     }
+
+	public boolean isForceAjoutSequence() {
+		return forceAjoutSequence;
+	}
+
+	public void setForceAjoutSequence(boolean forceAjoutSequence) {
+		this.forceAjoutSequence = forceAjoutSequence;
+	}
     
     
 

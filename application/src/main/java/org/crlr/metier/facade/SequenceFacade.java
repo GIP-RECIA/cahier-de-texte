@@ -1025,7 +1025,9 @@ public class SequenceFacade implements SequenceFacadeService {
         if (vraiOuFauxSaisieSimplifiee) {            
            
         		// recherche des sequences deja existantes pour l'enseignant dans l'établissement
-         	Set<SequenceDTO> sequencesExistantes = sequenceHibernateBusinessService.findSequenceEnseignant(idEnseignant, idEtablissement);
+         	Set<SequenceDTO> sequencesExistantes = sequenceHibernateBusinessService.findSequenceEnseignant4idOnly(
+         																				idEnseignant, 
+         																				idEtablissement);
          		// creattion des  maps enseignement => classes et enseignement => groupes
          	
          	

@@ -41,6 +41,8 @@ public class AuthentificationQO {
     /** Les expressios regulieres pour l'admin local. */
     private String regexpAdmLocal;
     
+    private boolean isFirstTime = false;
+    
 
 /**
      * Constructeur.
@@ -165,6 +167,14 @@ public class AuthentificationQO {
     public void setRegexpAdmLocal(String regexpAdmLocal) {
         this.regexpAdmLocal = regexpAdmLocal;
     }
+
+	public boolean isFirstTime() {
+		return isFirstTime;
+	}
+
+	public void setFirstTime(boolean isFirstTime) {
+		this.isFirstTime = isFirstTime;
+	}
     
     
     

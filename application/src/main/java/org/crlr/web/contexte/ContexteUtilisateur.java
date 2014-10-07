@@ -84,6 +84,13 @@ public class ContexteUtilisateur implements Serializable {
      * L'outil en cours d'utilisation.
      */
     private Outil outil;
+    
+    
+    /**
+     * Test si on a déjà fait une initialisationAuthentification pour l'utilisateur.
+     * utile pour ne pas refiare les ajout de sequenec automatique.
+     */
+    private boolean isFirstTime = true;
 
 /**
      * Constructeur.
@@ -160,6 +167,7 @@ public class ContexteUtilisateur implements Serializable {
         navigation.clear();
         outil = null;
         mapOutilMode.clear();
+        isFirstTime = true;
     }
 
     /**
@@ -365,4 +373,14 @@ public class ContexteUtilisateur implements Serializable {
             return this.utilisateurDTO;
         }
     }
+
+    /**
+     * n'est vrai que pour le premier appel et faux pour les suivant
+     * @return
+     */
+	public boolean isFirstTime() {
+		boolean aux = isFirstTime;
+		isFirstTime = false;
+		return aux;
+	}
 }

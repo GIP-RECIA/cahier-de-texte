@@ -227,6 +227,7 @@ public class SecuriteControl extends AbstractControl<SecuriteForm> {
         criteres.setRegexpAdmLocal(contexteApplication.getRegexpAdmLocal());
         
         try {
+        	criteres.setFirstTime(contexteUtilisateur.isFirstTime());
             final ResultatDTO<UtilisateurDTO> resultat = confidentialiteService.initialisationAuthentification(criteres);
             initialiserContexteUtilisateur(resultat.getValeurDTO(), casUser);
             log.info("Connexion de l'utilisateur déjà effectuée via CAS : {}", casUser);

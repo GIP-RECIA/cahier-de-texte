@@ -387,7 +387,10 @@ public class ConfidentialiteFacade implements ConfidentialiteFacadeService {
             if (Profil.ENSEIGNANT.equals( profilIndividu )) {
                 final CheckSaisieSimplifieeQO checkSaisieSimplifieeQO = new CheckSaisieSimplifieeQO( idEtablissement, id, anneeScolaireDTO,
                         vraiOuFauxEtabAccessible, vraiOuFauxEnvCRLR );
+                
+                checkSaisieSimplifieeQO.setForceAjoutSequence(authentificationQO.isFirstTime());
                 Boolean vraiOuFauxSaisieSimplifiee = true;
+                
                 vraiOuFauxSaisieSimplifiee = saveCheckAutiomatisationActivationSaisieSimplifiee( checkSaisieSimplifieeQO );
                 utilisateurDTO.setVraiOuFauxEtabSaisieSimplifiee( vraiOuFauxSaisieSimplifiee );
             }
@@ -418,7 +421,10 @@ public class ConfidentialiteFacade implements ConfidentialiteFacadeService {
         // si l'établissemzent est accessible.
         if (vraiOuFauxEtabAccessible) {
         	
-        	if (vraiOuFauxSaisieSimplifiee != false ) {
+        	if (	vraiOuFauxSaisieSimplifiee == null 
+        			|| (	checkSaisieSimplifieeQO.isForceAjoutSequence() 
+        				&& 	vraiOuFauxSaisieSimplifiee ==true)   ) {
+        		
         		 final SaveSequenceSimplifieeQO saveSequenceSimplifieeQO = new SaveSequenceSimplifieeQO();
                  saveSequenceSimplifieeQO.setAnneeScolaireDTO( anneeScolaireDTO );
                  saveSequenceSimplifieeQO.setIdEnseignant( idEnseignant );

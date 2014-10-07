@@ -797,7 +797,9 @@ public class SequenceHibernateBusiness extends AbstractBusiness
     }
     
     @Override
-    public Set<SequenceDTO> findSequenceEnseignant (final Integer idEnseignant, final Integer idEtablissement){
+    public Set<SequenceDTO> findSequenceEnseignant (
+    							final Integer idEnseignant, 
+    							final Integer idEtablissement){
     	  Assert.isNotNull("idEtablissement", idEtablissement);
           final String queryTxt = 
               "select SEQ FROM " + 
@@ -824,10 +826,12 @@ public class SequenceHibernateBusiness extends AbstractBusiness
               sequenceDTO.setIntitule(sequence.getIntitule());
               sequenceDTO.setIdEnseignant(sequence.getIdEnseignant());
               sequenceDTO.setIdEtablissement(sequence.getIdEtablissement());
-              
+             
+              GroupesClassesDTO groupeClasse = new GroupesClassesDTO();
+              sequenceDTO.setGroupesClassesDTO(groupeClasse);
+            
               ClasseBean classe = sequence.getClasse(); 
               GroupeBean groupe = sequence.getGroupe();
-              GroupesClassesDTO groupeClasse = new GroupesClassesDTO();
               if (classe != null) {
             	  groupeClasse.setCode(classe.getCode());
             	  groupeClasse.setId(classe.getId());
@@ -841,9 +845,59 @@ public class SequenceHibernateBusiness extends AbstractBusiness
             	  groupeClasse.setIdAnneeScolaire(groupe.getIdAnneeScolaire());
             	  groupeClasse.setTypeGroupe(TypeGroupe.GROUPE);
               }
+              if (sequence.getEnseignementLibelle() != null ) {
+            	  sequenceDTO.setDesignationEnseignement(sequence.getEnseignementLibelle().getLibelle());
+              }
+
               sequenceDTO.setIdEnseignement(sequence.getIdEnseignement());
-              sequenceDTO.setDesignationEnseignement(sequence.getEnseignementLibelle().getLibelle());
-       
+              listeSequenceDTO.add(sequenceDTO);
+          }
+          return listeSequenceDTO;
+    }
+    
+    @Override
+    public Set<SequenceDTO> findSequenceEnseignant4idOnly (
+    							final Integer idEnseignant, 
+    							final Integer idEtablissement){
+    	  Assert.isNotNull("idEtablissement", idEtablissement);
+          final String queryTxt = 
+              "select SEQ.id, SEQ.idClasse, SEQ.idGroupe, SEQ.idEnseignement FROM " + 
+              SequenceBean.class.getName() + " SEQ "+
+              " WHERE " +
+              " SEQ.idEtablissement = :idEtablissement AND SEQ.idEnseignant=:idEnseignant ";
+          
+          final Query query = getEntityManager().createQuery(queryTxt);
+          
+          query.setParameter("idEtablissement", idEtablissement);
+          query.setParameter("idEnseignant", idEnseignant);
+          
+          @SuppressWarnings("unchecked")
+          List<Object[]> listeSequenceResult = query.getResultList();
+          
+          final HashSet<SequenceDTO> listeSequenceDTO = new HashSet<SequenceDTO>();
+          for (final Object[] sequence : listeSequenceResult) {
+              final SequenceDTO sequenceDTO = new SequenceDTO();
+              sequenceDTO.setId((Integer) sequence[0]);
+              sequenceDTO.setIdEnseignant(idEnseignant);
+              sequenceDTO.setIdEtablissement(idEtablissement);
+             
+              GroupesClassesDTO groupeClasse = new GroupesClassesDTO();
+              sequenceDTO.setGroupesClassesDTO(groupeClasse);
+              
+        	  Integer idclasse = (Integer) sequence[1];
+        	  Integer idgroupe = (Integer) sequence[2];
+        	  if (idclasse != null) {
+        		  groupeClasse.setId(idclasse);
+        		  groupeClasse.setTypeGroupe(TypeGroupe.CLASSE);
+        	  } else if (idgroupe != null) {
+        		  groupeClasse.setId(idgroupe);
+        		  groupeClasse.setTypeGroupe(TypeGroupe.GROUPE);
+        	  } else {
+        		  // ni classe ni groupe on ne fait rien
+        		  continue;
+        	  }
+            	 
+              sequenceDTO.setIdEnseignement((Integer) sequence[3]);
               listeSequenceDTO.add(sequenceDTO);
           }
           return listeSequenceDTO;
