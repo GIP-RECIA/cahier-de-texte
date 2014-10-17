@@ -2767,7 +2767,7 @@ public class SeanceHibernateBusiness extends AbstractBusiness
                 +		" c where c.idEnseignant = SEQ.idEnseignant " 
                 +		" and c.idEtablissement = SEQ.idEtablissement " 
                 +		" and c.idEnseignement = SEQ.idEnseignement "
-                +		" and c.idGroup = SEQ.idGroup ) as couleur, " 		
+                +		" and c.idGroupe = SEQ.idGroupe ) as couleur, " 		
                 + CREER_REQUETE_FIND_LISTE_SEANCE_EDITION + " FROM " +
                 SequenceBean.class.getName() + " SEQ " +
                 " INNER JOIN SEQ.enseignement ENS " +
