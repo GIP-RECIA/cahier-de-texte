@@ -156,7 +156,7 @@ public class GroupeHibernateBusiness extends AbstractBusiness
                     SchemaUtils.getTableAvecSchema(schema, "cahier_groupe") + " G " +
                 " WHERE " +
                     " G.id_etablissement =? and " +
-                    " G.groupe_collaboratif = false and " +
+                    " G.groupe_collaboratif = false " +
                     " ORDER BY G.id ASC";
         }
         
