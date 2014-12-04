@@ -47,6 +47,10 @@ public final class ConverteurDTOUtils {
      * @return la liste convertie.
      */
     public static List<JoursDTO> convertWeekCalendar(List<DetailJourDTO> liste, boolean utiliseDateSeance) {
+    	return convertWeekCalendar(liste, utiliseDateSeance, true);
+    }
+    
+    public static List<JoursDTO> convertWeekCalendar(List<DetailJourDTO> liste, boolean utiliseDateSeance, boolean withCoupe) {
         
         
         List<Map<Integer, DetailJourDTO>> mapJours = Lists.newArrayList();
@@ -58,22 +62,26 @@ public final class ConverteurDTOUtils {
             if(AbstractForm.ZERO.equals(detailJourDTO.getSeance().getMinuteDebut())) {
                 detailJourDTO.setHeureSeance(detailJourDTO.getHeureSeance()+"0");
             }
-            detailJourDTO.getGroupesClassesDTO().setDesignation(StringUtils.abbreviate(detailJourDTO.getGroupesClassesDTO().getDesignation(), 13));            
-            detailJourDTO.getSeance().setCode(StringUtils.abbreviate(detailJourDTO.getSeance().getCode(), 13));
-            if (StringUtils.isEmpty(detailJourDTO.getIntitule())) {
+             if (StringUtils.isEmpty(detailJourDTO.getIntitule())) {
                 detailJourDTO.setIntitule("Travail pour le " + DateUtils.format(detailJourDTO.getDateRemise(), "dd/MM/yyyy"));
             } else {
                 detailJourDTO.setIntitule(detailJourDTO.getIntitule());
             }
+            
+             if (withCoupe) {
+            detailJourDTO.getGroupesClassesDTO().setDesignation(StringUtils.abbreviate(detailJourDTO.getGroupesClassesDTO().getDesignation(), 13));            
+            detailJourDTO.getSeance().setCode(StringUtils.abbreviate(detailJourDTO.getSeance().getCode(), 13));
+           
+             
             //detailJourDTO.setIntituleSeance(detailJourDTO.getIntituleSeance());
             /* Mantis 39548 : augmentation de la taille qui passe de 13 à 18. */
             detailJourDTO.getSeance().getSequence().setIntitule(StringUtils.abbreviate(detailJourDTO.getSeance().getSequence().getIntitule(), 13));
             /* Mantis 39548 : augmentation de la taille qui passe de 13 à 18. */
             detailJourDTO.setMatiere(StringUtils.abbreviate(detailJourDTO.getMatiere(), 13));            
-            
+
             /* Mantis 39548 : augmentation de la taille qui passe de 11 à 18. */
             detailJourDTO.setNom(StringUtils.abbreviate(detailJourDTO.getNom(), 18));            
-           
+             }
             int jour = DateUtils.getChamp(utiliseDateSeance ? 
                     detailJourDTO.getDateSeance() : detailJourDTO.getDateRemise(), Calendar.DAY_OF_WEEK); 
 

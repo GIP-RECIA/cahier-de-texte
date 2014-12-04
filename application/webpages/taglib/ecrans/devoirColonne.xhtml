@@ -20,12 +20,14 @@
             </f:facet>
             <h:panelGrid columns="1"
                          styleClass="corpsCalTable#{!category.map[jourColonne].actif ? 'Inactif' : ''}">
-
-              <h:outputText value="#{category.map[jourColonne].groupesClassesDTO.designation}" />
+			<h:panelGrid styleClass="firstLine" columns="2" columnClasses="col1,col2" rowClasses="row" >
+			              <h:outputText styleClass="tdClasse" value="#{category.map[jourColonne].groupesClassesDTO.designation}" />
+		              <h:outputText styleClass="tdEnseignant"  value="#{category.map[jourColonne].denomination} #{category.map[jourColonne].nom}" />	
+			</h:panelGrid>
               
-              <h:outputText value="#{category.map[jourColonne].matiere}" />
-              <h:outputText value="#{category.map[jourColonne].denomination} #{category.map[jourColonne].nom}" />
-              <h:outputText value="#{category.map[jourColonne].typeDevoirDTO.libelle}" />
+              <h:outputText styleclass="tdMatiere"  value="#{category.map[jourColonne].matiere}" />
+              
+              <h:outputText styleClass="tdLibelle" value="#{category.map[jourColonne].typeDevoirDTO.libelle}" />
               <cr:lien bean="#{devoir}"
                        cible="naviguerDetailDevoir"
                        desc="#{category.map[jourColonne].seance.accesEcriture ? 'Modifier le travail à faire' : 'Consulter le travail à faire'}"

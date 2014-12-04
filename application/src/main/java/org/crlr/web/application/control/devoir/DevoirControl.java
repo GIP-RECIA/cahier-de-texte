@@ -306,13 +306,22 @@ EnseignementListener {
             if(resultat != null) {
                 for (final ResultatRechercheDevoirDTO resultatRechercheDevoirDTO : resultat.getValeurDTO()) {
                     final DetailJourDTO dev = new DetailJourDTO();
+                   
                     ObjectUtils.copyProperties(dev, resultatRechercheDevoirDTO);
                     dev.setMatiere(resultatRechercheDevoirDTO.getSeance().getSequence().getDesignationEnseignement());
+                   
+                    if (StringUtils.isBlank(dev.getDenomination())) {
+                    	dev.setDenomination(dev.getCiviliteEnseignant() + ".");
+                    }
+                    if (StringUtils.isBlank(dev.getNom())) {
+                    	dev.setNom(dev.getNomEnseignant());
+                    }
                     generateDescriptionAbrege(dev);
                     liste.add(dev);
+                   
                 }
             }
-            form.setListe(ConverteurDTOUtils.convertWeekCalendar(liste, false));
+            form.setListe(ConverteurDTOUtils.convertWeekCalendar(liste, false, false));
             form.setListeDevoir(liste);
         } catch (final MetierException e) {
             log.debug("{0}", e.getMessage());
