@@ -21,7 +21,10 @@ function chargerAgenda() {
     console.log("stringDate = "+ stringDate  + " START DATE = " + startDate);
     
     // Recupere et parse la liste des elements a afficher dans l'agenda
+    // on a decouper le json car jQuery(..).val() tronque avec Chrome. 
     var agendaJSON = jQuery('#agendaJSON').val();
+    agendaJSON += jQuery('#agendaJSON2').val();
+    agendaJSON += jQuery('#agendaJSON3').val();
     console.log("agendaJSON = " + agendaJSON);
     var listeAgendaJSON = jQuery.parseJSON(agendaJSON);
     if (listeAgendaJSON == null) {

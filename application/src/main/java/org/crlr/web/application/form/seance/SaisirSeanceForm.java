@@ -66,6 +66,11 @@ public class SaisirSeanceForm extends AbstractForm {
     /** Chaine utilisee pour stocker les data utilisee par le composant agenda.*/
     private String agendaJSON;
 
+    /** idem mais on decoupe le json pour cause de bug jquery sur Chrome*/
+    private String agendaJSON2;
+    /** idem */
+    private String agendaJSON3;
+
     /** Cahine représentant la grille horaire de l'etablissement. */
     private String horairesJSON; 
     
@@ -296,15 +301,31 @@ public class SaisirSeanceForm extends AbstractForm {
     public String getAgendaJSON() {
         return agendaJSON;
     }
+  
+    public String getAgendaJSON2() {
+        return agendaJSON2;
+    }
+    public String getAgendaJSON3() {
+        return agendaJSON3;
+    }
 
     /**
      * Mutateur de agendaJSON {@link #agendaJSON}.
      * @param agendaJSON le agendaJSON to set
      */
     public void setAgendaJSON(String agendaJSON) {
-        this.agendaJSON = agendaJSON;
+    	int nbChar; 
+    	if (agendaJSON != null && (nbChar = agendaJSON.length()/3)> 100) {
+    		this.agendaJSON = agendaJSON.substring(0, nbChar);
+    		this.agendaJSON2 = agendaJSON.substring(nbChar, nbChar *= 2);
+    		this.agendaJSON3 = agendaJSON.substring(nbChar);
+    	} else {
+    		this.agendaJSON = agendaJSON;
+    		this.agendaJSON2 = "";
+    		this.agendaJSON3 ="";
+    	}
     }
-
+   
     /**
      * Accesseur de horairesJSON {@link #horairesJSON}.
      * @return retourne horairesJSON
@@ -429,12 +450,9 @@ public class SaisirSeanceForm extends AbstractForm {
      * Contruit une copie de la listeAgenda en mode "reduit" pour eviter le flux qui est envoyé vers le JS
      */
     public void recalculerDataAgendaJSON() {
-        
         //TODO Utilise Gson mechanisme pour réduire le flux
-        
         final Gson gson = new Gson();
-        final String json = gson.toJson(listeAgenda);
-        this.agendaJSON = json;
+        setAgendaJSON(gson.toJson(listeAgenda));
     }
     
     /**
