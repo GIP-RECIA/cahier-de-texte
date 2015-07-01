@@ -38,6 +38,8 @@ public class SaisirSeanceForm extends AbstractForm {
     private static final long serialVersionUID = 1238336429879110955L;
     
     public static final SimpleDateFormat dateFormat = new SimpleDateFormat("M/d/yyyy");
+    
+    private static final int NB_FRAGMENT_AGENDA_JSON = 10;
 
     /** Identifiant de l'enseignant sur lequel on travaille. */
     private Integer idEnseignant;
@@ -64,12 +66,9 @@ public class SaisirSeanceForm extends AbstractForm {
     private List<AgendaSeanceDTO> listeAgenda;
     
     /** Chaine utilisee pour stocker les data utilisee par le composant agenda.*/
-    private String agendaJSON;
+    private String[] agendaJSON = new String[NB_FRAGMENT_AGENDA_JSON];
 
-    /** idem mais on decoupe le json pour cause de bug jquery sur Chrome*/
-    private String agendaJSON2;
-    /** idem */
-    private String agendaJSON3;
+   
 
     /** Cahine représentant la grille horaire de l'etablissement. */
     private String horairesJSON; 
@@ -298,31 +297,70 @@ public class SaisirSeanceForm extends AbstractForm {
      * Accesseur de grilleJSON {@link #grilleJSON}.
      * @return retourne grilleJSON
      */
-    public String getAgendaJSON() {
-        return agendaJSON;
+    public String getAgendaJSON0() {
+        return agendaJSON[0];
     }
   
+    public String getAgendaJSON1() {
+        return agendaJSON[1];
+    }
     public String getAgendaJSON2() {
-        return agendaJSON2;
+        return agendaJSON[2];
     }
     public String getAgendaJSON3() {
-        return agendaJSON3;
+        return agendaJSON[3];
     }
+  
+    public String getAgendaJSON4() {
+        return agendaJSON[4];
+    }
+    public String getAgendaJSON5() {
+        return agendaJSON[5];
+    }
+    public String getAgendaJSON6() {
+        return agendaJSON[6];
+    }
+  
+    public String getAgendaJSON7() {
+        return agendaJSON[7];
+    }
+    public String getAgendaJSON8() {
+        return agendaJSON[8];
+    }
+    public String getAgendaJSON9() {
+        return agendaJSON[9];
+    }
+  
+   
 
     /**
      * Mutateur de agendaJSON {@link #agendaJSON}.
      * @param agendaJSON le agendaJSON to set
      */
     public void setAgendaJSON(String agendaJSON) {
-    	int nbChar; 
-    	if (agendaJSON != null && (nbChar = agendaJSON.length()/3)> 100) {
-    		this.agendaJSON = agendaJSON.substring(0, nbChar);
-    		this.agendaJSON2 = agendaJSON.substring(nbChar, nbChar *= 2);
-    		this.agendaJSON3 = agendaJSON.substring(nbChar);
+    	int nbChar;
+    	int endIndex;
+    	int beginIndex = 0;
+    	int taille = agendaJSON.length();
+    	if (agendaJSON != null && taille > 100) {	
+    		nbChar = agendaJSON.length()/NB_FRAGMENT_AGENDA_JSON;	
+    		endIndex = nbChar;
+    		for (int i = 0; i < NB_FRAGMENT_AGENDA_JSON -1; i++) {
+				this.agendaJSON[i] = agendaJSON.substring(beginIndex, endIndex);
+				beginIndex = endIndex;
+				endIndex += nbChar;
+			}
+    		this.agendaJSON[NB_FRAGMENT_AGENDA_JSON-1] = agendaJSON.substring(beginIndex);
+    		
     	} else {
-    		this.agendaJSON = agendaJSON;
-    		this.agendaJSON2 = "";
-    		this.agendaJSON3 ="";
+    		if (agendaJSON != null) {
+    			this.agendaJSON[0] = agendaJSON;
+    			beginIndex = 1;
+    		}
+    		for (int i = beginIndex; i < NB_FRAGMENT_AGENDA_JSON; i++) {
+    			this.agendaJSON[i] ="";	
+			}
+    		
     	}
     }
    

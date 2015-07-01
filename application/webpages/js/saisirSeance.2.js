@@ -22,10 +22,28 @@ function chargerAgenda() {
     
     // Recupere et parse la liste des elements a afficher dans l'agenda
     // on a decouper le json car jQuery(..).val() tronque avec Chrome. 
-    var agendaJSON = jQuery('#agendaJSON').val();
+    var agendaJSON = jQuery('#agendaJSON0').val();
+    console.log("agendaJSON.length 0 = " + agendaJSON.length);
+    agendaJSON += jQuery('#agendaJSON1').val();
+    console.log("agendaJSON.length 1 = " + agendaJSON.length);
     agendaJSON += jQuery('#agendaJSON2').val();
+    console.log("agendaJSON.length 2 = "+ agendaJSON.length);
     agendaJSON += jQuery('#agendaJSON3').val();
-    console.log("agendaJSON = " + agendaJSON);
+    console.log("agendaJSON.length 3 = "+ agendaJSON.length);
+    agendaJSON += jQuery('#agendaJSON4').val();
+    console.log("agendaJSON.length 4 = " + agendaJSON.length);
+    agendaJSON += jQuery('#agendaJSON5').val();
+    console.log("agendaJSON.length 5 = "+ agendaJSON.length);
+    agendaJSON += jQuery('#agendaJSON6').val();
+    console.log("agendaJSON.length 6 = "+ agendaJSON.length);
+    agendaJSON += jQuery('#agendaJSON7').val();
+    console.log("agendaJSON.length 7 = " + agendaJSON.length);
+    agendaJSON += jQuery('#agendaJSON8').val();
+    console.log("agendaJSON.length 8 = " + agendaJSON.length);
+    agendaJSON += jQuery('#agendaJSON9').val();
+    console.log("agendaJSON.length 9 = " + agendaJSON.length);
+   
+  //  console.log("agendaJSON = " + agendaJSON);
     var listeAgendaJSON = jQuery.parseJSON(agendaJSON);
     if (listeAgendaJSON == null) {
         console.log("Problem null JSON object agendaJSON");
