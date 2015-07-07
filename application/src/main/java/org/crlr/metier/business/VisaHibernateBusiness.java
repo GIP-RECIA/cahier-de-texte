@@ -255,7 +255,7 @@ public class VisaHibernateBusiness extends AbstractBusiness
        
     public ResultatDTO<Integer> updateVisaDateMaj(Integer idSeance, Date dateMaj) {
         /*
-Pour voir les visa impactés
+Pour voir les visa impactÃ©s
         String visaListIdQuery = "select visaInner.id from " + VisaBean.class.getName() + " visaInner " +
                 ", " + SeanceBean.class.getName() + " sea inner join sea.sequence seq where " +
                 " sea.id = :idSeance and " +
