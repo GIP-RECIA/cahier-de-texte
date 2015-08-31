@@ -66,7 +66,8 @@ public class SaisirSeanceForm extends AbstractForm {
     private List<AgendaSeanceDTO> listeAgenda;
     
     /** Chaine utilisee pour stocker les data utilisee par le composant agenda.*/
-    private String[] agendaJSON = new String[NB_FRAGMENT_AGENDA_JSON];
+    private String agendaJSON;
+    private String[] tabAgendaJSON = new String[NB_FRAGMENT_AGENDA_JSON];
 
    
 
@@ -297,44 +298,49 @@ public class SaisirSeanceForm extends AbstractForm {
      * Accesseur de grilleJSON {@link #grilleJSON}.
      * @return retourne grilleJSON
      */
+    
+     public String getAgendaJSON() {
+    	 return agendaJSON;
+     }
+      
     public String getAgendaJSON0() {
-        return agendaJSON[0];
+        return tabAgendaJSON[0];
     }
   
     public String getAgendaJSON1() {
-        return agendaJSON[1];
+        return tabAgendaJSON[1];
     }
     public String getAgendaJSON2() {
-        return agendaJSON[2];
+        return tabAgendaJSON[2];
     }
     public String getAgendaJSON3() {
-        return agendaJSON[3];
+        return tabAgendaJSON[3];
     }
   
     public String getAgendaJSON4() {
-        return agendaJSON[4];
+        return tabAgendaJSON[4];
     }
     public String getAgendaJSON5() {
-        return agendaJSON[5];
+        return tabAgendaJSON[5];
     }
     public String getAgendaJSON6() {
-        return agendaJSON[6];
+        return tabAgendaJSON[6];
     }
   
     public String getAgendaJSON7() {
-        return agendaJSON[7];
+        return tabAgendaJSON[7];
     }
     public String getAgendaJSON8() {
-        return agendaJSON[8];
+        return tabAgendaJSON[8];
     }
     public String getAgendaJSON9() {
-        return agendaJSON[9];
+        return tabAgendaJSON[9];
     }
   
    
 
     /**
-     * Mutateur de agendaJSON {@link #agendaJSON}.
+     * Mutateur de agendaJSON {@link #tabAgendaJSON}.
      * @param agendaJSON le agendaJSON to set
      */
     public void setAgendaJSON(String agendaJSON) {
@@ -342,23 +348,24 @@ public class SaisirSeanceForm extends AbstractForm {
     	int endIndex;
     	int beginIndex = 0;
     	int taille = agendaJSON.length();
+     	this.agendaJSON=agendaJSON;
     	if (agendaJSON != null && taille > 100) {	
     		nbChar = agendaJSON.length()/NB_FRAGMENT_AGENDA_JSON;	
     		endIndex = nbChar;
     		for (int i = 0; i < NB_FRAGMENT_AGENDA_JSON -1; i++) {
-				this.agendaJSON[i] = agendaJSON.substring(beginIndex, endIndex);
+				this.tabAgendaJSON[i] = agendaJSON.substring(beginIndex, endIndex);
 				beginIndex = endIndex;
 				endIndex += nbChar;
 			}
-    		this.agendaJSON[NB_FRAGMENT_AGENDA_JSON-1] = agendaJSON.substring(beginIndex);
+    		this.tabAgendaJSON[NB_FRAGMENT_AGENDA_JSON-1] = agendaJSON.substring(beginIndex);
     		
     	} else {
     		if (agendaJSON != null) {
-    			this.agendaJSON[0] = agendaJSON;
+    			this.tabAgendaJSON[0] = agendaJSON;
     			beginIndex = 1;
     		}
     		for (int i = beginIndex; i < NB_FRAGMENT_AGENDA_JSON; i++) {
-    			this.agendaJSON[i] ="";	
+    			this.tabAgendaJSON[i] ="";	
 			}
     		
     	}
