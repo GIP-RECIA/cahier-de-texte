@@ -9,7 +9,11 @@
       xmlns:t="http://myfaces.apache.org/tomahawk"
       xmlns:rich="http://richfaces.org/rich">
 
-<cr:page titrePage="Recherche/Modification séance" bean="#{ajoutModifGroupe}" form="#{ajoutModifGroupe.form}">
+<cr:page 	titrePage="Recherche/Modification séance" 
+			bean="#{ajoutModifGroupe}" 
+			form="#{ajoutModifGroupe.form}"
+			libXiti="Travail_Collaboratif"
+		>
 <h:outputStylesheet library="css" name="ajoutModifGroupe.css" target="head" />
   <h:outputScript library="js" name="ajoutModifGroupe.js" target="head" />
     <cr:menuAction id="idMenuAction">

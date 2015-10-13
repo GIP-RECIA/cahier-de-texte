@@ -13,17 +13,17 @@ package org.crlr.dto.application.base;
  * @author p.legay 
  * 
  *  P.legay ajout des roles et fixe l'ordre
- *
+ * ajout des objectclass correspondant au profils pour xiti
  * 
  */
 public enum Profil {
-		ENSEIGNANT("Enseignant"), 			
-		DIRECTION_ETABLISSEMENT("Direction établissement"), 
-		DOCUMENTALISTE("Vie scolaire"),
-		INSPECTION_ACADEMIQUE("Inspecteur académique"), 
-		ELEVE("Eleve"), 
-		PARENT("Parent"),
-		AUTRE("Autre"), 
+		ENSEIGNANT("Enseignant","ENTAuxEnseignant"), 			
+		DIRECTION_ETABLISSEMENT("Direction établissement","ENTAuxNonEnsEtab"), 
+		DOCUMENTALISTE("Vie scolaire","ENTAuxNonEnsEtab"),
+		INSPECTION_ACADEMIQUE("Inspecteur académique",""), 
+		ELEVE("Eleve","ENTEleve"), 
+		PARENT("Parent","ENTAuxPersRelEleve"),
+		AUTRE("Autre",""), 
 		;
 		
 // l'ordre des profils est important si une personne a 2 profils on prendra par défaut le premier.
@@ -31,9 +31,11 @@ public enum Profil {
 //Le profil Documentaliste ne se restreint pas aux utilisateurs documentalistes (CPE, conseiller orientation, ...).
 	
 	private String role;
+	private String objectClassDeterminant;
 	
-	private Profil(String role) {
+	private Profil(String role, String ojectClass) {
 		setRole(role);
+		setObjectClassDeterminant(ojectClass);
 	}
 
 	public String getRole() {
@@ -42,6 +44,14 @@ public enum Profil {
 
 	public void setRole(String role) {
 		this.role = role;
+	}
+
+	public String getObjectClassDeterminant() {
+		return objectClassDeterminant;
+	}
+
+	public void setObjectClassDeterminant(String objectClassDeterminant) {
+		this.objectClassDeterminant = objectClassDeterminant;
 	}
 
 }

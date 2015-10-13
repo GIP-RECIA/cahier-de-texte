@@ -10,7 +10,9 @@
     xmlns:t="http://myfaces.apache.org/tomahawk"
     xmlns:fn="http://java.sun.com/jsp/jstl/functions">
 
-<cr:page titrePage="Cahier de texte mensuel">
+<cr:page 	titrePage="Cahier de texte mensuel" 
+			libXiti="Gestion_Temps"
+		>
 
 <cr:menuAction id="idMenuAction">
 </cr:menuAction>
@@ -56,9 +58,9 @@
         render="planningContenu"
         status="statusPopup" 
     />
-                        
+                   
 </cr:page>
-  
+ 
 
 <cr:popupModifiable idPopup="idPopupDevoir" popupUseRichEditor="true" largeurPopup="800" titrePopup="Travail à faire">
 <cr:menuAction surcharge="false" rendered="#{planning.form.devoirSelected.seance.accesEcriture}">
@@ -283,5 +285,5 @@
         bean="#{planning}" raffraichirTabAfterUpload="#{planning.form.raffraichirTabAfterUpload}" />   
 
 <cr:popupStatus idStatus="statuspop" />
-  
+
 </html>

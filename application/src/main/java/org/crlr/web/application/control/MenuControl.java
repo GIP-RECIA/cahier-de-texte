@@ -7,6 +7,7 @@
 
 package org.crlr.web.application.control;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -39,7 +40,34 @@ import org.crlr.web.contexte.utils.ContexteUtils;
  * @author breytond
  */
 public class MenuControl extends AbstractControl<AbstractForm> {
-    /** The Constant ID. */
+
+	/**
+	 * une classe pour xiti
+	 * @author legay
+	 *
+	 */
+	public class Esciti implements Serializable {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		String uid;
+		String objectClass;
+		String siren;
+		public String getUid() {
+			return uid;
+		}
+		public String getObjectClass() {
+			return objectClass;
+		}
+		public String getSiren() {
+			return siren;
+		}
+		
+	}
+	
+	/** The Constant ID. */
     public static final String ID = "menu";
 
      /** service de confidentialité. */
@@ -62,6 +90,8 @@ public class MenuControl extends AbstractControl<AbstractForm> {
      * Indique si on ne doit pas actionner le changement d'utilisateur
      */
 	private boolean changementProfilDisabled; 
+	
+	private Esciti esciti;
 
     /**
      * Instantiates a new menu control.
@@ -576,7 +606,19 @@ public class MenuControl extends AbstractControl<AbstractForm> {
         return (profil != null) ? profil.name() : null;
     }
 
-
+   
+    
+    public Esciti getEsciti() {
+    	UtilisateurDTO user = ContexteUtils.getContexteUtilisateur().getUtilisateurDTOConnecte();
+        if (esciti != null) return esciti;
+    	esciti = new Esciti();
+    	esciti.objectClass = user.getProfil().getObjectClassDeterminant();
+    	esciti.siren = user.getSirenEtablissement();
+    	esciti.uid = user.getUserDTO().getUid();
+        return esciti;
+    }
+    
+    
 
     /**
      * Accesseur de listeAction {@link #listeAction}.

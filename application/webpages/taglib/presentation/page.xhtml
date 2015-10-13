@@ -125,6 +125,21 @@ composants de l'application
       <c:if test="#{contexteApplication.environnement eq 'CRC'}">
       <h:outputStylesheet library="css" name="general_recia.css" />
       </c:if>
+    	<ui:remove> Le chargement du js pour xiti</ui:remove>
+		<script type="text/javascript" src="/esciti/js/esciti.js" />
+	<script type="text/javascript">
+	<!--
+			if (typeof InfoENT4esciti != 'undefined') {
+				var X=InfoENT4esciti;
+				X.setSiren("#{menu.esciti.siren}");
+				X.setUid("#{menu.esciti.uid}");
+				X.setObjectClass("#{menu.esciti.objectClass}");
+				var lib = '${libXiti}';
+				X.callByService(lib != '' ? lib : "Cahier_Textes");
+			}
+	-->
+	</script>
     </t:documentBody>
+      
   </ui:composition>
 </t:document>
