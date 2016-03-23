@@ -1,0 +1,87 @@
+# $Id: config.properties,v 1.9 2010/06/08 10:51:06 ent_breyton Exp $
+#
+# Projet CRLR - Conseil Regional Languedoc Roussillon.
+# Copyright (c) 2009 Bull SAS
+
+# Paramétres de connexion é la base de données
+#
+
+
+# Driver
+
+db.driver=org.postgresql.Driver
+#db.driver=com.p6spy.engine.spy.P6SpyDriver
+
+# URL cahierTexteTestAlim
+db.url=jdbc:postgresql://FRMP0151.frml.bull.fr:5432/ent-cahier-texte-recia
+db.url=jdbc:postgresql://FRMP0151.frml.bull.fr:5432/crlr-cahier-2012-11-12
+
+# User
+db.user=ent
+# Password
+db.password=ent
+
+hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+hibernate.showSql=false
+
+##
+# Paramétres de connexion LDAP
+##
+
+# URL
+#ldap.url=ldap://FRMP0161.frml.bull.fr:389
+#ldap.url=ldap://129.181.25.70:389
+ldap.url=ldap://FRMP0151.frml.bull.fr:389
+
+# User
+#ldap.user=uid=root,dc=aquitaine,dc=fr
+#ldap.user=uid=root,dc=esco-centre,dc=fr
+ldap.user=uid=root,dc=example,dc=org
+
+# Password
+ldap.password=secret
+
+ldap.baseDn=dc=example,dc=org
+#ldap.baseDn=dc=esco-centre,dc=fr
+
+ldap.brancheStructure=structures
+ldap.branchePersonne=people
+# En environnement CRLR, cette propriété est facultative (ne doit pas étre renseignée) mais doit étre présente méme é vide.
+ldap.nomProfil=ESCOPersonProfils
+
+
+application.env=CRC
+
+# Paramétres du service webdav
+# URL avec le /
+webdav.url=http://frmp0137.frml.bull.fr
+webdav.login=ent
+webdav.password=entent
+webdav.context=/webdav/shared/userfiles/
+
+cmis.active = false
+
+#ent:admin:Cahier_textes:central
+#ent:admin:central
+profil.adminCentral=ent:admin:central,ent:admin:Cahier_textes:central
+#ent:men:admin:Cahier_textes:local:Odilon Redon LGT_0332081H
+#ent:men:admin:local:admin_Odilon Redon LGT_0332081H
+profil.adminLocal=ent:.*:admin:(Cahier_textes:local:|local:admin_)[^_]+_.*
+
+
+profil.enseignant=ENS
+profil.eleve=ELEVE
+profil.parent=PERSREL
+profil.directeur=DIR
+profil.persEducNat=EDU,DOC,ORI,ADM,ADF,AED,CTR,MDS
+profil.inspecteur=INS,IPE,IGN,IEX 
+
+
+import.edt.strict=true
+
+mimetex.path=C:/source/apache-tomcat-6.0.32/webapps/cahier-texte/dragmath/mimetex/mimetex.exe
+
+devoir.count.default=3
+
+seance.precedente.count.default=3
+

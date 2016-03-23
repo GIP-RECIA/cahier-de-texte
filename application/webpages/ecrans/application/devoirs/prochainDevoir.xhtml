@@ -1,0 +1,88 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:a4j="http://richfaces.org/a4j" 
+    xmlns:crx="urn:crlr:ext"
+    xmlns:cr="urn:crlr" xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:rich="http://richfaces.org/rich">
+
+<cr:page titrePage="Mes devoirs" bean="#{prochainDevoir}" fishEye="false"
+    form="#{prochainDevoir.form}">
+
+    <rich:panel header="Mes devoirs" id="panelProchainDevoir">
+
+        <div
+            style="width: 100%; text-align: center; margin-top: 10px; font-weight: bold;">
+        <center>
+            <h:panelGrid columns="1" rendered="#{prochainDevoir.form.profil eq 'PARENT'}">
+                <h:outputText
+                    value="Vous êtes en cours de consultation du cahier de texte de l'élève #{prochainDevoir.form.enfantSelectionne}" />
+            </h:panelGrid>
+        </center>
+        </div>
+        <cr:spacer height="5" />
+        <div style="width: 100%; text-align: center;">
+	        <h:panelGrid
+	            columns="1" rendered="#{not empty prochainDevoir.form.listeEnfant}"
+	            style="width:340px;margin:auto;">
+	            <h:outputText
+	                value="Sélectionner un autre élève pour voir son cahier de texte" />
+	            <cr:saisieListe id="listeEleves" donnees="#{prochainDevoir.listeEnfant}"
+	                valeur="#{prochainDevoir.form.idEnfantSelectionne}" titre="" largeur="335">
+	                <a4j:ajax event="change" render="prochainDevoir"
+	                    listener="#{prochainDevoir['selectionnerEnfant']}" />
+	            </cr:saisieListe>
+	        </h:panelGrid> 
+        </div>
+
+        <cr:spacer height="10" />
+        <c:set var="listingDevoirNonVide"
+            value="#{not empty prochainDevoir.form.listeDevoir}" />
+	    <rich:panel id="preferencesPanel" >
+	        <h:panelGrid id="listingDevoirPanel" columns="1" class="table"
+	            rendered="#{listingDevoirNonVide}">
+	            <rich:panel id="listingDevoir"
+	                style="vertical-align:top; overflow:auto;width:735px; height:280px; #{listingDevoirNonVide ? '' : 'border:0;'}">
+	                <cr:table idTable="tableListingDevoir" largeur="730"
+	                    liste="#{prochainDevoir.form.listeDevoir}" nbLignes="5"
+	                    entete="Liste des prochains devoirs à rendre">
+	                    <cr:colonne libelleColonne="Enseignement" id="">
+	                        <h:outputText value="#{ligne.matiere}" />
+	                    </cr:colonne>
+	                    <cr:colonne libelleColonne="Enseignant" id="">
+	                        <h:outputText value="#{ligne.denomination} #{ligne.nom}" />
+	                    </cr:colonne>
+	                    <cr:colonne libelleColonne="Intitulé du devoir" id="">
+	                        <h:outputText value="#{ligne.intituleDevoir}" />
+	                    </cr:colonne>
+	                    <cr:colonne libelleColonne="Type de devoir" id="">
+	                        <h:outputText value="#{ligne.typeDevoir}" />
+	                    </cr:colonne>
+	                    <cr:colonne libelleColonne="Description du devoir" id="">
+	                        <h:outputText escape="false" value="#{cr:truncate(cr:removeBalise(ligne.descriptionDevoir), 60, '...')}"/>
+	                    </cr:colonne>
+	                    <cr:colonne libelleColonne="Date de remise" id="">
+	                        <h:outputText value="#{cr:formatDate(ligne.date, 'dd/MM/yyyy')}" />
+	                    </cr:colonne>
+	                    <cr:colonne id="">
+	                        <cr:lien id="#{ligne.idDevoir}" desc="Consulter le devoir"
+	                            bean="#{prochainDevoir}" cible="deplierTout" render="zoneMenu"
+	                            titre="Voir">
+	                            <f:setPropertyActionListener value="#{ligne}"
+	                                target="#{prochainDevoir.form.selectDevoir}" />
+	                        </cr:lien>
+	                    </cr:colonne>
+	                </cr:table>
+	            </rich:panel>
+	        </h:panelGrid>
+	    </rich:panel>
+    </rich:panel>
+</cr:page>
+
+<cr:popupStatus idStatus="statuspop" />
+
+</html>

@@ -1,0 +1,165 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"    
+    xmlns:c="http://java.sun.com/jsp/jstl/core"             
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:cr="urn:crlr">
+<ui:composition>
+    <ui:remove>
+        Attention ! Il est recommandé de fournir un identifiant pour le lien. Dans les tableaux par exemple,
+        un bug a été rencontré lorsque l'on n'en met pas.
+    </ui:remove>
+    <ui:remove>
+    <!-- 
+        lien : composant permettant le rendu d'un
+        lien hypertexte avec une action (~commandLink)
+        
+        propriétés : 
+        * id : identifiant unique du lien.        
+        - desc : description du champ (tooltip). 
+		- titre     
+        - modifiable
+        - confirm
+        - onclick
+        - chemin
+        - rendered
+        - bean
+        - cible
+        - actionFor
+        - immediate
+        - suivant : fieldId, Identifiant du champ de destination.
+        - tabindexLien : indice dans la tabulation pour atteindre le lien
+        - batch : action de type batch (false par défaut)
+
+        Pour les liens Ajax:
+        - id
+        - titre
+        - render (exclusif ajax)
+        - oncomplete (exclusif ajax)
+		- modifiable
+		- bean
+		- cible
+		- immediate
+		- desc
+		- conserverScroll conserve l'état des scroll des tableaux dans la page.
+		
+    -->    
+    </ui:remove>
+   
+    <c:set var="modifiable" value="${empty modifiable ? true : modifiable}"/>
+    <c:set var="rendered" value="${empty rendered ? true : rendered}"/>
+    <c:set var="id" value="${empty id ? cr:idcompteur('lien') : id}"/>
+	<c:set var="fonctionScroll" value="saveTablesScrolling();" />
+    <c:set var="onclick" value="${empty conserverScroll ? onclick : cr:concat(fonctionScroll,onclick)}" />
+    
+   	<c:set var="confirmation" value="if(!confirm('${confirm}')){return false;}"/>
+   	<c:set var="withConfirmation" value="${not empty confirm}"/>
+   	<c:set var="confirmation" value="#{withConfirmation ? confirmation : ''}"/>
+   	<c:set var="cible" value="#{empty cible ? 'empty' : cible}"/>   	    
+    <c:set var="_js" value="resetFormTarget();"/>
+    <c:set var="styleClass" value="#{empty styleClass ? '' : styleClass}"/>
+    <c:if test="${not empty suivant}">
+        <c:set var="oncomplete" value="transfertFocus('${id}','${suivant}');"/>
+    </c:if>
+    <c:if test="${not empty suivantSansVerif}">
+        <c:set var="oncomplete" value="transfertFocus('','${suivantSansVerif}');" />
+    </c:if>
+    
+    
+    <c:set var="status" value="${ (not empty status) ? status : 'status'}" />    
+
+    <c:choose>
+        <c:when test="${empty bean}">            
+            <c:set var="chemin" value="#{empty chemin ? '#' :  fn:replace(chemin, ' ', '%20')}"/>
+            <c:choose>
+	            <c:when test="${modifiable}">
+	            	 <h:outputLink value="${chemin}" id="#{id}" target="_blank" styleClass="lien #{ rendered ? styleClass : 'cachee'}" title="${desc}" 
+	                	onclick="#{_js} #{onclick} #{confirmation} " tabindex="#{tabindexLien}">
+	                    <ui:insert/>
+	                	<c:choose>
+			                <c:when test="#{not empty image}">
+								<h:graphicImage id="${cr:idcompteur('image')}" library="images/icones" name="#{image}"/>
+							</c:when>
+							<c:otherwise>
+								#{titre}
+							</c:otherwise>
+	               		</c:choose>
+	                </h:outputLink>
+    	        </c:when>
+            	<c:otherwise>#{titre}<ui:insert/></c:otherwise>
+            </c:choose>
+        </c:when>
+        <c:otherwise>           
+	                <c:choose>
+	                	<c:when test="#{not empty render}">
+	                		<c:set var="render" value="#{render=='all' ? '' : render}"/>
+	                		<c:if test="#{inPopup and not empty render}">
+	                			<c:set var="render" value="#{render},#{idPopup}"/>
+	                		</c:if>
+	                		<c:choose>
+	                			<c:when test="#{not empty render}">	   
+                                    			
+	                			<a4j:commandLink id="#{id}" action="#{bean[cible]}" styleClass="lien #{ rendered ? styleClass : 'cachee'}"
+					                    immediate="#{immediate}" onclick="#{_js} #{onclick}; #{confirmation} desactiveClick(this.id, this.onclick);" 
+										tabindex="#{tabindexLien}" status="${status}" style="#{style}" requestDelay="#{delai}"
+					                    render="#{render}"  disabled="#{not modifiable}"
+                                        execute="#{execute}"
+										oncomplete="#{oncomplete} " title="#{desc}">
+										<ui:remove>On rafraichit toujours la zone de menu pour un pb de synchronisation, a revoir!!!!</ui:remove>
+										<c:choose>
+											<c:when test="#{not empty image}">
+                      	               			<h:graphicImage id="${cr:idcompteur('image')}" library="images/icones" name="#{image}" title="#{desc}" />
+	               							</c:when>
+	              							<c:otherwise>
+							                	#{titre}													
+											</c:otherwise>
+										</c:choose>
+					                    <ui:insert/>
+					                </a4j:commandLink>  
+				                </c:when>
+				                <c:otherwise>
+				                	<a4j:commandLink id="#{id}" action="#{bean[cible]}" styleClass="lien #{ rendered ? styleClass: 'cachee'}"
+					                    immediate="#{immediate}" onclick="#{_js} #{onclick}; #{confirmation} desactiveClick(this.id, this.onclick);" 
+										tabindex="#{tabindexLien}" status="${status}" style="#{style}"
+					                    title="#{desc}"
+					                    oncomplete="#{oncomplete} ">
+					                    <c:choose>
+						                    <c:when test="#{not empty image}">
+	               								<h:graphicImage id="${cr:idcompteur('image')}" value="${cr:concat(iconesDir,image)}"/>
+	               							</c:when>
+              								<c:otherwise>
+							                	#{titre}													
+											</c:otherwise>
+										</c:choose>
+					                    <ui:insert/>
+					                </a4j:commandLink>
+				                </c:otherwise>
+			                </c:choose>
+		                </c:when>
+		                <c:otherwise>
+                    <ui:remove>forceId=true est pour les liens editions</ui:remove>
+   			                <t:commandLink id="#{id}" action="#{bean[cible]}" styleClass="lien #{ rendered ? styleClass : 'cachee'}" 
+			                    immediate="#{immediate}" onclick="#{_js} #{onclick}; #{confirmation} desactiveClick(this.id, this.onclick);" actionFor="#{empty actionFor ? 'formulaire_principal' : cr:stripSpaces(actionFor)}"			                    
+			                    forceId="true" title="#{desc}" status="${status}" oncomplete="#{oncomplete}" style="#{style}"
+			                    tabindex="#{tabindexLien}">
+			                    <c:if test="${!empty target}"><f:attribute name="target" value="${target}"/></c:if>
+			                    <c:choose>
+				                    <c:when test="#{not empty image}">
+	       								<h:graphicImage id="${cr:idcompteur('image')}"
+                                            library="images/icones" name="#{image}"/>
+	       							</c:when>
+	      							<c:otherwise>
+						              	#{titre}
+									</c:otherwise>
+								</c:choose>
+			                    <ui:insert/>
+			                </t:commandLink>
+		                </c:otherwise>
+	                </c:choose>	           
+        </c:otherwise>
+    </c:choose> 
+</ui:composition>
+</html>

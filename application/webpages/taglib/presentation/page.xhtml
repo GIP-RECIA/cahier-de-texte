@@ -1,0 +1,145 @@
+<t:document xmlns="http://www.w3.org/1999/xhtml"
+            xmlns:a4j="http://richfaces.org/a4j"
+            xmlns:c="http://java.sun.com/jsp/jstl/core"
+            xmlns:cr="urn:crlr"
+            xmlns:crx="urn:crlr:ext"
+            xmlns:f="http://java.sun.com/jsf/core"
+            xmlns:h="http://java.sun.com/jsf/html"
+            xmlns:rich="http://richfaces.org/rich"
+            xmlns:t="http://myfaces.apache.org/tomahawk"
+            xmlns:ui="http://java.sun.com/jsf/facelets">
+  <ui:composition>
+    <h:head>
+      <c:set value="${empty titrePage ? 'Sans titre' : titrePage}"
+             var="titrePage" />
+      <c:set value="${empty id ? 'normal' : id}"
+             var="id" />
+      
+      <ui:remove>
+Définition de variables globales
+</ui:remove>
+      <c:set value="/resources/images/"
+             var="imagesDir" />
+      <c:set value="/resources/images/icones/"
+             var="iconesDir" />     
+      <c:set value="#{ contexteApplication.environnement == 'CRLR' ? '' : 'overflow-x:auto;' } "
+             var="styleBody" />
+      <meta content="text/html; charset=UTF-8"
+            http-equiv="Content-Type" />
+      <title>Cahier Texte - ${titrePage}</title>
+      <h:outputStylesheet library="css"
+                          name="arrondis.css" />
+      <ui:remove>
+charge le fichier de configuration pour la francisation des
+composants de l'application
+</ui:remove>
+      <f:loadBundle basename="messages"
+                    var="messages" />
+      <link href="${cr:concat(cr:url(imagesDir),'/favicon/logo.ico')}"
+            rel="shortcut icon" />
+      <script type="text/javascript">/* 
+      <![CDATA[ */
+                      var timeoutsession = null;
+              
+              var ctx = "#{request.contextPath}";
+                     
+                    /**
+                     * Supprime les erreurs javascripts puisque la fonction retourne tout le temps true.
+                     *
+                     */
+                    function supprimerErreurs() {
+                       return true;
+                    }
+
+                    //Modification du statut de la varibale du navigateur indicant le contrôle d'erreur.
+                    //A activer uniquement en production, à commenter en phase de développement.
+                    //window.onerror = supprimerErreurs;  
+                    
+                    
+      /* ]]>
+      */</script>
+      
+     
+                   
+      
+      <c:set value="status"
+             var="statusA4J" />
+      <c:set value="nostatus"
+             var="nostatusA4J" />
+      <c:set value="#{empty avecBandeau ? 'display:none;' : ''}"
+             var="avecBandeau" />
+    </h:head>
+    <t:documentBody style="#{styleBody}">
+    <!-- Pour être chargé dans le "head" mais après jQuery et les librairies Richfaces -->
+        <h:outputScript library="js"
+                      name="composants.js"
+                      target="head" />
+                      
+      <rich:jQuery query="validerSetFocusOnElement"
+                   selector="document"
+                   timing="domready" />
+      <!-- Zone applicative -->
+      <h:form enctype="#{empty upLoad or not upLoad ? 'application/x-www-form-urlencoded' : 'multipart/form-data'}"
+              id="formulaire_principal"
+              styleClass="formPrincipal">
+        <a4j:outputPanel id="zoneApplicative"
+                         layout="block"
+                         styleClass="formDiv">
+          
+          <div class="zoneappli"
+               id="zoneappli">
+            <ui:insert />
+          </div>
+          <div class="pied">
+            <div id="messagesDeplie"></div>
+            <cr:pied />
+            <div class="applicationVersion">V 
+            #{contexteApplication.version}</div>
+          </div>
+        </a4j:outputPanel>
+        <cr:popupStatus idStatus="status" />
+      </h:form>
+      <rich:popupPanel height="70"
+                       id="sessionExpiredPanel"
+                       width="300">
+        <f:facet name="header">Expiration de session</f:facet>
+        <rich:panel style="border:0;text-align:center;">
+          <h:outputText value="Votre session est arrivée à expiration." />
+          <br />
+          <h:outputText value="Veuillez actualiser la page courante." />
+        </rich:panel>
+      </rich:popupPanel>
+      <a4j:outputPanel ajaxRendered="true">
+        <script type="text/javascript"> 
+       /* <![CDATA[ */ 
+        if (timeoutsession != null) {
+           clearTimeout(timeoutsession);
+        }
+        timeoutsession = setTimeout("#{rich:component('sessionExpiredPanel')}.show();", @application.session.timeout@);
+                        
+       /*  ]]> */
+        </script>
+      </a4j:outputPanel>
+      <h:outputStylesheet library="css" name="general.css" />
+      
+      <c:if test="#{contexteApplication.environnement eq 'CRC'}">
+      <h:outputStylesheet library="css" name="general_recia.css" />
+      </c:if>
+    	<ui:remove> Le chargement du js pour xiti</ui:remove>
+		<script type="text/javascript" src="/esciti/js/esciti.js" />
+	<script type="text/javascript">
+	<!--
+			if (typeof InfoENT4esciti != 'undefined') {
+				var X=InfoENT4esciti;
+				X.setSiren("#{menu.esciti.siren}");
+				X.setUid("#{menu.esciti.uid}");
+				X.setObjectClass("#{menu.esciti.objectClass}");
+				var lib = '${libXiti}';
+				X.callByService(lib != '' ? lib : "Cahier_Textes");
+			}
+	-->
+	</script>
+    </t:documentBody>
+      
+  </ui:composition>
+</t:document>

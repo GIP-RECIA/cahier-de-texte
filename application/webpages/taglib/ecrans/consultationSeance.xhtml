@@ -1,0 +1,205 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:crx="urn:crlr:ext"
+    xmlns:cr="urn:crlr"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:rich="http://richfaces.org/rich">
+<ui:composition>
+
+    <h:outputStylesheet library="css"
+                        name="consultationSeance.css"
+                        target="head" />
+
+    
+	<t:div style="#{style} width: 100%; height: 16px; font-weight: bold;">
+		<span style="float: left; padding-left:2px;">
+			#{cr:formatDate(seanceDetail.date, 'dd/MM/yyyy')} - #{seanceDetail.horaireDebut}/#{seanceDetail.horaireFin} -  
+			#{seanceDetail.sequenceDTO.typeGroupe == 'CLASSE' ? 'Classe' :'Groupe'}
+			#{seanceDetail.sequenceDTO.groupesClassesDTO.designation}
+			#{(afficheSequenceTitre) ? ' - ' : ''}
+			#{(afficheSequenceTitre) ? seanceDetail.sequenceDTO.intitule : ''}
+		</span>
+	
+	   <cr:lien 
+	       id="#{idSeancePrecedenteXX}_modifierSeance" 
+           bean="#{controleur}"
+           cible="#{cibleModifierSeancePrecedente}"
+           render="#{idPopupSaisieSeance}_form:#{idPopupSaisieSeance}_panel"
+           image="modifier.gif"
+           oncomplete="#{rich:component(idPopupSaisieSeance)}.show(); appliqueRotationTampon();"
+           desc="Modifier la séance précédente" 
+           rendered="#{modifiable}"
+           style="float: right;"
+           >
+           <f:setPropertyActionListener value="#{seanceDetail}" target="#{controleur.form.seancePrecedente}" />
+           </cr:lien> 
+	</t:div>
+	
+	<t:div>
+	  <h:panelGroup styleClass="seanceChamps">
+	    <h:outputLabel styleClass="libelle" value="Intitulé :" />
+	    <h:outputText value="#{seanceDetail.intitule}" />
+	    <t:div rendered="#{afficheFromVisa}" >
+            <t:div rendered="#{seanceDetail.idEnseignant ne seanceDetail.sequenceDTO.idEnseignant}">
+                
+                <h:outputLabel styleClass="libelle" value="Enseignant remplacé :"/>
+                <h:outputText value="#{seanceDetail.sequenceDTO.enseignantDTO.nomComplet}" />
+            </t:div>
+		    <h:outputLabel styleClass="libelle" value="Dernière modification :"/>
+		    <h:outputText style="text-align: center; #{seanceDetail.alerteDateMaj ? 'background-color: #ff0000;' : ''}"
+		                  value="#{cr:formatDate(seanceDetail.dateMaj,'dd/MM/yyyy')}" />
+		    <h:commandLink action="#{visaSeance.chargerArchiveSeance}"
+		             title="Séance\n #{seanceDetail.intitule}"
+		             id="lienArchiveSeance#{seanceDetail.id}"
+		             rendered="#{seanceDetail.isVisibleCadena}"
+		             onclick="console.log('onclick chargerArchiveSeance')"
+		             style="white-space: normal; text-decoration: none;"
+		             styleClass="#{myBackgroundClass} planningLien">
+		           
+		    <f:setPropertyActionListener target="#{visaSeance.form.visaSeanceSelected}"
+		                                 value="#{seanceDetail}" />
+		                                 
+		         <f:ajax event="action"
+		              execute="@form"
+		              oneerror="handleErrorAjaxVS"
+		              onevent="handleEventAfficherArchiveSeance"
+		              status="status"
+		              render="#{idSeanceDetail} :idPopupSeance_form :idPopupSeance_form:idPopupSeance_panel" />
+		      <h:graphicImage library="images/icones"
+		                    name="lock.png"
+		                    rendered="true"
+		                    title="Séance archivée" />
+		    </h:commandLink>
+	    </t:div>
+	  
+	  <h:panelGrid columns="1"
+	               rendered="#{not empty seanceDetail.descriptionHTML}">
+	
+	    <h:outputText escape="false"
+	                  styleClass="description champLatex"
+	                  value="#{seanceDetail.descriptionHTML}" />
+	  </h:panelGrid>
+	  <rich:panel id="panelpieceJointe#{seanceDetail.id}"
+	              rendered="#{not empty seanceDetail.files}"
+	              styleClass="panelPiecesJointe">
+	    <h:outputLabel styleClass="libellePieceJointe"
+	                   value="Pièces jointes :" />
+	    <h:panelGrid id="pieceJointeDetail#{seanceDetail.id}"
+	                 style="display:block;"
+	                 styleClass="panelPieceJointeDetail">
+	      <ui:repeat keepSaved="false"
+	                 value="#{seanceDetail.files}"
+	                 var="pieceJointe">
+	        <ui:fragment rendered="#{pieceJointe.activerLien}">
+	
+	          <a class="pieceJointeLien"
+	             href="#{pieceJointe.pathFullDownload}"
+	             target="_blank"
+	             title="Télécharger #{pieceJointe.nom}">
+	             #{pieceJointe.nomCourt}</a>
+	        </ui:fragment>
+	        <h:outputText rendered="#{! pieceJointe.activerLien}"
+	                      styleClass="pieceJointeLien"
+	                      value="#{pieceJointe.nom}" />
+	      </ui:repeat>
+	    </h:panelGrid>
+	  </rich:panel>
+	</h:panelGroup>
+	<h:panelGrid id="devoirSeance#{seanceDetail.id}"
+	             styleClass="seanceDevoirDiv">
+	  <ui:repeat keepSaved="false"
+	             rendered="#{not empty seanceDetail.devoirs}"
+	             value="#{seanceDetail.devoirs}"
+	             var="devoirDTO">
+	    <h:panelGrid columns="1">
+	      <h:panelGroup styleClass="but">
+	        <h:outputLabel value="#{devoirDTO.typeDevoirDTO.categorie == 'NORMAL' ? 'Travail à faire' : 'Devoir'} pour le #{cr:formatDate(devoirDTO.dateRemise, 'dd/MM/yyyy')} : " />
+	        <h:commandLink action="#{ajoutSeance.afficherDevoir}"
+	                 title="Afficher le devoir"
+	                 id="lienDevoir#{devoirDTO.id}"
+	                 onclick="console.log('onclick chargerDevoir')"
+	                 rendered="#{affichePopupDevoir}"
+	                 style="white-space: normal; text-decoration: none;"
+	                 styleClass="#{myBackgroundClass} planningLien">
+	
+	                <f:setPropertyActionListener target="#{ajoutSeance.form.devoirSelected}"
+                                             value="#{devoirDTO}" />
+	               <f:ajax event="action"
+	                execute="@form"
+	                oneerror="handleErrorAjaxVS"
+	                onevent="handleEventAfficherDevoir"
+	                render="#{idSeanceDetail} :#{idPopupDevoir}_form: :#{idPopupDevoir}_form:#{idPopupDevoir}_panel" 
+	                >
+	           
+	                </f:ajax>
+	            <h:graphicImage library="images/icones"
+	                            name="loupe-icone.png"
+	                            rendered="true"
+	                            title="Afficher le devoir" />
+	          </h:commandLink>
+	        </h:panelGroup>
+	        <t:div rendered="#{not empty devoirDTO.typeDevoirDTO.libelle or not empty devoirDTO.intitule}">
+              <h:outputText escape="false" 
+                            styleClass="description"
+                            value="#{devoirDTO.typeDevoirDTO.libelle}" />
+              <h:outputText escape="false" 
+                            styleClass="description"
+                            rendered="#{not empty devoirDTO.typeDevoirDTO.libelle and not empty devoirDTO.intitule}"
+                            value=" - " />
+              <h:outputText escape="false" 
+                            styleClass="description"
+                            value="#{devoirDTO.intitule}" />
+              <br/>
+            </t:div>     
+	        <h:panelGrid columns="1" rendered="#{not empty devoirDTO.descriptionHTML}">
+	          <h:outputText escape="false"
+	                        styleClass="description champLatex"
+	                        value="#{devoirDTO.descriptionHTML}" />
+	        </h:panelGrid>
+	        <rich:panel id="panelpieceJointeDevoir#{devoirDTO.id}"
+                  rendered="#{not empty devoirDTO.files}"
+                  styleClass="panelPiecesJointe">
+                <h:outputLabel styleClass="libellePieceJointe" 
+                       value="Pièces jointes :" />
+                    <h:panelGrid id="pieceJointeDetail#{devoirDTO.id}"
+                     style="display:block;"
+                     styleClass="panelPieceJointeDetail">
+		                <ui:repeat keepSaved="false"
+			                     value="#{devoirDTO.files}"
+			                     var="pieceJointe">
+			            <ui:fragment rendered="#{pieceJointe.activerLien}">
+			    
+			              <a class="pieceJointeLien"
+			                 href="#{pieceJointe.pathFullDownload}"
+			                 target="_blank"
+			                 title="Télécharger #{pieceJointe.nom}">
+			                 #{pieceJointe.nomCourt}</a>
+			            </ui:fragment>
+			            <h:outputText rendered="#{! pieceJointe.activerLien}"
+			                          styleClass="pieceJointeLien"
+			                          value="#{pieceJointe.nom}" />
+			          </ui:repeat>
+                    </h:panelGrid>
+               </rich:panel>        
+	      </h:panelGrid>
+	    </ui:repeat>
+	  </h:panelGrid>
+	</t:div>
+	<div style="clear: both;"></div>
+	<t:div style="display:block;width:100%" rendered="#{afficheTamponVisa}">
+	   <cr:tamponVisa
+	        dateVisaDirecteur="#{seanceDetail.visaDirecteur.dateVisa}"
+	        typeVisaDirecteur="#{seanceDetail.visaDirecteur.typeVisa}"
+	        dateVisaInspecteur="#{seanceDetail.visaInspecteur.dateVisa}"
+	        typeVisaInspecteur="#{seanceDetail.visaInspecteur.typeVisa}"
+	   />
+	</t:div>
+	<div style="clear: both;"></div>
+
+</ui:composition>
+   
+</html>

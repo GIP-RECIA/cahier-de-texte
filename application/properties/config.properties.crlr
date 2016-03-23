@@ -1,0 +1,71 @@
+# $Id: config.properties,v 1.9 2010/06/08 10:51:06 ent_breyton Exp $
+#
+# Projet CRLR - Conseil Regional Languedoc Roussillon.
+# Copyright (c) 2009 Bull SAS
+
+# Paramètres de connexion à la base de données
+#
+
+# Driver
+db.driver=com.p6spy.engine.spy.P6SpyDriver
+
+#db.driver=org.postgresql.Driver
+
+# URL cahierTexteTestAlim
+db.url=jdbc:postgresql://FRMP0151.frml.bull.fr:5432/ent-cahier-texte-eric-test
+
+# User
+db.user=ent
+# Password
+db.password=ent
+
+hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+hibernate.showSql=false
+
+##
+# Paramètres de connexion LDAP
+##
+
+# URL
+ldap.url=ldap://FRMP0135.frml.bull.fr:389
+
+ldap.user=uid=root,dc=example,dc=org
+ldap.password=secret
+ldap.baseDn=dc=example,dc=org
+ldap.brancheStructure=structures
+ldap.branchePersonne=personnes
+# En environnement CRLR, cette propriété est facultative (ne doit pas étre renseignée) mais doit étre présente méme é vide.
+ldap.nomProfil=
+#ldap.branchePersonne=people
+
+application.env=CRLR
+
+#
+# Paramètres du service webdav
+# URL avec le /
+webdav.url=http://frmp0137.frml.bull.fr
+webdav.login=ent
+webdav.password=entent
+webdav.context=/webdav/shared/userfiles/
+
+profil.adminCentral=ADMCentral,test:ADM 
+profil.adminLocal=.*:admin:cahier:loc.*:.*
+
+profil.enseignant=ENSEIGNANT
+profil.eleve=ELEVE
+profil.parent=PERSREL,PARENT
+profil.directeur=DIRECTEUR
+profil.persEducNat=EDUCATION,DOCUMENTATION,ORIENTATION
+profil.inspecteur=INSPECTEUR
+
+import.edt.strict=true
+
+mimetex.path=C:/source/apache-tomcat-6.0.32/webapps/cahier-texte/dragmath/mimetex/mimetex.exe
+
+
+#Nombre par defaut affiche lors de la creation d'une seance
+devoir.count.default=3
+
+#Nombre par defaut de seances précédentes affichées 
+seance.precedente.count.default=3
+

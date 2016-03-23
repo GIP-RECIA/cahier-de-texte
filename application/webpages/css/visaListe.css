@@ -1,0 +1,203 @@
+tr.pair:hover {
+    background-color: #FBFF8C;
+}
+
+tr.impair:hover {
+    background-color: #FBFF8C;
+}
+
+table.entete {
+    border-collapse : collapse;
+}	
+
+table.entete th {
+    text-align: center;
+    vertical-align: middle;
+    border-width: 1px;
+    border-style: solid;
+    background-color: #{richSkin.headerBackgroundColor};
+    border-color: #{richSkin.tableBorderColor};
+}
+
+table.entete th .sousColonneEnteteTop {
+    border-top-style: none;
+    border-left-style: none;
+    border-right-style: none;   
+    width: 50%;
+} 
+ 
+table.entete th .sousColonneEnteteBottomLeft {
+    border-bottom-style: none;
+    border-left-style: none;
+    width: 50%;
+} 
+ 
+table.entete th .sousColonneEnteteBottomRight {
+    border-bottom-style: none;
+    border-right-style: none;
+} 
+ 
+table.entete td {
+	text-align: center;
+    vertical-align: middle;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #{richSkin.tableBorderColor};
+}
+
+table.entete td .left {
+	text-align: left;
+}
+ 
+table.entete td .tdGauche {
+    height: 100%;   
+    width: 50%;
+    border-left-width:0px;
+    border-right-width:1px;
+    border-top-width:0px;
+    border-bottom-width:0px;
+    border-top-style: hidden;
+}
+
+table.entete td .tdDroite {
+    height: 100%;   
+    width: 50%;
+    border-left-width:0px;
+    border-right-width:0px;
+    border-top-width:0px;
+    border-bottom-width:0px;
+    border-top-style: hidden;
+    
+}
+
+
+
+
+
+
+
+
+table.SousEntete {
+    border-collapse : collapse;
+}   
+
+table.SousEntete th {
+    text-align: center;
+    vertical-align: middle;
+    border-width: 1px;
+    border-style: solid;
+    background-color: #{richSkin.headerGradientColor};
+    border-color: #{richSkin.tableBorderColor};
+}
+
+table.SousEntete th .sousColonneEnteteTop {
+    border-top-style: none;
+    border-left-style: none;
+    border-right-style: none;   
+    width: 50%;
+} 
+ 
+table.SousEntete th .sousColonneEnteteBottomLeft {
+    border-bottom-style: none;
+    border-left-style: none;
+    width: 50%;
+} 
+ 
+table.SousEntete th .sousColonneEnteteBottomRight {
+    border-bottom-style: none;
+    border-right-style: none;
+} 
+ 
+table.SousEntete td {
+    text-align: center;
+    vertical-align: middle;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #{richSkin.tableBorderColor};
+}
+
+table.SousEntete td .left {
+    text-align: left;
+}
+ 
+table.SousEntete td .tdGauche {
+    height: 100%;   
+    width: 50%;
+    border-left-width:0px;
+    border-right-width:1px;
+    border-top-width:0px;
+    border-bottom-width:0px;
+    border-top-style: hidden;
+}
+
+table.SousEntete td .tdDroite {
+    height: 100%;   
+    width: 50%;
+    border-left-width:0px;
+    border-right-width:0px;
+    border-top-width:0px;
+    border-bottom-width:0px;
+    border-top-style: hidden;
+    
+}
+
+
+
+
+
+
+
+
+
+
+table.corps {
+	width: 99%; 
+	border-collapse : collapse;
+}
+
+table.corps td.data {
+	text-align: center;
+    vertical-align: middle;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #{richSkin.tableBorderColor};
+}
+
+table.corps td.dataGauche {
+    text-align: center;
+    vertical-align: middle;
+    border-left-width: 1px;
+    border-bottom-width: 1px;
+    border-top-width: 1px;
+    border-left-style: solid;
+    border-top-style: solid;
+    border-bottom-style: solid;
+    border-left-color: #{richSkin.tableBorderColor};
+    border-bottom-color: #{richSkin.tableBorderColor};
+    border-top-color: #{richSkin.tableBorderColor};
+}
+
+table.corps td.dataCentre {
+    text-align: center;
+    vertical-align: middle;
+    border-bottom-width: 1px;
+    border-top-width: 1px;
+    border-top-style: solid;
+    border-bottom-style: solid;
+    border-bottom-color: #{richSkin.tableBorderColor};
+    border-top-color: #{richSkin.tableBorderColor};
+}
+
+table.corps td.dataDroite {
+    text-align: center;
+    vertical-align: middle;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+    border-top-width: 1px;
+    border-right-style: solid;
+    border-top-style: solid;
+    border-bottom-style: solid;
+    border-right-color: #{richSkin.tableBorderColor};
+    border-bottom-color: #{richSkin.tableBorderColor};
+    border-top-color: #{richSkin.tableBorderColor};
+}

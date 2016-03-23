@@ -1,0 +1,36 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:a4j="http://richfaces.org/a4j"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:cr="urn:crlr"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:rich="http://richfaces.org/rich"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+  <ui:composition>
+    <rich:column rendered="true"
+                 width="14%">
+      <f:facet name="header">
+        <h:outputText value="#{jourHeaderFooter}" />
+      </f:facet>
+      <h:panelGrid columns="1"
+                   styleClass="corpsCalTable#{!category.map[jourColonne].actif ? 'Inactif' : ''}">
+
+        <h:outputText value="#{category.map[jourColonne].heureSeance} #{empty category.map[jourColonne].heureSeance ? '' : '/'} #{category.map[jourColonne].groupesClassesDTO.designation}" />
+        <h:outputText value="#{category.map[jourColonne].matiere}" />
+        <h:outputText value="#{category.map[jourColonne].denomination} #{category.map[jourColonne].nom}" />
+        <cr:lien bean="#{seanceSemaine}"
+                 cible="naviguerDetailSeance"
+                 desc="#{category.map[jourColonne].seance.accesEcriture ? 'Modifier la séance' : 'Consulter la séance'}\n #{category.map[jourColonne].seance.intitule}"
+                 id="seanceSemaine#{jourColonne}"
+                 styleClass="seanceSemaineLien"
+                 oncomplete="#{rich:component('idPopupConsulterSeance')}.show(); appliqueRotationTampon();"
+                 render=":idPopupConsulterSeance_form:idPopupConsulterSeance_panel"
+                 titre="">
+        <f:setPropertyActionListener target="#{seanceSemaine.form.selectSeance}"
+                                     value="#{category.map[jourColonne]}" />#{cr:truncate(category.map[jourColonne].seance.intitule,
+                                     13, '..')}</cr:lien>
+      </h:panelGrid>
+    </rich:column>
+  </ui:composition>
+</html>

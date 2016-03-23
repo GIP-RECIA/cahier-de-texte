@@ -1,0 +1,30 @@
+.raised {background: transparent; width:100%; margin:0 auto;}
+.raised h1, .raised p {margin:0 10px;}
+.raised h1 {font-size:2em; color:#fff; letter-spacing:1px;}
+.raised p {padding-bottom:0.5em;}
+
+.raised .top, .raised .bottom {display:block; background:transparent; font-size:1px;}
+.raised .b1, .raised .b2, .raised .b3, .raised .b4, .raised .b1b, .raised .b2b, .raised .b3b, .raised .b4b {display:block; overflow:hidden;}
+.raised .b1, .raised .b2, .raised .b3, .raised .b1b, .raised .b2b, .raised .b3b {height:1px;}
+.raised .b2 { border-left:1px solid #fff; border-right:1px solid #eee;}
+.raised .b3 {border-left:1px solid #fff; border-right:1px solid #ddd;}
+.raised .b4 {border-left:1px solid #fff; border-right:1px solid #aaa;}
+.raised .b4b {border-left:1px solid #eee; border-right:1px solid #999;}
+.raised .b3b { border-left:1px solid #ddd; border-right:1px solid #999;}
+.raised .b2b {border-left:1px solid #aaa; border-right:1px solid #999;}
+.raised .b1 {margin:0 5px; background:#fff;}
+.raised .b2, .raised .b2b {margin:0 3px; border-width:0 2px;}
+.raised .b3, .raised .b3b {margin:0 2px;}
+.raised .b4, .raised .b4b {height:2px; margin:0 1px;}
+.raised .b1b {margin:0 5px; background:#999;}
+.raised .boxcontent {display:block;  border-left:1px solid #fff; border-right:1px solid #999; padding-left: 5px;}
+
+.raised .MyRouge {background:red;color:#000;}
+.raised .MyRose {background:#FF00FF;color:#000;}
+.raised .MyGris {background:gray;color:#000;}
+.raised .MyBleu {background:#110091;color:#FFF;}
+.raised .MyBleu_clair {background:#87CEFA;color:#000;}
+.raised .MyVert {background:#32CD32;color:#000;}
+.raised .MyVert_clair {background:#CAFDBD;color:#000;}
+.raised .MyMarron {background:#726237;color:#FFF;}
+.raised .MySkin {color:#000;}

@@ -1,0 +1,74 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:rich="http://richfaces.org/rich"
+	xmlns:a4j="http://richfaces.org/a4j" xmlns:cr="urn:crlr">
+<ui:composition>
+    <c:set var="readOnly" value="#{empty readOnly ? false : readOnly}"/>
+    <c:set var="rendered" value="#{empty rendered ? true : rendered}"/>
+    <c:set var="idSaisieDateListe" value="#{empty idSaisieDateListe ? cr:idcompteur('idSaisieDateListe') : idSaisieDateListe}"/>
+    <c:set var="styleClassError" value="#{empty styleClassError or !styleClassError  ? '' : 'messageErreur'}" />
+    
+    <t:div id="#{idSaisieDateListe}" rendered="#{rendered}" style="display:inline">
+        
+        <t:div id="#{idSaisieDateListe}_data" style="display:none">
+            <h:inputText styleClass="#{idSaisieDateListe}_valeurFinal" value="#{valeurFinal}" id="#{idSaisieDateListe}_valeurFinal"  />
+        </t:div>
+        <cr:saisieListe 
+            donnees=""
+            id="#{idSaisieDateListe}_liste"
+            rendered="#{(cr:containsDateDTO(listeDate,valeurFinal)) or ((empty valeurFinal) and (not empty listeDate)) }"
+            largeur="80"
+            styleClass="${idSaisieDateListe}_valeurListe"
+            styleClassError="${styleClassError}"
+            valeur="#{valeurDTO}">
+            <a4j:ajax event="change" oncomplete="
+             onChangeDateListe('${idSaisieDateListe}_valeurFinal', '${idSaisieDateListe}_valeurListe');
+             ${oncomplete}
+             " 
+             status="#{status}" />
+                            
+            <f:converter converterId="selectOneDtoConverter"/>
+            <f:selectItem itemLabel="" itemValue="" />
+            <f:selectItems itemLabel="#{cr:formatDate(periode.date, 'dd/MM/yyyy')}"
+                     itemValue="#{periode}"
+                     value="#{listeDate}"
+                     var="periode" />
+            <f:attribute name="converterListe" value="#{listeDate}" />
+        </cr:saisieListe>
+       
+        <rich:calendar 
+            id="${idSaisieDateListe}_calendar" 
+            value="${valeur}" 
+            rendered="${rendered}"
+            locale="fr" 
+            popup="true" 
+            datePattern="dd/MM/yyyy" 
+            inputStyle="width: 80px;"  
+            inputClass="${idSaisieDateListe}_valeurCalendar ${((cr:containsDateDTO(listeDate,valeurFinal)) or ((empty valeurFinal) and (not empty listeDate))) ? 'cachee' : ''} ${styleClassError}"
+            showApplyButton="false" 
+            cellWidth="24px" 
+            cellHeight="22px" 
+            jointPoint="bottomRight" 
+            direction="bottomLeft" >
+            <a4j:ajax event="change" oncomplete="onChangeDateCalendar('${idSaisieDateListe}_valeurFinal', '${idSaisieDateListe}_valeurCalendar'); ${oncomplete}" execute="@this" />
+        </rich:calendar>
+	    
+        <cr:liena4j 
+            idliena4j="#{idSaisieDateListe}_resetDate" 
+            bean="#{bean}" 
+            rendered="#{not ((cr:containsDateDTO(listeDate,valeurFinal)) or ((empty valeurFinal) and (not empty listeDate)))}" 
+            oncomplete="#{oncomplete}"
+            cible="#{cibleResetDate}" 
+            render="#{idSaisieDateListe}" 
+            status="#{status}"  
+            title="Effacer la date sélectionnée"
+            >
+            <h:graphicImage library="images/icones" name="eraserSmall.png" />
+        </cr:liena4j>
+    </t:div>
+</ui:composition>
+</html>

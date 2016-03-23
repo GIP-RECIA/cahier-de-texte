@@ -1,0 +1,104 @@
+<html
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets" 
+    xmlns:cr="urn:crlr"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+>
+<ui:composition>    
+    <ui:remove>
+    <!-- 
+        popupChargeTravail : composant permettant le rendu de la charge de travail prévue pour une classe ou un groupe 
+        La charge de travail correspond à la liste des devoirs dont la date à rendre est prévue pour un jour donnée.
+        
+        propriétés :
+        * idPopup : identifiant de la popup
+        * listeDevoirPrincipal liste des devoir prévus pour la classe ou le groupe le meme jour
+               la liste est de type List<DevoirEnteteDTO> (peut être vide mais pas null)
+        * listeDevoirComplement liste des devoir prévus pour les autres classes ou groupes liés à la classe ou groupe 
+               passée en parametre 
+               La liste est de type List<DevoirEnteteDTO> (peut être vide mais pas null)
+        * groupeOuClasse CLASSE ou GROUPES pour indiquer la nature de la classe ou groupe
+    -->
+    </ui:remove>
+    
+    <c:set var="listeDevoirPrincipal" value="${listeDevoirPrincipal}" />
+    <c:set var="listeDevoirComplement" value="${listeDevoirComplement}" />
+    <c:set var="groupeOuClasse" value="${groupeOuClasse}" />
+    <c:set var="idPopup" value="${idPopup}" />
+    
+    
+    <cr:popup idPopup="#{idPopup}" tailleAuto="true"
+        largeurPopup="540"
+        titrePopup="Travail à faire prévus pour le même jour">
+        <h:panelGroup layout="block" 
+            style="overflow-y: auto; height:#{(not empty listeDevoirPrincipal) ? (not empty listeDevoirComplement) ? '300' : '170' : '170' }px; width: 520px;">
+            <t:div style="padding-bottom:12px;">
+            <cr:table idTable="#{idPopup}_idTableChargeTravail" largeur="520"
+             liste="#{listeDevoirPrincipal}" rendered="#{not empty listeDevoirPrincipal}"
+             entete="Travail à faire pour #{(groupeOuClasse eq 'CLASSE') ? 'la classe' : 'le groupe'} prévu le même jour"
+             nbLignes="3"
+             >         
+                 <cr:colonne libelleColonne="Enseignement" taille="220" id="">
+                     <h:outputText value="#{ligne.libelleEnseignement} / #{ligne.nomEnseignant}" 
+                                   style="#{ligne.seanceFuture ? 'font-style: italic' : ''}"
+                     />
+                 </cr:colonne>
+                 <cr:colonne libelleColonne="Intitulé du devoir" taille="260" id="">
+                     <h:outputText value="#{ligne.intituleDevoir}" 
+                                   style="#{ligne.seanceFuture ? 'font-style: italic' : ''}" />
+                     
+                     <h:graphicImage 
+                        library="images/icones"
+                        name="message-avertissant.gif"
+                        title="Le devoir est prévu dans une séance du #{ligne.libelleDateSeance}"
+                        rendered="#{ligne.seanceFuture}" 
+                        style="cursor:pointer;" />
+                 </cr:colonne>
+                 <cr:colonne libelleColonne="Devoir" taille="40" id="" align="center" >
+                     <h:graphicImage 
+                            name="valider.gif"
+                            library="images/icones"
+                            title="Le travail à faire est un devoir"
+                            rendered="#{ligne.vraiOuFauxDevoir}" 
+                            style="cursor:pointer;" />
+                 </cr:colonne>
+            </cr:table>
+            </t:div>
+            <cr:table idTable="#{idPopup}_idTableChargeTravailComplement" largeur="520"
+				liste="#{listeDevoirComplement}" rendered="#{not empty listeDevoirComplement}"
+				entete="Travail à faire #{(groupeOuClasse eq CLASSE) ? 'pour les groupes de la classe' : 'pour les classes du groupe'} prévu le même jour"
+				nbLignes="3"
+             >         
+                 <cr:colonne libelleColonne="Cours" taille="190" id="">
+                     <h:outputText value="#{ligne.libelleEnseignement} / #{ligne.nomEnseignant}" 
+                                   style="#{ligne.seanceFuture ? 'font-style: italic' : ''}" />
+                 </cr:colonne>
+                 <cr:colonne libelleColonne="#{(groupeOuClasse eq CLASSE) ? 'Groupe' : 'Classe'}" taille="60" id="">
+                     <h:outputText value="#{ligne.designationClasseGroupe}" 
+                                   style="#{ligne.seanceFuture ? 'font-style: italic' : ''}"/>
+                 </cr:colonne>
+                 <cr:colonne libelleColonne="Intitulé du devoir" taille="230" id="">
+                     <h:outputText value="#{ligne.intituleDevoir}" 
+                                   style="#{ligne.seanceFuture ? 'font-style: italic' : ''}"/>
+                     <h:graphicImage value="${cr:concat(iconesDir,'message-avertissant.gif')}"
+                            id="iconeAlerteConfidentialiteComplement"  
+                            title="Le devoir est prévu dans une séance du #{ligne.libelleDateSeance}"
+                            rendered="#{ligne.seanceFuture}" 
+                            style="cursor:pointer;" />
+                 </cr:colonne>
+                 <cr:colonne libelleColonne="Devoir" taille="40" id="" align="center" >
+                     <h:graphicImage 
+                            name="valider.gif"
+                            library="images/icones"
+                            title="Le travail à faire est un devoir"
+                            rendered="#{ligne.vraiOuFauxDevoir}" 
+                            style="cursor:pointer;" />
+                 </cr:colonne>
+            </cr:table>
+        </h:panelGroup>
+    </cr:popup>
+</ui:composition>
+</html>
+    

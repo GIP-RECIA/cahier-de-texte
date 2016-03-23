@@ -1,0 +1,258 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:crx="urn:crlr:ext"
+    xmlns:cr="urn:crlr"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:rich="http://richfaces.org/rich">
+
+<cr:page titrePage="Ajout séance" bean="#{ajoutSeance}" form="#{ajoutSeance.form}">    
+    <h:outputScript library="js" name="jquery-ui-1.8.20.custom.js" target="head" />
+    <h:outputScript library="js" name="jquery.qtip.js" target="head" />
+    <h:outputScript library="js" name="ajoutSeance.js" target="head" />
+    <h:outputScript library="js"  name="saisieDateListe.js" target="head"/>
+    
+    <h:outputStylesheet library="css" name="jquery.qtip.css" target="head" />
+    <h:outputStylesheet library="css" name="consultationSeance.css" target="head" />
+    
+    <cr:menuAction id="idMenuAction">
+        <cr:elemMenuAction 
+              idaction="idSauver" bean="#{ajoutSeance}" cible="sauver"
+              image="save.png" 
+              title="Sauvegarder"
+              render="idPanelSaisirSeance" 
+              rendered="#{ajoutSeance.form.seance.accesEcriture}"
+              status="statuspop"
+              oncomplete="setModificationFormulaire(false);onchangeOnglet();" />
+        <cr:elemMenuAction idaction="idSupprimer" bean="#{ajoutSeance}"
+              cible="supprimer"
+              image="delete.png" 
+              title="Supprimer la séance"
+              rendered="#{not empty ajoutSeance.form.seance.id and ajoutSeance.form.seance.accesEcriture}"
+              render="idPanelSaisirSeance,idMenuAction"
+              status="statuspop"  
+              confirm="Voulez-vous vraiement supprimer cette séance ?" />
+        <cr:elemMenuAction 
+                idaction="idRetourPrecedent" 
+                bean="#{ajoutSeance}" 
+                cible="retour"
+                title="Retour"
+                rendered="#{ajoutSeance.form.afficheRetour}"
+                render="idPanelSaisirSeance"
+                status="statuspop" 
+                image="back.png" />
+    </cr:menuAction>
+    
+    <cr:saisieDate rendered="false" id="saisieDateInvisible" valeur="" titre="Date bidon qui permet de faire marcher dans le composant cr:saisieSeance les champs de saisie de date" />  
+    <t:div style="display: none;"><cr:saisieEditeur rendered="true" id="saisieEditeurInvisible" commentaire="Editeur bidon qui permet de faire marcher dans le composant cr:saisieSeance les champs de saisie de editeur" /></t:div>
+    
+    <a4j:outputPanel id="idPanelSaisirSeance">
+        <cr:lien id="idLienChangeDate" 
+              bean="#{ajoutSeance}" cible="changeDateSeance" 
+              render="idDivTabSeance,idListeDesDevoirs"              
+              titre="">
+              
+        </cr:lien>        
+        
+        <rich:tabPanel selectedTab="tabSeance" switchType="ajax"
+            id="idtabPanelDetailJour" onitemchange="onchangeOnglet();">
+            <rich:tab id="TAB_SEANCE"
+                header="#{ajoutSeance.form.seanceTitre}" rendered="true">
+                <t:div id="idDivTabSeance" style="vertical-align:top; overflow:auto; border-style:solid; border-width:1px; border-color:#c0c0c0;">
+                    <cr:saisieSeance
+                        seance="#{ajoutSeance.form.seance}"                        
+                        readOnly="#{not ajoutSeance.form.seance.accesEcriture}"
+                        idPopupPiecesJointes="idPopupPiecesJointes"
+                        id_saisieSeance="idSaisieSeance"
+                        affichageSequence="true"
+                        listeSequence="#{ajoutSeance.form.listeSequence}"
+                        sequenceSelected="#{ajoutSeance.form.seance.sequenceDTO}"
+                        controleur="#{ajoutSeance}" 
+                        cible="chargerSequence"
+                        render="idListeDesDevoirs"
+                        bean="#{ajoutSeance}"
+                        cibleResetSeance="resetSeance"
+                        cibleDeletePieceJointeSeance="deletePieceJointeSeance" 
+                        cibleAjouterPieceJointeSeance="ajouterPieceJointeSeance"
+                        cibleAfterAjouterPieceJointeSeance="afterAjouterPieceJointeSeance"
+                        cibleResetSeanceAnnotations="resetSeanceAnnotations"
+                        cibleChargeImagesLatex="chargeImagesLatex"
+                        cibleChargeImagesLatexAnnotations="chargeImagesLatexAnnotations"
+                        afficheDate="true"
+                        onchangedate="lancerLienAjax('idLienChangeDate'); setModificationFormulaire(true);"
+                         />
+                </t:div>
+            </rich:tab>
+            <rich:tab id="TAB_DEVOIR" header="Travail à faire" rendered="true">
+                <t:div id="idListeDesDevoirs"  
+                        styleClass="listeDesDevoirsSeance">
+                    <c:forEach items="#{ajoutSeance.form.seance.devoirs}" var="devoir" varStatus="status">
+                        <cr:saisieDevoir
+                           id_saisieDevoir="idSaisieDevoir${status.index}"
+                           devoirDTO="#{devoir}"
+                           readOnly="#{not ajoutSeance.form.seance.accesEcriture}"
+                           listeTypeDevoir="#{ajoutSeance.form.listeTypeDevoir}"
+                           controleur="#{ajoutSeance}"
+                           id_devoirConteneur="idListeDesDevoirs"
+                           idPopupPiecesJointes="idPopupPiecesJointes"
+                           cibleResetDevoir="resetDevoir"
+                           cibleDeleteDevoir="deleteDevoir"
+                           cibleDeletePieceJointe="deletePieceJointe" 
+                           cibleAjouterPieceJointe="ajouterPieceJointe"
+                           cibleAfterAjouterPieceJointe="afterAjouterPieceJointe"
+                           cibleAfficherChargeTravail="afficherChargeTravail"
+                           cibleChargeImagesLatex="chargeImagesLatexDevoir"
+                           listeDate="#{ajoutSeance.form.listeDateRemiseDevoir}"
+                        /> 
+                    </c:forEach>
+                </t:div>
+                <t:div style="height:32px; padding-top:5px;" >
+                    <cr:lien id="idAjouterDevoir" bean="#{ajoutSeance}"
+                        cible="ajouterDevoir"
+                        render="idListeDesDevoirs"
+                        image="add.png"
+                        desc="Ajouter un travail à faire" />
+                </t:div>
+            </rich:tab>
+            <rich:tab id="TAB_SEANCE_PRECEDENTE" header="Séances précédentes" rendered="true">
+                <t:div id="idListeDesSeancePrecedente"  
+                        styleClass="listeDesDevoirsSeance" >
+                    <t:div id="idPasDeseanceprecedente"  
+                        style="text-align: center;" >
+                        <h:outputLabel rendered="#{empty ajoutSeance.form.listeSeancePrecedente}" value="Il n'y a aucune séance précédente pour la même classe ou groupe / enseignement" styleClass="libelle" title="" />
+                    </t:div>    
+                    <t:div id="contentSeancePrecedente">                    
+	                    <c:forEach items="#{ajoutSeance.form.listeSeancePrecedente}" var="seancePrecedente" varStatus="status">
+	                        <cr:seancePrecedente
+	                           id_seancePrecedente="idSeancePrecedente${status.index}"
+	                           seance="#{seancePrecedente}"
+	                           controleur="#{ajoutSeance}"
+	                           idPopupSaisieSeance="idPopupModifierSeancePrecedente"
+	                           cibleModifierSeancePrecedente="modifierSeancePrecedente"
+	                        /> 
+	                    </c:forEach>
+	               </t:div>        
+                </t:div>
+                <a4j:commandLink 
+                       id="idchargernouvelleseanceprecedente" 
+                       action="#{ajoutSeance['chargerSuiteSeancePrecendente']}"
+                       oncomplete="onchangeOnglet(); scrollSuiteSeance();"
+                       status="statuspop"
+                       rendered="true"
+                       onclick="stockerTailleScrollSeancePrecedente();"
+                       render="idListeDesSeancePrecedente idchargernouvelleseanceprecedente"
+                       style="#{ajoutSeance.form.afficheSuiteSeancePrecedente ? '' : 'display:none;'}"
+                >       
+                    <h:graphicImage
+                        library="images/icones" 
+                        name="flecheBas.png"
+                        title="Afficher la suite des séances précédentes" />
+                </a4j:commandLink>
+            </rich:tab>
+        </rich:tabPanel>        
+    </a4j:outputPanel>
+    
+    <cr:popupChargeTravail
+        idPopup="idPopupChargeTravail" 
+        listeDevoirPrincipal="#{ajoutSeance.form.devoirSelected.chargeTravail.listeDevoirPrincipal}"  
+        listeDevoirComplement="#{ajoutSeance.form.devoirSelected.chargeTravail.listeDevoirComplement}"
+        groupeOuClasse="#{ajoutSeance.form.devoirSelected.chargeTravail.groupeOuClasse}"
+    />
+    
+    <cr:popupConfirmSauvegardeModification 
+        libelleMessage="Voulez-vous enregistrer vos modifications avant de quitter cette page ?"
+        bean="#{ajoutSeance}" 
+        cible="sauver" 
+        render="idPanelSaisirSeance" 
+        oncomplete="setModificationFormulaire(false);" 
+        action="" />
+    
+</cr:page>
+
+<cr:popupPiecesJointes 
+    idPopup="idPopupPiecesJointes" tailleAuto="true"
+    largeurPopup="660" titrePopup="Pièces jointes"
+    statusPopup="statuspopup" raffraichirTabAfterUpload="#{ajoutSeance.form.raffraichirTabAfterUpload}" />
+
+
+<cr:popupModifiable idPopup="idPopupModifierSeancePrecedente"
+    largeurPopup="800" maxlength="50" statusPopup="statuspop"
+    titrePopup="Modification d'une séance précédente">
+    <a4j:outputPanel id="idPopupModifierSeancePrecedenteRegion">
+        <cr:menuAction id="idMenuActionPopupSeance" surcharge="false">
+            <cr:elemMenuAction 
+              idaction="idSauverSeancePrecedente" bean="#{ajoutSeance}" cible="sauverSeancePrecedente"
+              image="save.png" 
+              title="Sauvegarder"
+              render="formulaire_principal:idListeDesSeancePrecedente" 
+              oncomplete="if (#{facesContext.maximumSeverity == null or facesContext.maximumSeverity.ordinal le 0} ) { #{rich:component('idPopupModifierSeancePrecedente')}.hide(); onchangeOnglet(); }" 
+              rendered="true" 
+            />
+        </cr:menuAction>
+        <rich:tabPanel selectedTab="tabSeancePrecedent" switchType="ajax"
+            id="idtabPanelDetailJourSeancePrecedent" rendered="true" >
+            <rich:tab id="TAB_SEANCE_PREC" header="#{ajoutSeance.form.seancePrecenteTitre}" rendered="true">
+                <t:div style="height:450px; overflow:auto;">
+                    <cr:saisieSeance
+                        seance="#{ajoutSeance.form.seancePrecedente}"
+                        readOnly="false"
+                        formulaire_contenant="idPopupModifierSeancePrecedente_form"
+                        idPopupPiecesJointes="idPopupPiecesJointes"
+                        id_saisieSeance="idSaisieSeancePrecedente"
+                        affichageSequence="#{ajoutSeance.form.afficheSelectionSequenceSeancePrecedente}"
+                        listeSequence="#{ajoutSeance.form.listeSequenceSeancePrecedente}"
+                        sequenceSelected="#{ajoutSeance.form.sequenceSeancePrecedenteSelected}"
+                        controleur="#{ajoutSeance}" 
+                        cible="chargerSequenceSeancePrecedente"
+                        bean="#{ajoutSeance}"
+                        cibleResetSeance="resetSeancePrecedente"
+                        cibleDeletePieceJointeSeance="deletePieceJointeSeancePrecedente" 
+                        cibleAjouterPieceJointeSeance="ajouterPieceJointeSeance"
+                        cibleAfterAjouterPieceJointeSeance="afterAjouterPieceJointeSeancePrecedente"
+                        cibleResetSeanceAnnotations="resetSeanceAnnotationsPrecedente"
+                        cibleChargeImagesLatex="chargeImagesLatexSeancePrecedente"
+                        cibleChargeImagesLatexAnnotations="chargeImagesLatexAnnotationsSeancePrecedente"
+                    />
+                </t:div>
+            </rich:tab>
+            <rich:tab id="TAB_DEVOIR" header="Travail à faire" rendered="true">
+                <t:div id="idListeDesDevoirsSeancePrecedente" styleClass="listeDesDevoirsSeance">
+                    <c:forEach items="#{ajoutSeance.form.seancePrecedente.devoirs}" var="devoir" varStatus="status">
+                        <cr:saisieDevoir
+                           formulaire_contenant="idPopupModifierSeancePrecedente_form"
+                           id_saisieDevoir="idSaisieDevoirSeancePrecedente${status.index}"
+                           idPopupPiecesJointes="idPopupPiecesJointes"
+                           devoirDTO="#{devoir}"
+                           readOnly="false"
+                           id_devoirConteneur="idListeDesDevoirsSeancePrecedente"
+                           listeTypeDevoir="#{ajoutSeance.form.listeTypeDevoir}"
+                           controleur="#{ajoutSeance}"
+                           cibleResetDevoir="resetDevoir"
+                           cibleDeleteDevoir="deleteDevoirSeancePrecedente"
+                           cibleDeletePieceJointe="deletePieceJointe" 
+                           cibleAjouterPieceJointe="ajouterPieceJointe"
+                           cibleAfterAjouterPieceJointe="afterAjouterPieceJointe"
+                           cibleChargeImagesLatex="chargeImagesLatexDevoir"
+                           listeDate="#{ajoutSeance.form.listeDateRemiseDevoirSeancePrecedente}" 
+                        /> 
+                    </c:forEach>
+                </t:div>
+                <t:div style="height:32px; padding-top:5px;">
+                    <cr:lien id="idAjouterDevoirSeancePrecedente" bean="#{ajoutSeance}"
+                        cible="ajouterDevoirSeancePrecedente"
+                        render="idListeDesDevoirsSeancePrecedente"
+                        image="add.png"
+                        desc="Ajouter un travail à faire" />
+                </t:div>
+            </rich:tab>
+        </rich:tabPanel>
+    </a4j:outputPanel>
+</cr:popupModifiable>
+
+<cr:popupStatus idStatus="statuspop" />
+
+</html>

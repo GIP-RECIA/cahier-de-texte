@@ -1,0 +1,44 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:rich="http://richfaces.org/rich" xmlns:cr="urn:crlr">
+<ui:composition>
+	<ui:remove>
+		<!-- 
+        table : composant permettant le rendu d'un tableau
+                
+        propriétés : 
+        * idTable : identifiant unique du tableau.        
+        - liste : la liste des objets à afficher.
+        - nbLignes : nombre de ligne par page. 
+        - entete : titre tu tableau.
+        - largeur : largeur de la table ('' par defaut)  
+    -->
+
+	</ui:remove>
+	<c:set var="avecPagination" value="${empty avecPagination ? true : avecPagination}"/>
+	<c:set var="nbLignes" value="${ empty nbLignes ? (avecPagination ? '10' : '500') : nbLignes}" />
+    <c:set var="rendered" value="${empty rendered ? true : rendered}"/>
+    <c:set var="largeur" value="${not empty largeur ? cr:concat('width:',cr:concat(largeur, 'px;')) : ''}"/>
+    <c:set var="idTable" value="${empty idTable ? cr:idcompteur('table') : idTable}"/>
+    <c:set var="classeTable" value="${empty classeTable ? 'pair, impair' : classeTable}"/>
+
+	<rich:dataTable id="#{idTable}" value="#{liste}" rendered="#{rendered}" style="#{largeur}#{style}"
+		rowClasses="#{classeTable}" var="ligne" rows="#{nbLignes}" iterationStatusVar="#{varStatus}"
+		headerClass="#{headerClass}" width="#{largeur}">
+		<c:if test="#{not empty entete}">
+			<f:facet name="header">
+				<h:outputText value="#{entete}" />
+			</f:facet>
+		</c:if>
+		<ui:insert />
+		<c:if test="#{avecPagination}">
+			<f:facet name="footer">
+				<rich:dataScroller renderIfSinglePage="false" maxPages="5" />
+			</f:facet>
+		</c:if>
+	</rich:dataTable>
+</ui:composition>
+</html>

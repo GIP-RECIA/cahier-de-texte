@@ -1,0 +1,67 @@
+table.corps {
+	width: 99%; 
+	border-collapse : collapse;
+}
+
+table.corps td.data {
+	text-align: left;
+    vertical-align: middle;
+    font-weight: bold;
+}
+
+table.center {
+	margin: auto;
+}
+
+
+table.center td {
+    text-align: left;
+    vertical-align: middle;
+    font-weight: bold;
+}
+
+
+table.corps td.gauche {
+    text-align: left;
+    vertical-align: middle;
+    font-weight: bold;
+}
+
+table.corps td.data table tr td{
+    text-align: left;
+    vertical-align: middle;
+}
+table.corps td.data table{
+    border-collapse : collapse;
+    margin-left: 0;
+}
+
+
+table.resultat {
+    width: 99%; 
+    border-collapse : collapse;
+}
+
+table.resultat tr th {
+	text-align: center;
+	padding: 1px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #{richSkin.tableBorderColor};
+	background-color: #{richSkin.tableHeaderBackgroundColor};
+}
+	
+table.resultat tr td {
+    text-align: left;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #{richSkin.tableBorderColor};
+}
+
+table.resultat tr td.groupeDate {
+	color: #ffffff;
+	padding-top: 0px;
+	padding-bottom: 0px;
+	padding-left: 20px;
+}
+

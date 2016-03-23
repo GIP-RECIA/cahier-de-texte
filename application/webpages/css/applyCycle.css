@@ -1,0 +1,54 @@
+table.entete tr.pair:hover {
+    background-color: #FBFF8C;
+}
+
+table.entete tr.impair:hover {
+    background-color: #FBFF8C;
+}
+
+table.entete tr.pair {
+    background-color: #FFFFFF;
+}
+table.entete tr.impair {
+    background-color: #DDDDDD;
+}
+
+table.entete {
+    border-collapse : collapse;
+}	
+
+table.entete th {
+    text-align: center;
+    vertical-align: middle;
+    border-width: 1px;
+    border-style: solid;
+    background-color: #{richSkin.headerBackgroundColor};
+    border-color: #{richSkin.tableBorderColor};
+}
+
+.ui-dialog-titlebar.ui-widget-header.ui-corner-all.ui-helper-clearfix {
+    text-align: center;
+    vertical-align: middle;
+    border-width: 1px;
+    border-style: solid;
+    background-color: #{richSkin.headerBackgroundColor};
+    border-color: #{richSkin.tableBorderColor};
+}
+
+table.entete td.center {
+    text-align: center;
+    vertical-align: middle;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #{richSkin.tableBorderColor};
+}
+
+table.entete td.gauche {
+	text-align: left;
+    vertical-align: middle;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #{richSkin.tableBorderColor};
+}
+
+

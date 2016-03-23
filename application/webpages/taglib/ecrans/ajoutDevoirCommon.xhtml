@@ -1,0 +1,99 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:crx="urn:crlr:ext"
+    xmlns:cr="urn:crlr"
+    xmlns:rich="http://richfaces.org/rich">
+<ui:composition>
+    <!-- 
+        ajoutDevoirCommon : composant permettant le rendu du formulaire d'ajout d'un devoir.
+        
+        propriétés : 
+        - embarquer : si l'écran est une partie d'un autre outil il est alors embarqué.
+    --> 
+    <c:set var="embarquer" value="${(not empty embarquer and embarquer) ? true : false}" />
+    <c:set var="idEcran" value="${(not empty idEcran) ? idEcran : 'devoirUnique'}" />
+
+    <cr:lien id="idChercherChargeTravail" bean="#{ajoutDevoir}" cible="chercherChargeTravail" 
+             oncomplete="if (#{ajoutDevoir.form.chargeTravail.affichageCharge}) #{rich:component('idPopupChargeTravail')}.show(); " 
+             render="#{idEcran}ajoutDevoir,idPopupChargeTravail" rendered="false" />        
+
+    <rich:panel header="#{embarquer ? '' : 'Ajouter un devoir'}" id="#{idEcran}ajoutDevoir">
+        <h:panelGrid  columns="7" class="table">
+            <h:outputText value="Intitulé *" />
+            <h:inputText value="#{ajoutDevoir.form.intitule}" id="#{idEcran}intituleDev" maxlength="50" 
+                         onchange="if (!(window.modificationEnCours === undefined)) modificationEnCours='true';" />
+
+            <cr:saisieDate id="#{idEcran}dateDev" decalageTitreGauche="2" decalageTitreDroite="2"
+            largeur="#{embarquer ? 70 : 100}" valeur="#{ajoutDevoir.form.dateRemise}" titre="Date *" 
+            oncomplete="if (!(window.modificationEnCours === undefined)) modificationEnCours='true'; lancerLienAjax('idChercherChargeTravail');"
+            />
+
+            <h:graphicImage value="${cr:concat(iconesDir,'message-avertissant.gif')}" id="#{idEcran}afficherListeChargeTravail"
+                            title="Afficher les autres devoirs à rendre le même jour"
+                            rendered="#{ajoutDevoir.form.chargeTravail.affichageCharge}" 
+                            onclick="#{rich:component('idPopupChargeTravail')}.show();" 
+                            style="cursor:pointer;" />
+                         
+            <h:outputText value="Type de devoir" />
+            
+            <h:selectOneMenu id="#{idEcran}typeDevoir" value="#{ajoutDevoir.form.idTypeDevoir}"
+                             onchange="if (!(window.modificationEnCours === undefined)) modificationEnCours='true';">
+              <f:selectItems value="#{ajoutDevoir.form.listeTypeDevoir}" />
+            </h:selectOneMenu>
+        
+        </h:panelGrid>
+        <h:panelGrid  columns="6" class="table">
+            <cr:saisieEditeur id="#{idEcran}descriptionDev" titre="#{embarquer ? '' : 'Description'}"
+                desc="saisir le commentaire" largeur="#{embarquer ? '580' : ''}"                
+                valeur="#{ajoutDevoir.form.description}" 
+                onchange="if (!(window.modificationEnCours === undefined)) modificationEnCours='true';"   />
+            <h:panelGrid columns="1" class="table" >
+                <cr:lien bean="#{ajoutDevoir}" id="#{idEcran}ajouterDevEmp" 
+                         cible="ajouterDevoirEmp" image="valider.gif" desc="Valider la saisie du devoir"
+                         render="zoneSeance"  rendered="#{embarquer}" 
+                         oncomplete="if (!(window.modificationEnCours === undefined)) modificationEnCours='true';" />                        
+                <cr:lien id="#{idEcran}idPiecesJointesDevoirs" bean="#{ajoutDevoir}" cible="ouverturePopupPj"
+                        oncomplete="if (!(window.modificationEnCours === undefined)) {modificationEnCours='true';}
+                       #{rich:component('idPopupPiecesJointesDevoirs')}.show(); "
+                        render="idPopupPiecesJointesDevoirs"
+                        image="iconePieceJointe.png" desc="Sélectionner une pièce jointe.">
+                </cr:lien>                        
+            </h:panelGrid>   
+        </h:panelGrid>
+        
+         <c:set var="listingPieceJointeNonVideDev" value="#{not empty ajoutDevoir.form.files}"/>
+         <rich:panel id="#{idEcran}listingPieceJointeDev"  rendered="#{listingPieceJointeNonVideDev}" 
+                     style="vertical-align:top; overflow:auto; width:#{embarquer ? '600' : '800'}px; height:180px; #{listingPieceJointeNonVideDev ? '' : 'border:0;'}">
+             <cr:table idTable="#{idEcran}tableListingPieceJointeDev" largeur="#{embarquer ? '590' : '780'}"
+                 liste="#{ajoutDevoir.form.files}" rendered="#{listingPieceJointeNonVideDev}"
+                 entete="Liste des pièces jointes ajoutées au devoir" >
+                 <cr:colonne libelleColonne="nom" id="">
+                     <h:outputText value="#{ligne.nom}" />
+                 </cr:colonne>
+                 <cr:colonne libelleColonne="Actions" align="center" id="">
+                     <cr:lien id="#{idEcran}dlDevFichier" chemin="#{ligne.pathFullDownload}" rendered="#{ligne.activerLien}" bean=""
+                                 image="download.png" desc="Télécharger"/>   
+                     <cr:lien bean="#{ajoutDevoir}" id="#{idEcran}supprimer" confirm="Etes-vous sur de vouloir supprimer cette pièce jointe ?"
+                         cible="supprimerPieceJointe" image="delete.gif" desc="Supprimer"
+                         render="#{idEcran}ajoutDevoir" oncomplete="if (!(window.modificationEnCours === undefined)) modificationEnCours='true';">
+                         <f:setPropertyActionListener value="#{ligne}"
+                             target="#{ajoutDevoir.form.resultatSelectionnePieceJointe}" />
+                     </cr:lien>
+                 </cr:colonne>
+             </cr:table>
+         </rich:panel>
+    </rich:panel>
+
+    <cr:popupChargeTravail
+        idPopup="idPopupChargeTravail" 
+        listeDevoirPrincipal="#{ajoutDevoir.form.chargeTravail.listeDevoirPrincipal}"  
+        listeDevoirComplement="#{ajoutDevoir.form.chargeTravail.listeDevoirComplement}"
+        groupeOuClasse="#{ajoutDevoir.form.chargeTravail.groupeOuClasse}"
+        />
+</ui:composition>    
+</html>

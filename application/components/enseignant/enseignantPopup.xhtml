@@ -1,0 +1,81 @@
+
+
+    
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"  
+    xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:a4j="http://richfaces.org/a4j" 
+    xmlns:f="http://java.sun.com/jsf/core"    
+    xmlns:t="http://myfaces.apache.org/tomahawk"  
+    xmlns:cc="http://java.sun.com/jsf/composite"
+    xmlns:cr="urn:crlr"
+    xmlns:rich="http://richfaces.org/rich">
+
+
+<cc:interface>
+ 
+
+<cc:attribute name="enseignantForm" required="true" type="org.crlr.web.application.form.EnseignantForm"
+default = "#{enseignant.form}"
+/>
+
+<cc:attribute name = "enseignant" type = "org.crlr.web.application.control.EnseignantControl" />
+
+<cc:attribute name="popupEnsCible" required="true" type="java.lang.String" default="selectionnerEnseignant" />
+
+<cc:attribute name ="idPopup" required="true" 
+type="java.lang.String" default="idPopupEnseignant" />
+
+<cc:attribute name = "titreClasseGroupe" type="java.lang.Boolean" default="true"/>
+
+</cc:interface>
+<cc:implementation>
+    <cr:popupListeFiltrable idPopup="#{cc.attrs.idPopup}"
+                            tailleAuto="true"
+                            largeurPopup="400"
+                            hauteur="200"
+                            titrePopup="Liste des enseignants #{cc.attrs.titreClasseGroupe ? (classeGroupe.form.typeGroupeSelectionne eq GROUPES ? 'du groupe' : ' de la classe') : ''}">
+     <t:div id="idPopupEnseignantRegion"
+           style="">
+      <cr:tableSaisiePopup bean="#{cc.attrs.enseignant}"
+                           cible="#{cc.attrs.popupEnsCible}"
+						   cible2="selectionnerEnseignant"
+                           lienModifiable="true"               
+                           liste="#{cc.attrs.enseignantForm.listeEnseignant}"
+                           largeur="375"
+                           render="#{cc.attrs.render}"
+                           valeur="#{cc.attrs.enseignantForm.enseignantSelectionne}"
+                           status="statuspop"
+                           avecPagination="false">
+       
+        
+        <rich:column filterExpression="#{fn:containsIgnoreCase(ligne.nomComplet,cc.attrs.enseignant.form.filtreEnseignant)}"
+                     filterValue="#{cc.attrs.enseignant.form.filtreEnseignant}"
+                     width="275px">
+          <f:facet name="header">
+            <h:panelGroup>
+              <h:outputText value="Enseignant : " />
+              <h:inputText id="filterEnseignantTextId"
+                           value="#{cc.attrs.enseignant.form.filtreEnseignant}">
+                           
+                <a4j:ajax event="keyup"
+                          oncomplete="transfertFocus(this.id, '#{rich:clientId('filterEnseignantTextId')}');"
+                          render="#{cc.attrs.idPopup}_panel"
+                          status="status">
+                  <a4j:attachQueue requestDelay="500" />
+                </a4j:ajax>
+              </h:inputText>
+            </h:panelGroup>
+          </f:facet>
+          <h:outputText value="#{ligne.nomComplet}" />
+        </rich:column>
+      </cr:tableSaisiePopup>
+      </t:div>
+      </cr:popupListeFiltrable>
+</cc:implementation>
+
+
+</html>

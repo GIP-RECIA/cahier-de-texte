@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx" 
+xmlns:aop="http://www.springframework.org/schema/aop" xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+xmlns:task="http://www.springframework.org/schema/task" 
+xsi:schemaLocation=" 
+   http://www.springframework.org/schema/beans 
+   http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+   http://www.springframework.org/schema/tx 
+   http://www.springframework.org/schema/tx/spring-tx-3.0.xsd 
+   http://www.springframework.org/schema/aop 
+   http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+   http://www.springframework.org/schema/context
+   http://www.springframework.org/schema/context/spring-context-3.0.xsd
+   http://www.springframework.org/schema/task
+   http://www.springframework.org/schema/task/spring-task-3.0.xsd"> 
+
+    <!-- Charge et fait la correspondance des entrées properties -->    
+    <bean id="propertyConfigurer" 
+	    class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+	  <property name="locations" > 
+	      <list>	      	
+	      	<value>classpath:config.properties</value>
+	      </list>
+	  </property>
+	</bean>
+	
+	
+	<bean id="autoProxyCreator" class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"/>
+	
+  <!-- Source de données JDBC 
+  <bean id="dataSource" 
+  	class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+    <property name="driverClassName"><value>${db.driver}</value></property>
+    <property name="url"><value>${db.url}</value></property>
+    <property name="username"><value>${db.user}</value></property>
+    <property name="password"><value>${db.password}</value></property>
+  </bean>-->
+  
+    <!-- Source de données DB -->
+    <bean id="dataSource"
+        class="com.mchange.v2.c3p0.ComboPooledDataSource"  destroy-method="close">
+        <property name="driverClass" value="${db.driver}" />
+        <property name="jdbcUrl" value="${db.url}" />
+        <property name="user" value="${db.user}" />
+        <property name="password" value="${db.password}" />
+        <property name="acquireRetryAttempts" value="0"/>
+        <property name="preferredTestQuery" value="SELECT 1"/>
+        <property name="idleConnectionTestPeriod" value="120"/>
+        <property name="testConnectionOnCheckin" value="true"/>
+    </bean>
+
+    <!-- Configuration du manager d'entity "-->
+    <bean id="entityManagerFactory"
+        class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"
+        p:dataSource-ref="dataSource" p:persistence-unit-name="CahierTexte"> 
+        <!-- On spécifie ici l'adaptateur Spring pour l''implémentation JPA utilisée -->
+        <property name="jpaVendorAdapter">
+            <bean
+                class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter"
+                p:databasePlatform="${hibernate.dialect}"
+                p:showSql="${hibernate.showSql}" p:generate-ddl="false" />
+        </property>
+        <!-- On spécifie ici le tisseur utilisée pour la modification du ByteCode, cf documentation de Spring pour plus de précisions -->
+        <property name="loadTimeWeaver">
+            <bean
+                class="org.springframework.instrument.classloading.InstrumentationLoadTimeWeaver" />
+        </property>
+    </bean>
+
+    <bean id="entityManager"
+        class="org.springframework.orm.jpa.support.SharedEntityManagerBean">
+        <property name="entityManagerFactory"
+            ref="entityManagerFactory" />
+    </bean>
+
+    <!-- le gestionnaire de transactions -->
+    <bean id="transactionManager"
+        class="org.springframework.orm.jpa.JpaTransactionManager"
+        p:entityManagerFactory-ref="entityManagerFactory" />
+
+    <!--Activation de la prise en compte des annotations de type @Required,@Autowired,@PostConstruct,
+        @PreDestroy,@Resource,@PersistenceContext,@PersistenceUnit -->
+    <context:annotation-config />
+    
+    <context:component-scan base-package="org.crlr.metier.business" />
+    <context:component-scan base-package="org.crlr.metier.facade" />
+    <context:component-scan base-package="org.crlr.services" />
+    <!--<tx:annotation-driven />-->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+    
+    <!-- Configuration des traitements asynchrones -->
+    <task:annotation-driven executor="singleThreadExecutor"/>
+	<task:executor id="singleThreadExecutor" pool-size="1"/>
+    
+    <!-- persistence -->
+    <bean
+        class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor" />
+
+    <!-- traduction des exceptions -->
+    <bean
+        class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor" />
+  
+  <!--  gestion des transactions 
+  <bean id="transactionManager"
+	class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+	<property name="sessionFactory">
+		<ref local="sessionFactory" />
+	</property>
+  </bean>
+  
+  <tx:annotation-driven transaction-manager="transactionManager"/>
+  
+  
+  <bean id="jdbcExceptionTranslator" class="org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator">
+	<property name="dataSource">
+		<ref bean="dataSource" />
+	</property>
+  </bean>
+  
+  <bean
+	id="hibernateTemplate" class="org.springframework.orm.hibernate3.HibernateTemplate">
+	<property name="sessionFactory">
+		<ref bean="sessionFactory" />
+	</property>
+	<property name="jdbcExceptionTranslator">
+		<ref bean="jdbcExceptionTranslator" />
+	</property>
+  </bean>  -->
+  
+   
+  <!-- Implémentation Hibernate
+  <bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+    <property name="dataSource" ref="dataSource" />
+    <property name="annotatedClasses">
+		<list>
+			<value>org.crlr.metier.entity.EnseignantBean</value>
+			<value>org.crlr.metier.entity.EleveBean</value>
+			<value>org.crlr.metier.entity.EtablissementBean</value>
+			<value>org.crlr.metier.entity.EtablissementsElevesBean</value>			
+		</list>
+	</property>
+    <property name="hibernateProperties">
+      <props>
+        <prop key="hibernate.dialect">${hibernate.dialect}</prop>
+		<prop key="hibernate.connection.autocommit">false</prop>
+		<prop key="hibernate.connection.charSet">UTF-8</prop>
+		<prop key="hibernate.show_sql">true</prop>
+		<prop key="hibernate.bytecode.use_reflection_optimizer">false</prop>
+		<prop key="transaction.factory_class">org.hibernate.transaction.JDBCTransactionFactory</prop>
+		<prop key="connection.autoReconnectForPools">true</prop>
+		<prop key="connection.is-connection-validation-required">true</prop>
+		<prop key="connection.autoReconnect">true</prop>
+		<prop key="query.substitutions">true 1, false 0, yes 'Y', no 'N'</prop>
+		<prop key="hibernate.jdbc.fetch_size">25</prop>
+		<prop key="hibernate.jdbc.batch_size">25</prop>
+		<prop key="hibernate.jdbc.use_scrollable_resultset">true</prop>
+		<prop key="hibernate.jdbc.use_streams_for_binary">true</prop>
+		<prop key="hibernate.max_fetch_depth">1</prop>
+		<prop key="hibernate.c3p0.min_size">10</prop>
+        <prop key="hibernate.c3p0.max_size">100</prop>
+        <prop key="hibernate.c3p0.timeout">10</prop>
+        <prop key="hibernate.c3p0.acquire_increment">5</prop>
+        <prop key="hibernate.c3p0.idle_test_period">300</prop>
+        <prop key="hibernate.c3p0.max_statements">50</prop>
+		<prop key="hibernate.cache.use_query_cache">false</prop>
+		<prop key="hibernate.cache.use_second_level_cache">false</prop>
+		<prop key="hibernate.cache.provider_class">org.hibernate.cache.NoCacheProvider</prop>
+      </props>
+    </property>
+  </bean>-->
+ 
+  <!-- 
+  <bean id="userHibernateBusinessService" class="org.crlr.metier.business.EleveHibernateBusiness"> 
+    <property name="hibernateTemplate" ref="hibernateTemplate" />
+  </bean>
+  
+  <bean id="confidentialiteFacadeService" class="org.crlr.metier.facade.ConfidentialiteFacade"> 
+    <property name="userHibernateBusinessService" ref="userHibernateBusinessService" />
+    <property name="ldapBusinessService" ref="ldapBusinessService" />
+  </bean>-->
+  
+  <!-- Implémentation LDAP
+  <bean id="contextSource" class="org.springframework.ldap.support.LdapContextSource">
+    <property name="url"><value>${ldap.url}</value></property>
+    <property name="userName"><value>${ldap.user}</value></property>
+    <property name="password"><value>${ldap.password}</value></property>
+  </bean>
+  
+  <bean id="ldapTemplate" class="org.springframework.ldap.LdapTemplate">
+    <property name="contextSource" ref="contextSource" />
+  </bean>
+  
+  <bean id="ldapBusinessService" class="org.crlr.metier.business.LdapBusiness">
+    <property name="context"><value>${ldap.baseDn}</value></property>    
+    <property name="ldapTemplate" ref="ldapTemplate" />
+  </bean>-->  
+  
+
+   <bean id="contextSource" class="org.springframework.ldap.core.support.LdapContextSource">
+        <property name="url" value="${ldap.url}" />
+        <property name="userDn" value="${ldap.user}" />
+        <property name="base" value="${ldap.baseDn}" />
+        <property name="password" value="${ldap.password}" />
+        <property name="pooled" value="true" />
+    </bean>
+    
+  
+    
+    <bean id="ldapTemplate" class="org.springframework.ldap.core.LdapTemplate">
+        <constructor-arg ref="contextSource" />
+    </bean>
+    
+    <bean id="ldapBusinessService" class="org.crlr.metier.business.LdapBusiness">
+        <property name="ldapTemplate" ref="ldapTemplate" />
+        <property name="branchePersonne" value="${ldap.branchePersonne}" />
+        <property name="brancheStructure" value="${ldap.brancheStructure}" />
+        <property name="nomProfil" value="${ldap.nomProfil}" />
+    </bean>
+
+</beans>

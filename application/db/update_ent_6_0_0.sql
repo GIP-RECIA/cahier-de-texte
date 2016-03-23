@@ -1,0 +1,1 @@
+ALTER TABLE cahier_courant.cahier_groupe ALTER COLUMN designation TYPE character varying(255) ;

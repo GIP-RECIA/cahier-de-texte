@@ -1,0 +1,637 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- une page de remplacement de seancePrint.xhtml -->
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:a4j="http://richfaces.org/a4j"
+      xmlns:crx="urn:crlr:ext"
+      xmlns:cr="urn:crlr"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk"     
+      xmlns:rich="http://richfaces.org/rich"
+      >
+  <cr:page bean="#{printSeance}"
+           form="#{printSeance.form}"
+           titrePage="Détail/PDF des séances par classe">
+        
+    <h:outputScript library="js" name="seanceList.js" target="head" />      
+    <h:outputScript library="js" name="visualisation.js" target="head" />
+   
+    <h:outputStylesheet library="css" name="jquery.qtip.css" target="head" />
+    <h:outputStylesheet library="css" name="visualisation.css" target="head" />
+    <h:outputStylesheet library="css" name="seanceListe.css" target="head" />         
+    
+    
+    <cr:menuAction id="idMenuAction">
+      <cr:elemMenuAction bean="#{printSeance}"
+                         cible="rechercher"
+                         idaction="idRechercher"
+                         image="binocular.png"
+                         oncomplete="handleResize();"
+                         render="listingSeances,editionPDF,openToutIcone"
+                         title="Rechercher" />
+      <cr:elemMenuAction bean="#{printSeance}"
+                         cible="reset"
+                         idaction="idReinitialiser"
+                         image="eraser.png"
+                         oncomplete=""
+                         render="listingSeances, outilRecherche, openToutIcone"
+                         title="Réinitialiser" />
+                         
+     <ui:remove>
+      <cr:lienClientJS idLienClientJS="editionPDF"
+                       image="pdf.png"
+                       onclick="#{rich:component('idPopupPrint')}.show();"
+                       renderedFeinte="#{not empty printSeance.form.listeSeances}"
+                       titre="Edition PDF" />
+                    
+      <cr:lienEdition bean="#{printSeance}"
+      				rendered="#{not empty printSeance.form.listeSeances}"
+                    cible="printPdf"
+                    id="printPDF2"
+                    image="pdf.png"
+                    desc="Edition PDF" 
+                    sansImage="false"/>
+    
+     </ui:remove> 
+      
+    <h:outputLink 	rendered="#{not empty printSeance.form.listeSeances}" 
+    				value="../printPdf/seanceListe.pdf" 
+    				id="printPDF" 
+    				title="Edition PDF"
+    				target="_blank"> 
+		<h:graphicImage  library="images/icones" name="pdf.png"/>
+	</h:outputLink>
+    
+    
+    </cr:menuAction>
+    
+    <cr:lien id="refreshRecheche" bean="#{printSeance}"
+            cible="resetListeSeances"
+            oncomplete=""
+            render="listingSeances"
+            titre="" /> 
+    
+    <cr:lienEdition bean="#{printSeance}"
+                    cible="print"
+                    id="printPDF"
+                    rendered="true"
+                    sansImage="true"
+                    titre="" />
+    <rich:panel id="outilRecherche">
+      <f:facet name="header">
+        <t:panelGroup>
+          <cr:lien bean="#{printSeance}"
+                   cible="openTout"
+                   id="openToutIcone"
+                   image="#{form.existeSeancePlier ? 'plus.png' : 'minus.png' }"
+                   oncomplete="handleResize();"
+                   render="listingSeances, openToutIcone, devoirSeance"
+                   styleClass="boutonResize" />
+
+
+          <h:outputText value="#{contexteUtilisateur.outilArchive ? 'Historique des séances par classe' : 'Détail/PDF des séances par classe'}" />
+
+         
+        </t:panelGroup>
+      </f:facet>
+      <h:panelGrid 	class="table archive"  
+                   		columns="4" rendered="#{contexteUtilisateur.outilArchive}" >  
+      <cr:saisieListe id="selectAnnee" titre="Année scolaire: "
+		               rendered="#{contexteUtilisateur.outilArchive}" 
+		               largeur="100" decalageTitreGauche="0" decalageTitreDroite="0" 
+		               valeur="#{printSeance.form.idAnneeScolaire}" 
+		               donnees="#{printSeance.form.listeAnneeScolaire}"
+		               proprieteLibelle="exercice" proprieteValeur="id">
+		               <a4j:ajax event="change" 
+		                   listener="#{printSeance['selectionnerAnneeScolaire']}" 
+		                   render="listingSeances, outilRecherche" />
+	  </cr:saisieListe>  
+	  
+	  <cr:saisieListe 	id="selectEtab" titre="Etablissement: "
+	  					rendered="#{contexteUtilisateur.outilArchive}" 
+	  					valeur="#{printSeance.form.idEtablissement}"
+	  					donnees="#{printSeance.form.listeEtablissement}"
+	  					proprieteLibelle="designation" proprieteValeur="id">
+	  					<a4j:ajax event="change" 
+	  					listener="#{printSeance['selectionnerEtablissement']}"
+	  					render="listingSeances, outilRecherche" />
+	  </cr:saisieListe>
+	  </h:panelGrid>
+      <cr:selectClasseGroupe oncomplete="" 
+      						rendered="#{printSeance.classGroupLoadable}"
+                             render="listingSeances outilRecherche :idPopupEnseignant_form:idPopupEnseignantRegion" />
+      
+      
+      <h:panelGrid class="table"
+                   columns="4">
+        
+        <cr:saisieDate decalageTitreDroite="5"
+                       decalageTitreGauche="14"
+                       id="datedu"
+                       titre="Du"
+                       oncomplete="lancerLienAjax('refreshRecheche');"
+                       valeur="#{printSeance.form.dateDebut}" />
+        <cr:saisieDate decalageTitreDroite="5"
+                       decalageTitreGauche="5"
+                       id="dateau"
+                       titre="Au"
+                       oncomplete="lancerLienAjax('refreshRecheche');"
+                       valeur="#{printSeance.form.dateFin}" />
+      </h:panelGrid>
+      <cr:selectEnseignement bean="#{printSeance}" render="listingSeances :idPopupEnseignant_form:idPopupEnseignantRegion outilRecherche">
+      </cr:selectEnseignement>
+      <cr:selectEnseignant 	bean="#{printSeance}" 
+      						render="listingSeances outilRecherche" 
+      						toujoursVisible="false"
+      						>
+      </cr:selectEnseignant>
+    </rich:panel>
+    <cr:saisieDate rendered="false" id="saisieDateInvisible" valeur="" titre="Date bidon qui permet de faire marcher dans le composant cr:saisieSeance les champs de saisie de date" />  
+    <t:div style="display: none;"><cr:saisieEditeur rendered="true" id="saisieEditeurInvisible" commentaire="Editeur bidon qui permet de faire marcher dans le composant cr:saisieSeance les champs de saisie de editeur" /></t:div>
+    
+    <ui:remove>DEBUT LISTES DES SCEANCEs </ui:remove>
+    <rich:panel id="listingSeances"
+                styleClass="listSeancesPanel">
+      <a4j:repeat value="#{printSeance.form.listeSeances}"
+                  var="ligne">
+        <div>
+          <rich:panel id="panelSeance"
+          				
+                      styleClass="panelSeance panelSeanceList">
+            <f:facet name="header" >
+              <t:panelGroup style="background-color: #{ligne.typeCouleur.id}; border: 3px groove #{ligne.typeCouleur.id};">
+                <cr:lien bean="#{printSeance}"
+                         cible="open"
+                         id="seanceIcone"
+                         image="#{(ligne.open)? 'minus.png' : 'plus.png'}"
+                         render="detailSeance, seanceIcone, devoirSeance, openToutIcone"
+                         styleClass="boutonResize">
+                  <f:setPropertyActionListener target="#{printSeance.form.seanceSelectionne}"
+                                               value="#{ligne}" />
+                </cr:lien>
+                <cr:lien bean="#{printSeance}"
+                         cible="open"
+                         desc="#{ligne.printSequenceDTO.intitule}"
+                         id="seance"
+                         render="detailSeance, seanceIcone, devoirSeance"
+                         style="color:#{ligne.typeCouleur.couleurTexte}; text-decoration:none;"
+                         titre="#{cr:formatDate(ligne.date, 'dd/MM/yyyy')} - #{ligne.printSequenceDTO.intitule} - #{ligne.sequenceDTO.typeGroupe == 'CLASSE' ? 'Classe' :'Groupe'} #{ligne.sequenceDTO.groupesClassesDTO.designation} - #{ligne.enseignantDTO.civilite} #{ligne.enseignantDTO.prenom} #{ligne.enseignantDTO.nom} ">
+
+                  <f:setPropertyActionListener target="#{printSeance.form.seanceSelectionne}"
+                                               value="#{ligne}" />
+                </cr:lien>
+              </t:panelGroup>
+            </f:facet>
+            
+            <h:panelGrid id="detailSeance"
+                         style="#{ligne.open ? 'display:table;' : 'display:none;'}"
+                         styleClass="panelSeanceDetail" 
+                         columns="2" 
+                         width="100%;" columnClasses="detailSeanceLeft, detailSeanceRight" rules="">
+                         
+              <h:panelGroup>
+              <t:div id="displayDuTampon" styleClass="divTampon" rendered="#{(not empty ligne.visaDirecteur or not empty ligne.visaInspecteur) and (not readOnly)}">
+                                    <cr:tamponVisa
+				                        dateVisaDirecteur="#{ligne.visaDirecteur.dateVisa}"
+				                        typeVisaDirecteur="#{ligne.visaDirecteur.typeVisa}"
+				                        dateVisaInspecteur="#{ligne.visaInspecteur.dateVisa}"
+				                        typeVisaInspecteur="#{ligne.visaInspecteur.typeVisa}"
+                                    />
+                   </t:div>
+              <h:panelGrid columns="2" styleClass="intitule"
+                               rendered="#{not empty ligne.intitule}">
+                               
+                    <h:outputLabel styleClass="libelle"
+                                   value="Intitulé :" />
+                    <h:outputText value="#{ligne.intitule}" /> 
+                 	<h:outputLabel styleClass="libelle" value="Dernière modification :" />
+					<h:panelGroup>
+						<h:outputText
+							value="#{cr:formatDate(ligne.dateMaj, 'dd/MM/yyyy')}"
+							styleClass="#{ligne.visaPerime ? 'fondRouge dateModif' : 'dateModif'}" />
+
+						<h:graphicImage library="images/icones" name="lock.png"
+							rendered="#{ligne.visaDirecteurMemo}"
+							title="Visamémo Directeur" styleClass="iconInText" />
+
+						<h:graphicImage library="images/icones" name="lock.png"
+							rendered="#{ligne.visaInspecteurMemo}"
+							title="Visamémo Inspecteur" styleClass="iconInText" />
+
+						<h:commandLink action="#{printSeance.chargerSeance}"
+							id="idvisuseance" immediate="true"
+							onclick="#{_js} console.log('onclick chargerSeance'); #{confirmation} desactiveClick(this.id, this.onclick);"
+							style="white-space: normal; text-decoration: none;"
+							styleClass="#{myBackgroundClass} planningLien"
+							title="Séance\n #{seance.intitule}"
+							rendered="#{! contexteUtilisateur.outilArchive}"
+							>
+
+							<f:setPropertyActionListener
+								target="#{printSeance.form.seanceSelectionne}"
+								value="#{ligne}" />
+							<f:ajax event="action" execute="@form"
+								oneerror="handleErrorAjaxVS"
+								onevent="handleEventAfficherSeance"
+								render=":idPopupSeance_form :idPopupSeance_form:idPopupSeance_panel " />
+
+							<h:graphicImage library="images/icones" name="loupe-icone.png"
+								styleClass="iconInText" rendered="true"
+								title="Voir le détail de la séance" />
+						</h:commandLink>
+					</h:panelGroup>
+
+				</h:panelGrid>
+                   
+              <h:panelGrid columns="1" 
+                           rendered="#{not empty ligne.descriptionHTML}">
+                
+                <h:outputText escape="false" 
+                              styleClass="description"
+                              value="#{ligne.descriptionHTML}"  rendered="#{not empty ligne.descriptionHTML}"/>
+              </h:panelGrid>
+              <rich:panel id="panelpieceJointe"
+                          rendered="#{not empty ligne.files}"
+                          styleClass="panelPiecesJointe">
+                <h:outputLabel styleClass="libelle"
+                               value="Pièces Jointes :" />
+                <h:panelGrid id="pieceJointeDetail#{varStatusSeance.index}#{varStatus.index}"
+                             style="display:block;"
+                             styleClass="panelPieceJointeDetail">
+                  <a4j:repeat value="#{ligne.files}"
+                              var="pieceJointe">
+                    <ui:fragment rendered="#{pieceJointe.activerLien}">
+
+                      <a class="pieceJointeLien"
+                         href="#{pieceJointe.pathFullDownload}"
+                         target="_blank"
+                         title="Télécharger #{pieceJointe.nom}">
+                         #{pieceJointe.nomCourt}</a>
+                    </ui:fragment>
+                    <h:outputText rendered="#{! pieceJointe.activerLien}"
+                                  styleClass="pieceJointeLien"
+                                  value="#{pieceJointe.nom}" />
+                  </a4j:repeat>
+                </h:panelGrid>
+              </rich:panel>
+            </h:panelGroup>
+            
+            <ui:remove>La partie affichage des devoirs </ui:remove>
+            <h:panelGrid id="devoirSeance"
+                       styleClass="seanceDevoirDiv seanceDevoirDivList">
+             
+             <t:panelGroup >
+             <cr:lien bean="#{printSeance}"
+                         cible="closeAllDevoirs"
+                         id="devoirOpenIcone"
+                         image="minus.png"
+                         render="devoirSeance"
+                         styleClass="boutonResize"
+                         rendered="#{ligne.devoirOpened}">
+                         <f:setPropertyActionListener target="#{printSeance.form.seanceSelectionne}"
+                                               value="#{ligne}" />
+             </cr:lien>
+             <cr:lien bean="#{printSeance}"
+                         cible="openAllDevoirs"
+                         id="devoirCloseIcone"
+                         image="plus.png"
+                         render="devoirSeance"
+                         styleClass="boutonResize"
+                         rendered="#{ligne.devoirClosed}">
+                         <f:setPropertyActionListener target="#{printSeance.form.seanceSelectionne}"
+                                               value="#{ligne}" />
+             </cr:lien>
+             </t:panelGroup> 
+                                               
+            <a4j:repeat rendered="#{not empty ligne.devoirs}"
+                        value="#{ligne.devoirs}"
+                        var="devoirDTO">
+              <rich:panel id="panelDevoir"
+                          styleClass="panelDevoir  panelDevoirInList">
+                <f:facet name="header">
+                 <cr:lien bean="#{printSeance}"
+                         cible="openDevoir"
+                         id="devoirIcone"
+                         image="#{(devoirDTO.open)? 'minus.png' : 'plus.png'}"
+                         render="devoirSeance"
+                         styleClass="boutonResize">
+                  <f:setPropertyActionListener target="#{printSeance.form.devoirSelectionne}"
+                                               value="#{devoirDTO}" />
+                </cr:lien>
+                    <h:outputText value="Pour le #{cr:formatDate(devoirDTO.dateRemise, 'dd/MM/yyyy')} : #{devoirDTO.intitule}" style="font-weight:bold;"/>
+                  
+                </f:facet>
+                <h:panelGrid id="devoirDetail"
+                             style="#{devoirDTO.open ? 'display:block;' : 'display:none;'}">
+
+                  <h:panelGrid columns="2"
+                               rendered="#{not empty devoirDTO.typeDevoirDTO}">
+                               
+                    <h:outputLabel styleClass="libelle"
+                                   value="Type :" />
+                    <h:outputText value="#{devoirDTO.typeDevoirDTO.libelle}" />
+                  </h:panelGrid>
+<ui:remove>                  <h:panelGrid columns="1"
+                               rendered="#{not empty devoirDTO.descriptionHTML}">
+                               <h:outputText escape="false"
+                                  styleClass="description"
+                                  value="#{devoirDTO.descriptionHTML}" />
+                  </h:panelGrid>
+</ui:remove>
+                    <h:outputText rendered="#{not empty devoirDTO.descriptionHTML}"
+                    				escape="false"
+                                  styleClass="description"
+                                  value="#{devoirDTO.descriptionHTML}" />
+                  
+                  <rich:panel id="panelpieceJointeDevoir"
+                              rendered="#{not empty devoirDTO.files}"
+                              styleClass="panelPiecesJointe">
+                    <h:outputLabel styleClass="libelle"
+                                   value="Pièces Jointes :" />
+                    <h:panelGrid id="pieceJointeDevoirDetail"
+                                 style="display:block;"
+                                 styleClass="panelPieceJointeDetail">
+                                 
+                      <a4j:repeat value="#{devoirDTO.files}"
+                                  var="pieceJointe">
+                        <ui:fragment rendered="#{pieceJointe.activerLien}">
+
+                          <a class="pieceJointeLien"
+                             href="#{pieceJointe.pathFullDownload}"
+                             target="_blank"
+                             title="Télécharger #{pieceJointe.nom}">
+                             #{pieceJointe.nomCourt}</a>
+                        </ui:fragment>
+                        <h:outputText rendered="#{! pieceJointe.activerLien}"
+                                      styleClass="pieceJointeLien"
+                                      value="#{pieceJointe.nom}" />
+                      </a4j:repeat>
+                    </h:panelGrid>
+                  </rich:panel>
+                </h:panelGrid>
+              </rich:panel>
+            </a4j:repeat>
+          </h:panelGrid>
+          <ui:remove>FIN devoirSeance</ui:remove>
+          </h:panelGrid>
+          </rich:panel>
+          
+     	
+        </div>
+      </a4j:repeat>
+    </rich:panel>
+   <ui:remove>FIN LISTE DES SCEANCES</ui:remove> 
+   
+   <cr:liena4j idliena4j="idRefreshAfterModification" 
+        bean="#{printSeance}"
+        immediate="true"
+        cible="refreshList"
+        render="listingSeances "
+        status="statusPopup" 
+    />
+                        
+  </cr:page>
+  
+  <cr:popupModifiable idPopup="idPopupPrint"
+                      largeurPopup="660"
+                      maxlength="50"
+                      statusPopup="statuspop"
+                      titrePopup="Options d'impression">
+    <cr:menuAction surcharge="false">
+      <rich:messages />
+      <cr:lien bean="#{printSeance}"
+               cible="printSeance"
+               id="printDialogOK"
+               image=""
+               immediate="false"
+               onclick="#{rich:component('idPopupPrint')}.hide();"
+               oncomplete="#{not empty printSeance.form.report ? 'lancerEdition()' : ''};"
+               render="printPDF"
+               status="statuspop">OK</cr:lien>
+      <cr:lien id="annuler"
+               onclick="#{rich:component('idPopupPrint')}.hide();">
+               Annuler</cr:lien>
+    </cr:menuAction>
+    <a4j:outputPanel id="idPopupEventRegion">
+      <rich:messages />
+      <h:panelGrid class="table"
+                   columns="4"
+                   style="vertical-align : middle;">
+        <h:outputLabel styleClass="libelle"
+                       value="Options d'impressions" />
+        <h:selectOneRadio id="selectionSimpleOuDetaille"
+                          style="padding-left:5px;"
+                          value="#{printSeance.form.typeAffichageSelectionne}">
+                          
+          <f:selectItem itemLabel="Simple"
+                        itemValue="SIMPLE" />
+          <f:selectItem itemLabel="Détaillé"
+                        itemValue="DETAILLE" />
+        </h:selectOneRadio>
+      </h:panelGrid>
+      <h:panelGrid class="table"
+                   columns="4"
+                   style="vertical-align : middle;">
+        <h:outputLabel styleClass="libelle"
+                       value="Avec saut de page" />
+        <h:selectOneRadio id="selectionSautPage"
+                          style="padding-left:5px;"
+                          value="#{printSeance.form.vraiOuFauxSautPage}">
+                          
+          <f:selectItem itemLabel="Oui"
+                        itemValue="true" />
+          <f:selectItem itemLabel="Non"
+                        itemValue="false" />
+        </h:selectOneRadio>
+      </h:panelGrid>
+    </a4j:outputPanel>
+  </cr:popupModifiable>
+  <cr:popupEnseignant render="outilRecherche listingSeances" />
+  <cr:popupGroupeClasse render="outilRecherche :idPopupEnseignant_form:idPopupEnseignantRegion listingSeances" />
+  <cr:popupEnseignement bean="#{printSeance}"
+                        render="outilRecherche :idPopupEnseignant_form:idPopupEnseignantRegion listingSeances" />
+  <cr:popupStatus idStatus="statuspop" />
+  
+  
+   <cr:popupConfirmSauvegardeModification action=""
+                                           bean="#{printSeance}"
+                                           cible="sauver"
+                                           libelleMessage="Voulez-vous enregistrer vos modifications avant de quitter cette page ?"
+                                           onErrorSauvegarde="setModificationFormulaire(true);"
+                                           oncomplete="setModificationFormulaire(false);"
+                                           render="listeSeance" />
+  
+  
+  <ui:remove>POPUPS d'Edition d'une séance avec edition de pieces jointes éventuelles:</ui:remove>
+  <ui:remove> d'abord la popup d'édition des pieces jointes:</ui:remove>
+  <cr:popupPiecesJointes 
+    idPopup="idPopupPiecesJointes" tailleAuto="true"
+    largeurPopup="660" titrePopup="Pièces jointes"
+    statusPopup="statuspopup" 
+    raffraichirTabAfterUpload="#{ajoutSeance.form.raffraichirTabAfterUpload}"
+    rendered="#{! contexteUtilisateur.outilArchive}"
+     />
+  
+  <cr:popupModifiable domElementAttachment="form"
+                      idPopup="idPopupTest"
+                      largeurPopup="800"
+                      maxlength="50"
+                      popupUseRichEditor="true"
+                      statusPopup="statuspop"
+                      titrePopup="Détail de la séance"
+                      rendered="#{! contexteUtilisateur.outilArchive}"
+                      >
+   </cr:popupModifiable>
+  
+  
+  <ui:remove> puis la popup d'édition des seances:</ui:remove>
+   <cr:popupModifiable domElementAttachment="form"
+                      idPopup="idPopupSeance"
+                      largeurPopup="800"
+                      maxlength="50"
+                      popupUseRichEditor="true"
+                      statusPopup="statuspop"
+                      titrePopup="Détail de la séance"
+                      rendered="#{! contexteUtilisateur.outilArchive}"
+                      >
+
+    <a4j:outputPanel id="idPopupConsulterSeanceRegion">
+   
+    <cr:menuAction id="idMenuActionPopupSeance" surcharge="false">
+      <cr:elemMenuAction bean="#{printSeance}"
+                         cible="chargerSeance"
+                         idaction="idMenuBackArchiveSeance"
+                         image="back.png"
+                         oncomplete="#{rich:component('idPopupSeance')}.show();"
+                         render=":idPopupSeance_form:idPopupSeance_panel"
+                         rendered="#{printSeance.form.visualiseBack}"
+                         status="status"
+                         title="Retour à la version actuelle" />
+                         
+      <cr:elemMenuAction bean="#{printSeance}"
+                         cible="chargerArchiveDirecteur"
+                         idaction="idMenuArchiveSeanceDirecteur"
+                         image="seanceLock.png"
+                         oncomplete="#{rich:component('idPopupSeance')}.show();"
+                         render=":idPopupSeance_form:idPopupSeance_panel"
+                         rendered="#{printSeance.form.visualiseArchiveDirecteur}"
+                         status="status"
+                         title="Regarder la version visée par le directeur" />
+       <cr:elemMenuAction bean="#{printSeance}"
+                         cible="chargerArchiveInspecteur"
+                         idaction="idMenuArchiveSeanceInspecteur"
+                         image="seanceLock.png"
+                         oncomplete="#{rich:component('idPopupSeance')}.show();"
+                         render=":idPopupSeance_form:idPopupSeance_panel"
+                         rendered="#{printSeance.form.visualiseArchiveInspecteur}"
+                         status="status"
+                         title="Regarder la version visée par l'inspecteur" />
+         <cr:elemMenuAction 
+              idaction="idSauverSeance" 
+              bean="#{ajoutSeance}" cible="sauver"
+              image="save.png" 
+              title="Sauvegarder"
+             
+              oncomplete="
+              if (#{facesContext.maximumSeverity == null or facesContext.maximumSeverity.ordinal le 0} ) {
+                #{rich:component('idPopupSeance')}.hide();
+                lancerLienAjax('idRefreshAfterModification');  
+              }" 
+             rendered="#{ajoutSeance.form.seance.accesEcriture}"
+            />
+            
+            <cr:elemMenuAction 
+              idaction="idCopierSeance" 
+              bean="#{ajoutSeance}" cible="copier"
+              image="copy.png" 
+              title="Copier la séance"
+              oncomplete="" 
+              rendered="false" 
+            />
+                           
+    </cr:menuAction>
+ 
+    <cr:liena4j bean="#{ajoutSeance}"
+                cible="changeDateSeance"
+                idliena4j="idLienChangeDate"
+                render="richTabPanel"
+                status="statusPopup"
+                titre="">
+    </cr:liena4j>
+    <rich:tabPanel id="richTabPanel"
+                   selectedTab="seance"
+                   switchType="client">
+      <rich:tab header="#{ajoutSeance.form.seanceTitre}"
+                id="SEANCE"
+                name="tabSeance"
+                rendered="#{! contexteUtilisateur.outilArchive}">
+        <t:div style="height:450px; overflow:auto;">
+          <cr:saisieSeance 
+          		seance="#{ajoutSeance.form.seance}"
+          		readOnly="#{not ajoutSeance.form.seance.accesEcriture}"
+          		
+          		formulaire_contenant="idPopupSeance_form"
+          		idPopupPiecesJointes="idPopupPiecesJointes"
+          		id_saisieSeance="idSaisieSeance"
+          		affichageSequence="#{ajoutSeance.form.afficheSelectionSequenceSeance}"
+          		showAnnotations="#{ajoutSeance.form.seance.accesEcriture}"
+          		listeSequence="#{ajoutSeance.form.listeSequenceSeance}"
+          		sequenceSelected="#{ajoutSeance.form.seance.sequenceDTO}"
+          		controleur="#{ajoutSeance}"
+          		cible="chargerSequence"
+          		bean="#{ajoutSeance}"
+          		
+          		cibleResetSeance="resetSeance"
+          		cibleDeletePieceJointeSeance="deletePieceJointeSeance"
+          		cibleAjouterPieceJointeSeance="ajouterPieceJointeSeance"
+          		cibleAfterAjouterPieceJointeSeance="afterAjouterPieceJointeSeance"
+          		cibleResetSeanceAnnotations="resetSeanceAnnotations"
+          		cibleChargeImagesLatex="chargeImagesLatex"
+          		cibleChargeImagesLatexAnnotations="chargeImagesLatexAnnotations"
+          		checkModification="false"
+                afficheDate="true"
+                onchangedate=" var lien = $('#idPopupSeance_form\\:idLienChangeDate'); if (lien != null) { lien.click(); }"
+                noVisa="true"
+          />
+        </t:div>
+      </rich:tab>
+      <ui:remove>L'onglet des travaux à faire</ui:remove>
+      <rich:tab header="Travail à faire"
+                id="TAB_DEVOIR"
+                rendered="#{! contexteUtilisateur.outilArchive}">
+        <t:div id="idListeDesDevoirsSeance"
+               styleClass="listeDesDevoirsSeance">
+          <c:forEach items="#{ajoutSeance.form.seance.devoirs}"
+                     var="devoir"
+                     varStatus="status">
+            <cr:saisieDevoir 
+            	formulaire_contenant="idPopupSeance_form"
+            	id_saisieDevoir="idSaisieDevoirSeance${status.index}"
+            	devoirDTO="#{devoir}"
+            	readOnly="#{not ajoutSeance.form.seance.accesEcriture}"
+            	id_devoirConteneur="idListeDesDevoirsSeance"
+            	idPopupPiecesJointes="idPopupPiecesJointes"
+            	listeTypeDevoir="#{ajoutSeance.form.listeTypeDevoir}"
+            	controleur="#{ajoutSeance}"
+            	cibleResetDevoir="resetDevoir"
+            	cibleDeleteDevoir="deleteDevoir"
+            	cibleDeletePieceJointe="deletePieceJointe"
+            	cibleAjouterPieceJointe="ajouterPieceJointe"
+            	cibleAfterAjouterPieceJointe="afterAjouterPieceJointe"
+            	cibleAfficherChargeTravail="afficherChargeTravail"
+            	cibleChargeImagesLatex="chargeImagesLatexDevoir"
+            	checkModification="false"
+            	listeDate="#{ajoutSeance.form.listeDateRemiseDevoir}"
+                id_popupChargeTravail="idPopupChargeTravailSeance" 
+            />
+          </c:forEach>
+        </t:div>
+      </rich:tab>
+    </rich:tabPanel>
+    </a4j:outputPanel>
+      
+  </cr:popupModifiable>
+</html>

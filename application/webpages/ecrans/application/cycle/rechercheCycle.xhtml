@@ -1,0 +1,112 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:a4j="http://richfaces.org/a4j"
+      xmlns:cr="urn:crlr"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:rich="http://richfaces.org/rich">
+
+<cr:page 	titrePage="Recherche/Modification séance" 
+			libXiti="Travail_Collaboratif"
+	>
+    <cr:menuAction id="idMenuAction">
+      <cr:elemMenuAction idaction="idRechercher"
+                         bean="#{rechCycle}"
+                         cible="rechercher"
+                         image="binocular.png"
+                         title="Rechercher"
+                         render="idListeCycle" />
+      <cr:elemMenuAction idaction="idReinitialiser"
+                         bean="#{rechCycle}"
+                         cible="reset"
+                         image="eraser.png"
+                         title="Réinitialiser"
+                         render="idListeCycle,idPanelCritere" />
+   <h:graphicImage
+      			library="images/icones" name="aide.png" 
+      			title="Aide contextuelle"
+                id="idAide"
+                onclick="#{rich:component('idPopupAide')}.show();" /> 
+              
+               </cr:menuAction>
+    
+    <cr:lien id="refreshRecheche" bean="#{rechCycle}"
+            cible="resetListeCycle"
+            oncomplete=""
+            render="idListeCycle"
+            titre="" />    
+    
+    <rich:panel id="outilRecherche">
+        <rich:panel header="Rechercher une séquence pédagogique" id="idPanelCritere">
+            <h:panelGrid columns="6" class="table">
+                <h:outputLabel value="Titre contenant" styleClass="libelle" title="Titre de la séquence pédagogique contenant" />
+                <h:inputText value="#{rechCycle.form.filtre.titre}" />
+               
+                <h:outputLabel value="Enseignement contenant" styleClass="libelle" title="Un des enseignements associés à la séquence pédagogique contenant" />
+                <h:inputText value="#{rechCycle.form.filtre.enseignement}" />
+               
+                <h:outputLabel value="Objectif contenant" styleClass="libelle" title="Objectif de la séquence pédagogique contenant" />
+                <h:inputText value="#{rechCycle.form.filtre.objectif}" />
+            </h:panelGrid>
+        </rich:panel>
+        
+        <rich:panel id="idListeCycle">
+            <cr:table idTable="tableListingSeance"
+                  style="margin:auto;"
+                  liste="#{rechCycle.form.listeCycle}"
+                  entete="Liste des séquences pédagogiques"
+                  nbLignes="13"
+                  rendered="#{not empty rechCycle.form.listeCycle}">
+                <cr:colonne id="idTitre" libelleColonne="Titre" align="left" style="white-space:normal;">
+                    <h:outputText value="#{ligne.titre}" />
+                </cr:colonne>
+                <cr:colonne id="idPrerequis" libelleColonne="Pré-requis" align="left" style="white-space:normal;">
+                    <h:outputText escape="false" value="#{ligne.prerequisCourt}" />
+                </cr:colonne>
+                <cr:colonne id="idObjectifs" libelleColonne="Objectifs" align="left" style="white-space:normal;">
+                    <h:outputText escape="false" value="#{ligne.objectifCourt}" />
+                </cr:colonne>
+                <cr:colonne libelleColonne="Actions" align="center" id="" > 
+                    <cr:lien bean="#{rechCycle}"
+                        id="selectionner"
+                        cible="selectionner"
+                        image="selectionner.gif"
+                        desc="Modifier/Consulter"
+                        render="idListeCycle">
+                        <f:setPropertyActionListener value="#{ligne}" target="#{rechCycle.form.cycleSelected}" />
+                    </cr:lien>
+                    <cr:lien bean="#{rechCycle}"
+                        id="appliquer"
+                        cible="appliquer"
+                        image="carnetApplyMini.png"
+                        rendered="#{empty contexteUtilisateur.utilisateurDTOOrigine}"
+                        desc="Appliquer la séquence pédagogique sur un cahier de texte"
+                        render="idListeCycle">
+                        <f:setPropertyActionListener value="#{ligne}" target="#{rechCycle.form.cycleSelected}" />
+                    </cr:lien>
+                </cr:colonne>
+            </cr:table>
+        </rich:panel>
+    </rich:panel>
+    
+     <cr:popup 
+	  		idPopup="idPopupAide" 
+	  		titrePopup="Aide"
+			largeurPopup="820" 
+			tailleAuto="true" 
+			popupUseRichEditor="false">
+		<div style="overflow: auto; width: 100%; height: 600px;" > 
+			<span style="word-wrap: break-word; width:780px;display: block;float:left;white-space:normal;">
+				<h:outputText value="#{ajoutCycle.form.texteAide}" escape="false" />
+			</span>
+		</div>
+      </cr:popup> 
+    
+    
+</cr:page>
+
+<cr:popupStatus idStatus="statuspop" />
+</html>

@@ -1,0 +1,836 @@
+
+sup {
+    vertical-align: super !important;
+}
+
+sub {
+	vertical-align: sub !important;
+}
+
+
+* {
+	 font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    vertical-align: top;
+}
+
+html,body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #ffffff;
+}
+
+.formPrincipal {
+    display: block;
+    margin: 0;
+    padding-top: 0;
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: 0;    
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+.zoneappli {
+    background-color: #ffffff;
+    white-space: nowrap;
+    padding: 0;
+    margin: 0;
+    display: auto;
+    height: 100%;
+    width: 100%;
+}
+
+/* Structure générale *****************************/
+.pied {
+    height: 20px;
+    background-color: #ccc;
+    /*padding-top: 3px;*/
+    position: fixed;
+        width: 100%;        
+        top: auto;
+        right: 0;
+        bottom: 0;
+        left: 0;
+}
+
+td.pied {
+    padding: 0;
+    margin: 0;
+}
+
+div.applicationVersion {
+    height: 20px;
+    background-color: #dddddd;
+    /*padding-top: 3px;*/
+    border-left: solid;
+    border-left-width: 1px;
+    border-left-color: #999999;
+    font-size: x-small;
+    font-style: italic;
+    width:65px;
+    padding-left:3px;
+    float: right;
+     
+}
+
+td.applicationSimulation {
+    height: 20px;
+    /*padding-top: 3px;*/
+    border-left: solid;
+    border-left-width: 1px;
+    border-left-color: #999999;
+    font-size: x-small;
+    font-style: italic;
+    width:200px;
+    padding-left:3px;
+    vertical-align: middle;
+}
+
+div.messagesDiv {
+    width: 80%;
+    float: left;
+    overflow: hidden;
+}
+
+ /* Messages *****************************************/
+.listeMessagesReplie {
+    float: left;
+    position: absolute;
+    bottom: 10px;
+    height: 25px;
+    overflow: hidden;
+}
+
+.listeMessageDeplie {
+    float: left;
+    position: absolute;
+    bottom: 10px;
+    height: 200px;
+    overflow: auto;
+}
+
+/************* Zone de messages d'erreur et informatifs *********/
+
+
+.boutonMessages {
+    width: 20px;
+    padding: 0 0 0 0;
+    background: #ccc;
+    border-right: 1px solid #000;
+    text-align: center;
+    vertical-align: middle;
+}
+
+td.zoneMessages {
+    height: 20px;
+    padding-left: 3px;
+}
+
+td.zoneMessages .vide {
+    color: #c3c8d5;
+}
+
+#messages {
+    padding-top: 2px;
+    height: 15px;
+    cursor: pointer;
+    width: 99%;
+    overflow: hidden;
+}
+
+#messages .vide {
+    display: none;
+}
+
+#messagesDeplie {
+    position: absolute;
+    left: 23px;
+    height: 200px;
+    bottom: 0px;
+    top: auto;
+    width: 100%;
+    border-left: 1px solid #000;
+    border-top: 1px solid #000;
+    /*border-right: 3px solid #000055;*/
+    background: #ccc;
+    display: none;
+    cursor: pointer;
+    z-index: 10000;
+    overflow:auto;
+}
+
+#messagesDeplie .vide {
+    display: none;
+}
+
+#messagesDeplie tr {height:18px;}
+
+/** Message d'erreur encadré de rouge */
+.messageErreur {
+  border-color: red;    
+}
+
+/* Correction IE : visible datatable dans popup cache */
+div#zoneappli .rf-pp-cnt table.rf-dt {  
+border-collapse:separate;
+}
+
+.menuToolbar {
+	background: #c3c9cd;
+	border: 1px solid  #000000; 
+	vertical-align:middle;
+}
+
+
+.menu {
+    background: #ccc;
+    white-space: nowrap;
+    padding: 0;
+    margin: 0;  
+    position: absolute;
+    top:0;
+    left:0;
+    z-index: 10;
+    width:200px;
+}
+
+
+.champ {
+    font-weight: normal;
+    color: #000000;
+    font-size: ;
+}
+
+.champLatex {
+    word-wrap: break-word; 
+    /*border: 1px dotted #000000; 
+    padding: 3px 10px 3px 10px;*/ 
+    white-space: normal;
+    /* width: 80%;*/
+      display: block;
+}
+
+
+.grille {
+    margin: 0;
+    padding: 0;
+    width: 90%;
+}
+
+.inactif {
+    color:#000000;
+    border: 1px solid gray;
+    background: #E0E0E0;
+}
+
+.libelle { /*width: 130px;*/
+    font-weight: bold;
+    word-spacing: 3px;
+}
+
+.libelle .inactif { /* width: 130px;*/
+    border: none;
+    background: none;
+    color: black;
+}
+
+.on-top {
+    z-index: 50;
+}
+
+/* Composant saisie liste box cochable*/
+    /* on met le composant en position relative, pour pouvoir placer la liste déroulante au dessus en absolute après
+    
+    http://stackoverflow.com/questions/1287439/ie7-z-index-layering-issues
+    */
+.divLayoutSelectListCheckBox {
+    position: relative;
+    z-index: 50;
+}
+
+/* le champ input simulant une select box */
+.idropDownSelectListCheckBoxInput {
+    width: 130px;
+    margin: 0px;
+    z-index: 2;
+}
+
+/* le div de la liste en elle meme. */
+.dropDownSelectListCheckBox {
+    height: 120px;
+    width: 152px;
+    overflow: auto;
+    background-color: #EEF5FE;
+    border: 1px solid #CAC5BE;    
+    opacity: 1.0;
+    z-index: 50;
+}
+
+/* on fixe en position absolue et avec un z-index important  le div entourant la liste déroulante pour qu'elle passe au dessus du reste*/
+.fullListDropDownCheckBox {
+    position: absolute;
+    z-index: 50;
+}
+
+div.listeDesDevoirsSeance {
+    vertical-align:top; 
+    overflow-y:auto; 
+    overflow-x: hidden;
+    height:380px; 
+    border-style:solid; 
+    border-width:1px; 
+    border-color:#c0c0c0;
+    background-color: #ffffff;
+}
+
+a:link,a:visited,a:hover {
+    color: #3298CB;
+    text-decoration: underline;
+    font-size: 12px;
+    background-repeat: repeat;
+    white-space: nowrap;
+}
+
+a:hover {
+    text-decoration: none;    
+}
+
+a.bouton,a.bouton:link,a.bouton:active,a.bouton:visited,a.bouton:hover {
+    background-color: #D7D7D7;
+    border: 1px solid #666666;
+    font-size: 12px;
+    text-decoration: none;
+    color: black;
+    display: block;
+    padding-left: 3px;
+    padding-right: 3px;
+    min-width: 80px;
+}
+
+img {
+    border: 0;
+    text-decoration: none;
+}
+
+
+
+.rf-ddm-itm-ic {
+    height: 32px;
+    width: 32px;
+}
+
+.rf-ddm-itm-ic img {
+    height: 32px;
+    width: 32px;
+}
+
+.rf-ddm-itm-sel {
+    padding-left : 0px;  
+    padding-right : 0px;  
+    padding-top : 0px;  
+    padding-bottom : 0px;  
+}
+     
+.rf-ddm-itm-unsel {
+    padding-left : 0px;  
+    padding-right : 0px;  
+    padding-top : 0px;  
+    padding-bottom : 0px;  
+}
+     
+.rf-tb-itm  {
+    padding-left : 0px;  
+    padding-right : 0px;  
+    padding-top : 0px;  
+    padding-bottom : 0px;
+    vertical-align : middle;  
+}
+
+.rf-tb-itm a {
+    padding-left : 10px;  
+}
+
+
+.rf-dt-hdr-c
+{
+    color: #{richSkin.tableHeaderTextColor};
+    background-image: "url(#{resource['org.richfaces.images:gradientA.png']})";
+}
+
+.rf-dt-shdr-c
+{
+    color: #{richSkin.generalTextColor};
+    background-color: #{richSkin.tableHeaderBackgroundColor};
+    background-image: none;
+}
+
+    /* Redéfinission du padding des panel richfaces */
+.dr-pnl-b {
+    padding: 3px;
+}
+
+
+.dr-pnl {border:none;}
+.rich-panel, .rf-p {border:none;background:#ffffff;}
+.rich-panel-header, .rf-p-hdr {border:1px solid #000000;text-align:center;font-size:14px;padding:3px 2px;}
+.rich-panel-body, .rf-p-b { padding: 2px;}
+.rich-tabpanel-content, .rf-tbp-c {background:#ffffff;}
+
+div.rf-tab-hdr-tabline-vis.rf-tab-hdr-tabline-top {
+    background: none;
+    border: none;
+}
+
+.dr-table, .rf-dt {width:100%;}
+
+
+
+
+.dr-table-headercell, .rf-dt-hdr-c {font-size:12px;}
+
+.rf-dg-c {
+    padding-bottom: 0px;
+    padding-top: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+.rf-dt-hdr-c tr {
+        
+} 
+ 
+/****** Rich faces upload ***/
+.rich-fileupload-list-decor {
+    border: none;
+    background: #FFFFFF;
+}
+
+.rich-fileupload-toolbar-decor {
+    border: 0px;
+    background: #FFFFFF;
+}
+
+.rich-fileupload-button {
+    border: 0px;
+    background: #FFFFFF;
+    padding: 0px;
+    z-index: 0;
+}
+
+.rich-fileupload-ico-add {
+    background: #FFFFFF;
+    background: url(../images/icones/upload.png) no-repeat;
+    width: 17px;
+    height: 17px;
+    border: none;
+}
+
+.rich-fileupload-button-border {
+    border: 0px;
+    padding: 0px;
+    background: #FFFFFF;
+}
+
+/*onmouseover*/
+.rich-fileupload-button-light {
+    background: none;
+    padding: 0px;
+    border: none;
+}
+
+.rich-fileupload-button-font {
+    border: none;
+    padding: 0px;
+}
+
+/*onpress*/
+.rich-fileupload-button-press {
+    border: 0px;
+    padding: 0px;
+    background: #FFFFFF;
+}
+
+/* Adaptation du composant saisie riche */
+.richfacesSkin .mceListBox .mceText {
+    width: 100px !important;
+}
+
+.rich-stglpanel-body {background:#ffffff;}
+
+/* selection arbre richfaces */
+.rich-tree-node-selected {
+    border:0;
+}
+
+.rich-tree-node-highlighted {
+    text-decoration : none;
+}
+
+
+
+
+
+
+
+
+
+body#simple {
+    background: #FFF;
+}
+
+.centpourcent {
+    height: 100%;
+    width: 100%;
+}
+
+td {
+    text-align: left;
+    vertical-align: top;
+}
+
+ul {
+    margin: 11px;
+    padding: 0;
+}
+
+li {
+    margin: 0 0 10px 1.5em;
+    padding: 0;
+    list-style: square;
+}
+
+/* IE utilise display:block par défaut qui ajoute des éspaces verticaux non désirées */
+form {
+   display: inline;
+}
+
+p.important {
+    color: red;
+    font-weight: bold;
+}
+
+p.important2 {
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.important3 {
+    font-weight: normal;
+    font-size: 12px;
+}
+
+.left {
+    float: left;
+}
+
+.right {
+    float: right;
+}
+
+.clear {
+    clear: both;
+}
+
+.center {
+    text-align: center;
+}
+
+.cachee {
+    display: none;
+}
+
+.inline {
+    display: inline;
+}
+
+.block {
+    display: block;
+}
+
+.aDroite {
+    text-align: right;
+}
+
+
+
+
+/* Typographie *****************************/
+
+
+
+h1,h2,h3,h4,h5,h6 {
+    font-family: Arial, sans-serif;
+    margin: 0px;
+    padding: 0px;
+}
+
+h1 {
+    font-size: 13px;
+    color: #002538;
+    font-style: normal;
+    font-weight: bolder;
+    font-variant: normal;
+    line-height: 14px;
+    text-transform: uppercase;
+    height: 14px;
+}
+
+h2 {
+    font-size: 12px;
+    color: #900000;
+    font-style: normal;
+    font-weight: bolder;
+    text-transform: uppercase;
+    padding-left: 2px;
+}
+
+h3 {
+    font-size: ;
+    line-height: 16px;
+    color: #900000;
+    font-weight: normal;
+    font-style: normal;
+    white-space: nowrap;
+    text-align: left;
+    text-transform: uppercase;
+    padding-left: 2px;
+}
+
+h4 {
+    color: #900000;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+}
+
+h5 {
+    color: #3298CB;
+    font-style: normal;
+    font-variant: normal;
+    font-weight: normal;
+}
+
+label {
+    padding-top: 4px;
+    padding-right: 10px;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+/* Fin typographie ********************************/
+
+
+/* fin de la barre d'action *************************/
+   
+
+/* Fin des messages *********************************/
+    /************* Champs de formulaire ********/
+
+
+
+select {
+    font-size: 10px;
+    color: #000000;
+    padding: 1px;
+    background-color: #FFFFFF;
+    border: 1px solid #999999;
+    width: 150px;
+}
+
+textfield {
+    font-size: 10px;
+    font-weight: normal;
+    color: #000000;
+    padding: 3px;
+    background-color: #FFFFFF;
+    border: 1px solid #999999;
+}
+
+input {
+    font-size: 12px;
+    vertical-align: middle;
+    background-color: #FFFFFF;
+    border:1px solid gray;
+}
+
+
+.ligneOutil {
+    text-wrap: none;
+    margin-bottom: 5px;
+}
+
+
+
+/************** Barre d'onglets **************/
+.myFaces_panelTabbedPane {
+    /* bug des tabbedpane, obligé de redéfinir la classe de myfaces */
+    width: 100%;
+}
+
+/******** Tableau **************/
+.table {margin:auto;}
+.table td {
+    text-align: left;
+    line-height: 21px;
+}
+
+.pair {
+    background-color: #e3e3e3;
+}
+
+.impair {
+    background-color: #ffffff;
+}
+
+/** Table pour les pieces jointes et les devoirs **/
+.tabPiecesJointesDevoirs thead {padding:0px;}
+.tabPiecesJointesDevoirs {padding:0px;}
+
+/****** Checkbox dans les tableaux à selection multiple ***/
+input.checkboxOnly {
+    width: 20px;
+    margin: 0;
+    padding: 0;
+}
+
+div.checkboxOnly {
+    text-align: center;
+}
+
+
+
+
+
+/* composant agenda */
+.corpsCalTable {
+    margin: 0;
+    border: 1px dotted #900000;
+    width: 100%;
+   /* height: 100px; Mantis 39548 : réduction de l'interligne pour une meilleure lisibilité. */
+    font-weight: bold;
+    text-decoration: none;
+    white-space: normal;
+    background-color: #FFF;
+}
+
+.corpsCalTableInactif {
+    margin: 0;
+    border: 1px dotted #900000;
+    width: 100%;
+    height: 100px;
+    font-weight: bold;
+    text-decoration: none;
+    white-space: normal;
+    background: #E1E1E1;
+}
+
+.corpsCalTable tr, .corpsCalTable td {
+    width: 100%;
+    word-spacing: 0px;
+}
+
+.enteteCalTable {
+    margin: 0;
+    width: 100%;
+    text-align: center;
+}
+
+.enteteCalTable td {
+    text-align: center; 
+}
+
+.titreCalTable {
+    margin: 0;
+    width: 100%;
+    color: #FFFFFF;
+    font-weight: bold;
+    font-size: 13px;
+    text-align: center;
+}
+
+.planning {
+    width: 100% !important;
+    width: 99%;
+}
+
+/*composant emploi du temps*/
+.corpsEmplTable {
+    background-color: #FFFFFF;    
+    font-weight: bold;
+    height: 40px;
+    margin: 0;
+    text-decoration: none;
+    white-space: normal;
+    border-collapse : separate;
+}
+
+ .tableColEmpDrag {
+    line-height: 15px;
+    cursor: pointer;
+ }
+
+
+
+
+
+
+
+html .cke_skin_richfaces .cke_top {
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+    border-bottom-color: #{richSkin.headerBackgroundColor};
+    background-color: #{richSkin.headerGradientColor};
+}
+
+html .cke_skin_richfaces .cke_ltr {
+	background-color: #{richSkin.headerBackgroundColor};
+} 
+
+
+/* Gestion de la popup piece jointe */
+
+#idPopupPiecesJointes_form\:espaceStockageActive div.rf-fu  {
+	width:100px;
+	background-color: transparent;
+	border-style: none;
+}
+
+#idPopupPiecesJointes_form\:espaceStockageActive div.rf-fu  div.rf-fu-hdr  {
+    background-color: transparent;
+    background-image: none;
+    border-style:none;
+    
+}
+
+#idPopupPiecesJointes_form\:espaceStockageActive div.rf-fu  div.rf-fu-hdr .rf-fu-btn-add {
+    border-style:solid;
+    border-color: #{richSkin.headerBackgroundColor};
+}
+
+
+#idPopupPiecesJointes_form\:espaceStockageActive div.rf-fu  div.rf-fu-hdr .rf-fu-btns-lft {
+	   width:100%;
+}
+
+
+#idPopupPiecesJointes_form\:containerRepertoireCahier div.rf-p div.rf-p-b, 
+#idPopupPiecesJointes_form\:listingRepertoireStockage div.rf-p div.rf-p-b,
+#idPopupPiecesJointes_form\:listingRepertoireCahier div.rf-p div.rf-p-b
+{
+    border-style:solid;
+    border-width:1px; 
+    border-color: #{richSkin.headerGradientColor};
+} 
+
+
+
+
+
+
+
+

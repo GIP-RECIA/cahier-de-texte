@@ -1,0 +1,77 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:a4j="http://richfaces.org/a4j"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:cr="urn:crlr"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+    
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:rich="http://richfaces.org/rich"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+ 
+ 
+<cc:interface>
+ 
+
+<cc:attribute name="enseignantForm" required="true" type="org.crlr.web.application.form.EnseignantForm"
+default = "#{enseignant.form}"
+/>
+
+<cc:attribute name = "enseignant" type = "org.crlr.web.application.control.EnseignantControl" />
+<cc:attribute name = "classeGroupe" type = "org.crlr.web.application.control.ClasseGroupeControl" />
+
+<cc:attribute name="choixTousOuUn" required="true" type="java.lang.Boolean" default="true" />
+<cc:attribute name="readonly" required="true" type="java.lang.Boolean" default="false" />
+<cc:attribute name="toujoursVisible" required="true" type="java.lang.Boolean" default="false" />
+
+<cc:attribute name="labelControlEnseignant" required="true" 
+type="java.lang.String" default="Enseignant" />
+
+ <cc:attribute name="intituleEnseignantId"
+ required="true" 
+type="java.lang.String" default="intituleEnseignantId" />
+ 
+ <cc:attribute name="idPopupEnseignant"
+ required="true" 
+type="java.lang.String" default="idPopupEnseignant" />
+
+</cc:interface>
+<cc:implementation>
+  
+
+  <c:set var="modifiable" value="${not cc.attrs.readOnly }"/>
+  
+    <h:panelGrid class="table"
+                 columns="4"
+                 rendered="#{cc.attrs.toujoursVisible or (not empty cc.attrs.classeGroupe.form.groupeClasseSelectionne.intitule and cc.attrs.enseignant.form.profil != 'ENSEIGNANT')}"
+                 style="vertical-align : middle;">
+      <h:outputLabel styleClass="libelle"
+                     value="#{cc.attrs.labelControlEnseignant}" />
+      <h:selectOneRadio id="selectionTousUnEnseignant"
+                        style="padding-left:5px;"
+                        rendered="#{cc.attrs.choixTousOuUn}"
+                        disabled="#{not modifiable}"
+                        value="#{cc.attrs.enseignant.form.filtreParEnseignant}">
+        <a4j:ajax event="click"
+                  listener="#{cc.attrs.enseignant['filtreParEnseignantSelectionne']}"
+                  oncomplete=""
+                  render="#{cc.attrs.render},outilRecherche" />
+        <f:selectItem itemLabel="Tous"
+                      itemValue="false" />
+        <f:selectItem itemLabel="Un"
+                      itemValue="true" />
+      </h:selectOneRadio>
+      <cr:saisiePopup bean="#{cc.attrs.enseignant}"
+                      decalageTitreGauche="14"
+                      id="#{cc.attrs.intituleEnseignantId}"
+                      idPopup="#{cc.attrs.idPopupEnseignant}"
+                      largeur="300"
+                      lienModifiable="#{modifiable}"
+                      modifiable="false"
+                      rendered="#{cc.attrs.enseignant.form.filtreParEnseignant}"
+                      valeur="#{cc.attrs.enseignant.form.enseignantSelectionne.nomComplet}" />
+    </h:panelGrid>
+  
+  </cc:implementation>
+</html>

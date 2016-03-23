@@ -1,0 +1,101 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:a4j="http://richfaces.org/a4j"    
+    xmlns:f="http://java.sun.com/jsf/core" xmlns:cr="urn:crlr">
+
+<ui:composition>
+    <c:set var="formId" value="formulaire_principal"/> 
+    <c:set var="decalageTitreDroite" value="${empty decalageTitreDroite ? '10' : decalageTitreDroite}"/> 
+    <c:set var="decalageTitreGauche" value="${empty decalageTitreGauche ? '0' : decalageTitreGauche}"/>    
+    <c:set var="rendered" value="${empty rendered ? true : rendered}"/>
+    <c:set var="cible" value="${empty cible ? 'empty' : cible}"/>
+    
+    <c:set var="idComposant" value="${empty idComposant ? cr:idcompteur('saisieListeCheckBox') : idComposant}" />
+    
+    <!-- Javascript for the component behaviour-->
+    <!-- <a4j:loadScript src="resource://jquery.js" />  -->
+    <script type="text/javascript">
+/* <![CDATA[ */
+                    jQuery(document).ready(function() {
+                        /* compte le nombre d'occurrences cochées. */
+                        var totalCoche = jQuery("##{id}dropListContainer  input[@type='checkbox']:checked").length;
+                        
+                        /* par défaut on cache la liste déroulante */
+                        jQuery("##{id}magicBoxList").hide(); 
+                        
+                        /* on remplit la valeur du champ input par défaut */
+                        jQuery("##{formId}\\:#{id}statesinput").attr("value", totalCoche + " " + '#{selectedLabel}');
+
+                        
+                        
+                        
+                        /* un click dans l'input cache ou montre la liste*/
+                        jQuery("##{formId}\\:#{id}statesinput").click(function() {
+                            if (jQuery("##{id}magicBoxList").is(":hidden")) {
+                                jQuery("##{id}magicBoxList").show();
+                              } else {
+                                jQuery("##{id}magicBoxList").hide();
+                              }
+                        });
+                        
+                        /* un click sur la flèche cache ou montre la liste.*/
+                        jQuery("##{formId}\\:#{id}showandhidelinkid").click(function() {
+                            if (jQuery("##{id}magicBoxList").is(":hidden")) {
+                                jQuery("##{id}magicBoxList").show();
+                              } else {
+                                  jQuery("##{id}magicBoxList").hide();
+                              }
+                        });                        
+           
+                         
+                    });
+                          function check(){
+                         count = jQuery("##{id}dropListContainer  input[@type='checkbox']:checked").length;                             
+                             jQuery("##{formId}\\:#{id}statesinput").attr("value", count + " " + '#{selectedLabel}');  
+                         }    
+/* ]]> */  
+            </script>
+
+    <!-- le code proprement dit du composant -->
+    <h:panelGrid id="#{idComposant}" columns="2" rendered="true" style="margin:0; padding:0; #{rendered ? '' : 'display: none;'}">
+        <h:outputLabel value="#{titre}" style="line-height:20px;padding-right: ${decalageTitreDroite}px; padding-left: ${decalageTitreGauche}px;"
+                        rendered="#{not empty titre}" styleClass="libelle" title="${desc}" />
+        <t:div styleClass="divLayoutSelectListCheckBox"
+            id="#{id}idPanelGridForFc">
+            <h:panelGrid columns="4" border="0" cellpadding="0" cellspacing="0">
+                <!-- on imite une select box avec un inputText desactivé et une image de flèche -->                
+                <h:inputText id="#{id}statesinput" readonly="true"
+                    styleClass="idropDownSelectListCheckBoxInput" />
+                <a4j:commandLink id="#{id}showandhidelinkid">
+                    <h:graphicImage library="images/icones" name="selectionCombo.gif" id="#{id}showandhidelinkidimage" width="22" height="19" alt="" />
+                </a4j:commandLink>
+            </h:panelGrid>
+            <h:panelGroup>
+                <!-- la liste déroulante-->
+                <div class="fullListDropDownCheckBox" id="#{id}magicBoxList">
+                    <div class="dropDownSelectListCheckBox" id="#{id}dropListContainer">
+                        <cr:table idTable="#{id}_table" avecPagination="false" rendered="#{rendered}" liste="#{liste}" largeur="132">
+                           <cr:colonne id="#{id}_case" avecHeader="false" taille="20">
+                           
+                              <h:selectBooleanCheckbox value="#{valeurCheckBox}"
+                                     name="checkboxRichList" id="checkboxRichList" >
+                                      <a4j:ajax listener="#{bean[cible]}" event="click" oncomplete="#{oncomplete} javascript:check();"
+                                               render="#{id}idPanelGridForFc,#{render}" />
+                              </h:selectBooleanCheckbox>  
+                                  
+                           </cr:colonne>
+                           <cr:colonne id="#{id}_valeur" avecHeader="false">
+                              <h:outputText value="#{valeurLibelleCheckBox}"/>
+                           </cr:colonne>
+                        </cr:table>
+                    </div>          
+                </div>
+            </h:panelGroup>
+        </t:div>
+    </h:panelGrid>
+</ui:composition>
+
+</html>

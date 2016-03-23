@@ -1,0 +1,81 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:cr="urn:crlr">
+<ui:composition>
+
+  <c:set var="rendered" value="${empty rendered ? true : rendered}"/> 
+  <c:set var="readonly" value="${empty readonly ? false : readonly}"/>
+  <c:set var="myBackground" value="#C0C0C0"/> 
+
+                   
+  <t:div styleClass="raised #{ rendered ? '' : 'cachee'}"
+  style="margin-bottom: 5px;">
+    <div class="top">
+        <div class="b1" />
+        <div class="b2" style="background:#{myBackground};"/>
+        <div class="b3" style="background:#{myBackground};"/>
+        <div class="b4" style="background:#{myBackground};"/>
+    </div>
+    <div class="boxcontent" style="background:#{myBackground};" >
+      <h:panelGrid columns="2">
+            <cr:lien
+	          id="#{devoirLienId}"
+	          rendered="#{not readonly}"
+		      desc="#{devoirDTO.intitule}" 
+		      oncomplete="#{rich:component('idPopupDevoir')}.show();"
+		      bean="#{bean}" render=":idPopupDevoir_form:idPopupDevoir_panel"
+		      cible="chargerDevoir"
+		      style="white-space: normal; color: #000000; text-decoration: none;">
+		        <f:setPropertyActionListener value="#{devoirDTO}"
+			        target="#{devoirSelectionne}" />
+                <h:outputText value="#{devoirDTO.designationClasse}" /> 
+	            <h:outputText value="#{devoirDTO.designationGroupe} " /> <br/> 
+	            <h:outputText value="#{devoirDTO.matiere}" /> <br/>
+	            <h:outputText rendered="#{visualisationNomEnseignant}" 
+	                value="#{devoirDTO.civiliteEnseignant} #{devoirDTO.nomEnseignant}" />
+		        
+	        </cr:lien>
+          
+	        <cr:lien
+	          id="#{devoirLienId}Bis"
+	          rendered="#{not readonly}"
+		      desc="#{devoirDTO.typeDevoirDTO.categorie == 'NORMAL' ? 'Travail à faire' : 'Devoir à rendre'} \n #{devoirDTO.intitule}" 
+		      oncomplete="#{rich:component('idPopupDevoir')}.show();"
+              onclick="console.log(jQuery('##{rich:clientId(devoirLienId)}'));"
+		      bean="#{bean}" render="idPopupDevoir_panel"
+		      cible="chargerDevoir"
+              styleClass="planningLien"
+		      style="white-space: normal; color: #000000; text-decoration: none;">
+		        <f:setPropertyActionListener value="#{devoirDTO}"
+			        target="#{devoirSelectionne}" />
+              
+                <h:graphicImage library="images/icones" name="#{devoirDTO.typeDevoirDTO.categorie == 'NORMAL' ? 'travailAFaire.png' : 'devoirARendre.png' }" />
+	        </cr:lien>
+	        <t:div id="static#{id}" rendered="#{readonly}" title="#{devoirDTO.intitule}">
+	           <h:outputText value="#{devoirDTO.designationClasse}" /> 
+               <h:outputText value="#{devoirDTO.designationGroupe} " /> <br/> 
+               <h:outputText value="#{devoirDTO.matiere}" /> <br/>
+               <h:outputText rendered="#{visualisationNomEnseignant}" 
+                   value="#{devoirDTO.civiliteEnseignant} #{devoirDTO.nomEnseignant}" />
+	        </t:div>
+	        <t:div id="static#{id}bis" rendered="#{readonly}" title="#{devoirDTO.intitule}">
+	           <h:graphicImage value="${cr:concat(iconesDir,'devoirARendre.png')}" />
+	        </t:div>
+  		 </h:panelGrid>
+		  
+    </div>
+    <div class="bottom">
+		    <div class="b4b" style="background:#{myBackground};"/>
+		    <div class="b3b" style="background:#{myBackground};"/>
+		    <div class="b2b" style="background:#{myBackground};"/>
+		    <div class="b1b" />
+    </div>
+	</t:div>
+</ui:composition>
+</html>

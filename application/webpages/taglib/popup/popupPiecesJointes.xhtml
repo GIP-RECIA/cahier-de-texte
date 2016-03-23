@@ -1,0 +1,324 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:a4j="http://richfaces.org/a4j"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:cr="urn:crlr"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:rich="http://richfaces.org/rich"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+  <ui:composition>
+    <c:set value="/iconesApplications/"
+           var="iconesApplicationsDir" />
+    <c:set value="#{status}"
+           var="status" />
+    <c:set value="#{idPopup}checksizeFileUpload"
+           var="idCheckFileUpload" />
+    <cr:lien bean="#{popupPiecesJointes}"
+             cible="checkMessageSizeFileUpload"
+             id="#{idCheckFileUpload}"
+             render="#{idCheckFileUpload}"
+             titre="" />
+    <!-- 
+#{popupPiecesJointes}
+ -->
+    <c:set value="#{raffraichirTabAfterUpload}"
+           var="raffraichirListe" />
+    <cr:popup hauteurPopup="#{hauteurPopup}"
+              iconesDir="/resources/images/icones/"
+              idPopup="#{idPopup}"
+              largeurPopup="#{largeurPopup}"
+              tailleAuto="true"
+              titrePopup="#{titrePopup}">
+      <h:outputScript library="js"
+                      name="fileupload.js"
+                      target="head" />
+      <h:form id="#{idPopup}_form">
+        <a4j:outputPanel id="#{idPopup}_panel">
+          <cr:menuAction id="idMenuActionPopupPieceJointe"
+                         surcharge="false">
+            <cr:elemMenuAction bean="#{popupPiecesJointes}"
+                               cible="afficherDepot"
+                               idaction="idParcourirDepot"
+                               image="espaceCahier.png"
+                               render="listingFichiers"
+                               title="Afficher le contenu de mon dépôt CTN" />
+                               
+            <c:if test="#{contexteApplication.environnement eq 'CRLR'}">
+            <cr:elemMenuAction bean="#{popupPiecesJointes}"
+                               cible="afficherStockage"
+                               idaction="idParcourirStockage"
+                               image="espaceStockage.png"
+                               render="listingFichiers"
+                               title="Afficher le contenu de mon espace de stockage" />
+            </c:if>
+                               
+            <c:if test="#{contexteApplication.environnement eq 'Aquitaine'}">
+            <cr:elemMenuAction bean="#{popupPiecesJointes}"
+                               cible="afficherCmis"
+                               idaction="idParcourirCmis"
+                               image="espaceStockage.png"
+                               render="listingFichiers"
+                               title="Afficher le contenu de mon espace ‘Mes documents’" />
+            </c:if>
+          </cr:menuAction>
+          
+          <t:div id="listingFichiers" >
+
+            <t:div id="listingRepertoireCahier"
+                   style="float:left;width:300px;height:308px;">
+              <rich:panel header="Parcourir Mon dépôt">
+                <t:div id="listingRepertoireCahierScroll"
+                       style="width:300px;height:286px;overflow:auto;">
+                       
+                  <rich:tree iconCollapsed="#{iconesDir}iconFolder.gif"
+                             iconExpanded="#{iconesDir}iconFolderOpen.gif"
+                             iconLeaf="#{iconesDir}iconFolder.gif"
+                             style="width:290px"
+                             switchType="ajax"
+                             var="item">
+                    <rich:treeModelRecursiveAdaptor nodes="#{item.nodes}"
+                                                    roots="#{popupPiecesJointes.form.sourceRootsDepotCahier}">
+
+                      <rich:treeNode>
+                        <cr:lien bean="#{popupPiecesJointes}"
+                                 cible="selectionnerRepertoireCahier"
+                                 id="idRepertoire"
+                                 render="containerRepertoireCahier,listingRepertoireCahierScroll,DossierSelected"
+                                 status="#{status}"
+                                 style="#{item.path eq popupPiecesJointes.form.pathRepertoireEnCoursCahier ? 'background:#0A246A;color:#FFFFFF;' : ''}"
+                                 titre="#{item.name}">
+                          <f:setPropertyActionListener target="#{popupPiecesJointes.form.pathRepertoireEnCoursCahier}"
+                                                       value="#{item.path}" />
+                        </cr:lien>
+                      </rich:treeNode>
+                    </rich:treeModelRecursiveAdaptor>
+                  </rich:tree>
+                </t:div>
+              </rich:panel>
+            </t:div>
+            
+            <!-- Onglet CTN fichiers -->
+            <t:div id="containerRepertoireCahier"
+                   rendered="#{popupPiecesJointes.form.ongletSelectionne eq 'DEPOT'}"
+                   style="width:300px;margin-left:310px;">
+              <rich:panel header="Sélectionner une pièce jointe du dossier '#{popupPiecesJointes.form.nameRepSel}'">
+
+                <div style="width:292px;height:274px;overflow:auto;">
+
+                  <c:forEach items="#{popupPiecesJointes.form.ctnFichiers}"
+                             var="item"
+                             varStatus="itemIndex">
+                    <cr:lien bean="#{popupPiecesJointes}"
+                             cible="selectionnerFichierPourCahier"
+                             desc="Ajoute le fichier en pièce jointe"
+                             image="selectFileUpload.png"
+                             oncomplete="if (#{facesContext.maximumSeverity==null}) { lienAfterSelectFile('#{idPopup}', '#{raffraichirListe}'); }"
+                             render="#{raffraichirListe},containerRepertoireCahier"
+                             status="#{status}">
+                    <f:setPropertyActionListener target="#{popupPiecesJointes.form.ctnFichierSelectionne}"
+                                                 value="#{item}" />#{item.nom}</cr:lien>
+                    <br />
+                  </c:forEach>
+                </div>
+              </rich:panel>
+            </t:div>
+            
+            <!-- Onglet Stockage fichiers -->
+            <t:div id="listingRepertoireStockage"
+                   rendered="#{popupPiecesJointes.form.ongletSelectionne eq 'STOCKAGE' and popupPiecesJointes.form.espaceStockageActive}"
+                   style="margin-left: 310px;width:300px;height:308px">
+                   
+              <rich:panel header="Parcourir Mon espace de stockage">
+              
+              <t:div id="espaceStockageNotActive"
+                 rendered="#{not popupPiecesJointes.form.espaceStockageActive  }">
+
+            <p style="font-weight: bold;">Votre espace de stockage
+            n'existe pas. 
+            <br />Veuillez vous connecter une première fois à
+            l'application espace de stockage pour l'activer.</p>
+          </t:div>
+
+                <t:div id="listingRepertoireStockageScroll"
+                       style="width:292px;height:286px;overflow:auto;border-style=solid;">
+
+                  <a4j:jsFunction action="#{popupPiecesJointes.selectionnerFichierStockage}"
+                                  execute="@this"
+                                  name="selectionnerFichierStockage"
+                                  oncomplete="if (#{facesContext.maximumSeverity==null}) { lienAfterSelectFile('#{idPopup}', '#{raffraichirListe}'); }"
+                                  render="#{raffraichirListe}"
+                                  status="#{status}">
+                    <a4j:param assignTo="#{popupPiecesJointes.form.nodeStockageSelectedKey}"
+                               name="nodeStockageSelectedKey" />
+                  </a4j:jsFunction>
+                  <rich:dragIndicator id="indicatorStockage"
+                                      style="background-color: black;" />
+                  <rich:tree ajaxKeys="#{null}"
+                             ajaxSubmitSelection="true"
+                             dragIndicator="indicatorStockage"
+                             iconCollapsed="#{iconesDir}iconFolder.gif"
+                             iconExpanded="#{iconesDir}iconFolderOpen.gif"
+                             iconLeaf="#{iconesDir}selectFileUpload.png"
+                             id="treeStockage"
+                             nodeSelectListener="#{popupPiecesJointes.processSelection}"
+                             render="#{raffraichirListe}"
+                             style="width:300px"
+                             switchType="client"
+                             treeNodeVar="treeNode"
+                             value="#{popupPiecesJointes.treeNode}"
+                             var="item">
+                    <rich:treeNode onclick="if (#{item.leaf}) { selectionnerFichierStockage('#{item.key}'); }"
+                                   title="#{item.leaf ? 'Ajoute le fichier en pièce jointe et le recopie depuis votre espace de stockage dans le dossier sélectionné de votre dépôt CTN' : ''}">
+
+                      <h:outputText value="#{item}" />
+                    </rich:treeNode>
+                  </rich:tree>
+                </t:div>
+              </rich:panel>
+            </t:div>
+            
+            <!-- Onglet Alfersco / CMIS fichiers -->
+            <t:div id="listingRepertoireCmis"
+                   rendered="#{popupPiecesJointes.form.ongletSelectionne eq 'CMIS'}"
+                   style="margin-left: 310px;width:300px;height:308px">
+                   
+              <rich:panel header="Parcourir Mon espace ‘Mes documents’">
+
+                <t:div id="listingRepertoireCmisScroll"
+                       style="width:292px;height:286px;overflow:auto;border=none;">
+
+                  <a4j:jsFunction action="#{popupPiecesJointes.selectionnerFichierCmis}"
+                                  execute="@this"
+                                  name="selectionnerFichierCmis"
+                                  oncomplete="if (#{facesContext.maximumSeverity==null}) { lienAfterSelectFile('#{idPopup}', '#{raffraichirListe}'); }"
+                                  render="#{raffraichirListe}"
+                                  status="#{status}">
+                    <a4j:param assignTo="#{popupPiecesJointes.form.nodeCmisSelectedKey}"
+                               name="nodeCmisSelectedKey" />
+                  </a4j:jsFunction>
+                  <rich:dragIndicator id="indicatorCmis"
+                                      style="background-color: black;" />
+                  <rich:tree ajaxKeys="#{null}"
+                             ajaxSubmitSelection="true"
+                             dragIndicator="indicatorCmis"
+                             iconCollapsed="#{iconesDir}iconFolder.gif"
+                             iconExpanded="#{iconesDir}iconFolderOpen.gif"
+                             iconLeaf="#{iconesDir}selectFileUpload.png"
+                             id="treeCmis"
+                             nodeSelectListener="#{popupPiecesJointes.processSelection}"
+                             render="#{raffraichirListe}"
+                             style="width:300px"
+                             switchType="client"
+                             treeNodeVar="treeNode"
+                             value="#{popupPiecesJointes.treeNode}"
+                             var="item">
+                    <rich:treeNode onclick="if (#{item.leaf}) { selectionnerFichierCmis('#{item.key}'); }"
+                                   title="#{item.leaf ? 'Ajoute le fichier en pièce jointe et le recopie depuis votre espace de stockage dans le dossier sélectionné de votre dépôt CTN' : ''}">
+
+                      <h:outputText value="#{item}" />
+                    </rich:treeNode>
+                  </rich:tree>
+                </t:div>
+              </rich:panel>
+            </t:div>
+            
+            <br />
+            <table>
+              <tr>
+                <td>
+                  <rich:fileUpload addControlLabel=""
+                                   addLabel="Ajouter"
+                                   autoclear="true"
+                                   clearAllLabel="Tout supprimer"
+                                   fileUploadListener="#{popupPiecesJointes.listener}"
+                                   immediateUpload="#{popupPiecesJointes.autoUpload}"
+                                   listHeight="0px"
+                                   listWidth="50px"
+                                   onfilesubmit="console.log('onfilesubmit');#{rich:component('statuspop_wait')}.show();"
+                                   onuploadcomplete="console.log('onuploadcomplete');#{rich:component('statuspop_wait')}.hide();"
+                                   maxFilesQuantity="#{popupPiecesJointes.form.uploadsAvailable}"
+                                   onsizerejected="lancerLienAjax(#{idCheckFileUpload});"
+                                   uploadLabel="Télécharger"
+                                   status="">
+                    <a4j:ajax event="uploadcomplete"
+                              listener="#{popupPiecesJointes.uploadComplete}"
+                              oncomplete="
+                                if (#{facesContext.maximumSeverity==null}) { lienAfterSelectFile('#{idPopup}', '#{raffraichirListe}'); }
+                                "
+                              render="#{raffraichirListe},containerRepertoireCahier,containerFichiers" />
+                  </rich:fileUpload>
+                </td>
+                <td>
+                  <h:outputLabel value="Ajouter un fichier depuis votre poste de travail dans le dossier sélectionné de votre dépôt CTN" />
+                </td>
+              </tr>
+            </table>
+                                     
+                   
+                
+              
+              <h:panelGrid class="table"
+                           columns="7"
+                           id="DossierSelected"
+                           style="padding-top:5px">
+                                 <cr:liena4j bean="#{popupPiecesJointes}"
+                         cible="nouveauDossier"
+                         title="Créer un sous-dossier"
+                         idliena4j="idNouveau"
+                         render="#{idPopup}_form"
+                         rendered="true"
+                         style="padding-top:5px" >
+                <h:graphicImage library="images/icones"
+                                            name="folder_new.png" />
+                             
+                
+                </cr:liena4j>
+                
+                <cr:saisieTexte decalageTitreDroite="18"
+                                desc="#{popupPiecesJointes.form.nameDossierParentSel}/#{popupPiecesJointes.form.nameDossierSel}"
+                                largeur="200"
+                                modifiable="false"
+                                titre="Dossier sélectionné"
+                                valeur="#{popupPiecesJointes.form.nameDossierParentSel}" />
+                <cr:saisieTexte decalageTitreDroite="18"
+                                largeur="150"
+                                modifiable="#{popupPiecesJointes.form.isDossierModifiable}"
+                                rendered="#{depot.form.nameDossierParentSel eq popupPiecesJointes.form.nameRepSel ? 'false' : 'true'}"
+                                valeur="#{popupPiecesJointes.form.nameDossierSel}" />
+                <h:outputLabel value="" />
+                <cr:lien bean="#{popupPiecesJointes}"
+                         cible="renomerDossier"
+                         confirm="Voulez-vous vraiment renommer ce sous-dossier ?"
+                         desc="Valider la modification du nom du sous-dossier"
+                         id="idRenomer"
+                         image="valider.gif"
+                         render="#{idPopup}_form"
+                         rendered="#{popupPiecesJointes.form.isDossierModifiable}"
+                         sansImage="false"
+                         style="padding-top:5px" />
+                <cr:liena4j bean="#{popupPiecesJointes}"
+                         cible="deleteDossier"
+                         confirm="Voulez-vous vraiment supprimer ce sous-dossier : #{popupPiecesJointes.form.nameDossierSel} ?"
+                         title="Supprimer le sous-dossier"
+                         idliena4j="idSupprimer"
+                         image="delete.gif"
+                         render="#{idPopup}_form"
+                         rendered="#{popupPiecesJointes.form.isDossierModifiable}"
+                         sansImage="false"
+                         style="padding-top:5px" >
+                <h:graphicImage library="images/icones"
+                                            name="delete.gif" />
+                             
+                
+                </cr:liena4j>
+              
+            </h:panelGrid>
+          </t:div>
+        </a4j:outputPanel>
+      </h:form>
+    </cr:popup>
+  </ui:composition>
+  
+  
+</html>

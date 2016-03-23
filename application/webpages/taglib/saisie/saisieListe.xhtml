@@ -1,0 +1,68 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:f="http://java.sun.com/jsf/core" xmlns:cr="urn:crlr">
+<ui:composition>
+	<ui:remove>
+		<!-- 
+        saisieListe : composant permettant le rendu d'un
+        champ de formulaire de type liste.
+        
+        propriétés : 
+        * id : identifiant du composant.
+        - titre : libellé (optionnel) du champ. 
+        - desc : description du champ (tooltip).
+        * valeur : valueBinding
+        * donnees : la liste d'objet DTO ou selectItem
+        - modifiable      
+        - largeur : largeur du champ. par défaut 150 pixels.        
+    -->
+	</ui:remove>
+
+	<c:set var="largeur" value="${empty largeur ? '150' : largeur}" />
+	<c:set var="decalageTitreDroite"
+		value="${empty decalageTitreDroite ? '10' : decalageTitreDroite}" />
+	<c:set var="decalageTitreGauche"
+		value="${empty decalageTitreGauche ? '0' : decalageTitreGauche}" />
+	<c:set var="modifiable" value="${empty modifiable ? true : modifiable}" />
+	<c:set var="rendered" value="${empty rendered ? true : rendered}" />
+	<c:set var="id" value="${empty id ? cr:idcompteur('saisieListe') : id}" />
+	<c:set var="pourcentageAffiche" value="pourcentageAffiche ? pourcentageAffiche : ''}" />
+    <c:set var="style" value="${not empty style ? style : cr:concat(cr:concat('width:',largeur),'px')}"  />
+    <c:set var="styleClassError" value="${empty styleClassError or !styleClassError  ? '' : 'messageErreur'}" />
+
+
+	<c:choose>
+		<c:when test="${not empty titre}">
+			<h:outputLabel value="#{titre}"
+				style="padding-right: ${decalageTitreDroite}px; padding-left: ${decalageTitreGauche}px;"
+				rendered="#{rendered}" styleClass="libelle" title="${desc}" />
+		</c:when>
+	</c:choose>
+
+	<t:selectOneMenu id="${id}" immediate="${immediate}" value="${valeur}"
+		required="${requis}" tabindex="#{tabindex}" rendered="#{rendered}"
+		onkeypress="#{onkeypress};if(checkReturnKey(event,13)){return false}"
+		onchange="#{onchange}" style="${style}"
+		styleClass="${empty styleClass ? (modifiable ? 'champ' : 'inactif') : styleClass} ${styleClassError}"
+		disabled="${!modifiable}">
+		
+		<ui:insert />
+		<c:if test="${!empty donnees}">
+			<c:choose>
+				<c:when
+					test="#{not empty proprieteLibelle and not empty proprieteValeur}">
+					<t:selectItems id="#{id}_sli" value="#{donnees}" var="variable"
+						itemLabel="#{variable[proprieteLibelle]}"
+						itemValue="#{variable[proprieteValeur]}" />
+				</c:when>
+				<c:otherwise>
+					<f:selectItems value="${donnees}" />
+				</c:otherwise>
+			</c:choose>
+		</c:if>
+	</t:selectOneMenu>
+</ui:composition>
+</html>

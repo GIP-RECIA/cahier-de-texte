@@ -1,0 +1,22 @@
+#formulaire_principal\3AidMenuAction .rf-tb-itm {
+	/*text-align: center;*/
+	/*width: 2px;*/
+}
+
+#formulaire_principal\3AidMenuActionAdd_itm {
+	width: 100%;
+	text-align: center;
+}
+
+#formulaire_principal\3AidMenuActionAdd_itm .rf-tb-itm {
+    text-align: center;
+}
+
+
+col {
+	/*
+	text-align: right;
+	font: bold;
+	/*width: 2px;
+	height: 3px;*/
+}

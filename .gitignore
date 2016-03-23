@@ -1,0 +1,74 @@
+#################################################
+# .gitignore file used to maintain a clean repo #
+#################################################
+
+########################################
+# Directories
+########################################
+
+###################
+# Build directories
+###################
+build/
+crlr-commons/jar/
+bin/
+crlr-commons/bin/
+
+###################
+# Eclipse 
+# directories
+###################
+.settings/
+
+
+
+########################################
+# Files
+########################################
+
+###################
+# Properties files
+###################
+build.properties
+application/properties/config.properties*
+application/properties/droit.properties*
+application/properties/log4j.properties*
+application/webpages/web.xml
+
+###################
+# Eclipse files
+###################
+.classpath
+.project
+.checkstyle
+
+###################
+# Log files
+###################
+*.log
+
+###################
+# Gedit files
+###################
+*.*~
+
+###################
+# Vim files
+###################
+*.swp
+*.swo
+*.swn
+.vim
+
+###################
+# Compiled python
+# files
+###################
+*.pyc
+
+###################
+# Patch
+# File
+###################
+*.patch
+

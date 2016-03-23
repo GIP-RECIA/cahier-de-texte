@@ -1,0 +1,91 @@
+.corpsCalTable {
+    background-color: #FFFFFF;
+    border: 1px dotted #900000;
+    font-weight: bold;
+    height: 40px;
+    margin: 0;
+    text-decoration: none;
+    white-space: normal;
+    width: 100%;
+}
+
+
+TD.rf-dt-c > TABLE.corpsCalTable {
+	border-spacing:0px;
+	width:none;
+	width-min:33%;
+}
+
+TABLE.corpsCalTable .firstLine {
+	width:100%;
+}
+TABLE.corpsCalTable .firstLine TD.col1 {
+	width:35%;
+	text-align:left;
+}
+TABLE.corpsCalTable .firstLine TD.col2{
+	text-align:right;
+}
+TABLE.corpsCalTable .tdEnseignant, TABLE.corpsCalTable .tdClasse{
+	font-size:80%;
+}
+
+.corpsOuvre, .rf-dg-c {
+    padding: 0;
+    width: 17px;
+    font-weight:bold;
+    
+}
+
+
+input.rf-sel-inp {
+    width: 25px;
+}
+
+.toolbarButton {
+	border: none;
+	background-color: inherit;
+	margin: 0 5px 5px 0;
+	
+}
+
+div.saisirSeanceEvent {
+    border-width: 2px;
+    font-weight:bold;
+    text-align: center;
+}
+
+div.saisirSeanceEventLibre {
+    border-width: 2px;
+    font-weight:bold;
+    font-style: italic;
+    text-align: center; 
+}
+
+div.saisirSeanceEventVide {
+    border-width: 2px;
+    text-align: center;
+}
+
+
+div.saisirSeanceSelectedEvent {
+    border-width: 4px;
+    font-weight:bold;
+    text-align: center;
+}
+
+div.saisirSeanceSelectedEventLibre {
+    border-width: 4px;
+    font-weight:bold;
+    font-style: italic;
+    text-align: center; 
+}
+
+div.saisirSeanceSelectedEventVide {
+    border-width: 4px;
+    text-align: center;
+}
+
+div.semainier TABLE thead.rf-dt-thd th.rf-dt-shdr-c {
+    width: 14%;
+}

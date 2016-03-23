@@ -1,0 +1,145 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:cr="urn:crlr"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:rich="http://richfaces.org/rich"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:a4j="http://richfaces.org/a4j" 
+    >
+    
+
+<cr:page titrePage="Simultation du mode élève" >
+    
+    <h:outputScript library="js" name="jquery-ui-1.8.17.custom.min.js" target="head" />
+    
+    <cr:menuAction id="idMenuAction" autreAction="true" >
+        <cr:lien id="idValider" bean="#{simulationEleve}"
+            rendered="#{not empty simulationEleve.form.eleveSelected and empty contexteUtilisateur.utilisateurDTOOrigine}"
+            cible="valider" image="valider.png"
+            desc="Valider l'activation du mode simulation avec l'élève sélectionné"
+            oncomplete="lancerLienAjax('idNaviguerAccueil');"
+            render="cahierdetexte" 
+            status="status" 
+            />
+
+        <cr:lien id="idAnnuler" bean="#{simulationEleve}"
+            rendered="#{not empty contexteUtilisateur.utilisateurDTOOrigine}"
+            cible="annuler" image="supprimer.png"
+            desc="Mettre fin au mode de simulation élève et retourner au mode normal"
+            oncomplete="lancerLienAjax('idNaviguerAccueil');"
+            render="cahierdetexte"
+            status="status" 
+             />
+            
+    </cr:menuAction>
+        
+        <a4j:commandLink id="idNaviguerAccueil" action="ACCUEIL@menu@arbre" status="status" />
+        
+        <cr:liena4j idliena4j="idChargerListeEleve" 
+	        bean="#{silulationEleve}"
+	        cible="chargerListeEleve"
+	        render="cahierdetexte"
+	        status="status"
+	        rendered="true">
+	    </cr:liena4j>
+        
+        <rich:panel header="Mode élève" id="idmodeeleve" rendered="#{not empty contexteUtilisateur.utilisateurDTOOrigine}">
+           <div style="width: 100%; text-align: center; margin-top: 10px; font-weight: bold;">
+             <center>
+                <h:panelGrid columns="1" > 
+                    <h:outputText
+                        value="Vous êtes actuellement en cours de consultation du cahier de texte de l'élève #{contexteUtilisateur.utilisateurDTO.userDTO.nom} #{contexteUtilisateur.utilisateurDTO.userDTO.prenom}" />
+                </h:panelGrid>
+             </center>
+           </div>
+          <cr:spacer height="5" />
+        </rich:panel>
+        
+        <rich:panel id="cahierdetexte" header="Sélection d'un élève" rendered="#{empty contexteUtilisateur.utilisateurDTOOrigine}">
+          <div style="width: 100%; text-align: center;" >
+	        <table>
+		        <tr>
+		            <td>
+	                    <cr:selectClasseGroupe 
+		                    choixGroupesDeClass="false"
+		                    oncomplete=""
+		                    render="idchoixEleve :idPopupEleve_content "
+		                    tousClasseGroupe="false" />
+		            </td>
+	            </tr>
+	            <tr>
+	               <td>
+	                   <cr:saisiePopup id="idchoixEleve" titre="Elève"
+	                        modifiable="false"
+	                        lienModifiable="true"
+	                        largeur="350"
+	                        idPopup="idPopupEleve" decalageTitreGauche="14"
+	                        valeur="#{simulationEleve.form.eleveSelected.nom} #{simulationEleve.form.eleveSelected.prenom}"
+	                        bean="#{simulationEleve}" />
+	               </td>
+	            </tr>
+	        </table>
+        </div>    
+    </rich:panel>
+
+</cr:page>    
+
+<cr:popupListeFiltrable idPopup="idPopupEleve" 
+        tailleAuto="true"
+        largeurPopup="490"
+        hauteur="300"
+        titrePopup="Liste des élèves">
+        
+        <cr:tableSaisiePopup 
+            bean="#{simulationEleve}" 
+            cible="selectionnerEleve"
+            liste="#{simulationEleve.form.listeEleve}" largeur="450"
+            render=":formulaire_principal:cahierdetexte"
+            valeur="#{simulationEleve.form.eleveSelected}"
+            fermetureSiMsg="true" status="status"
+            avecPagination="false">
+            <rich:column 
+                    filterValue="#{simulationEleve.form.filtreEleveNom}" 
+                    filterExpression="#{fn:containsIgnoreCase(ligne.nom,bean.form.filtreEleveNom)}"
+                    >
+                    <f:facet name="header">
+                        <h:panelGroup>
+                            <h:outputText value="Nom " />
+                            <h:inputText value="#{simulationEleve.form.filtreEleveNom}"
+                                        id="filterTextNom">
+                                <a4j:ajax event="keyup" render="idPopupEleve_table" 
+                                    status="status" oncomplete="transfertFocus(this.id,'#{rich:clientId('filterTextNom')}');">
+                                    <a4j:attachQueue requestDelay="500" />
+                                </a4j:ajax>  
+                            </h:inputText>
+                        </h:panelGroup>
+                    </f:facet>
+                    <h:outputText value="#{ligne.nom}"/>
+            </rich:column>
+            <rich:column 
+                    filterValue="#{simulationEleve.form.filtreElevePrenom}" 
+                    filterExpression="#{fn:containsIgnoreCase(ligne.prenom,bean.form.filtreElevePrenom)}"
+                    >
+                    <f:facet name="header">
+                        <h:panelGroup>
+                            <h:outputText value="Prénom " />
+                            <h:inputText value="#{simulationEleve.form.filtreElevePrenom}"
+                                        id="filterTextPrenom">
+                                <a4j:ajax event="keyup" render="idPopupEleve_table" 
+                                    status="status" oncomplete="transfertFocus(this.id,'#{rich:clientId('filterTextPrenom')}');">
+                                    <a4j:attachQueue requestDelay="500" />
+                                </a4j:ajax>  
+                            </h:inputText>
+                        </h:panelGroup>
+                    </f:facet>
+                    <h:outputText value="#{ligne.prenom}"/>
+            </rich:column>
+        </cr:tableSaisiePopup>
+</cr:popupListeFiltrable>
+
+<cr:popupGroupeClasse render=":formulaire_principal:cahierdetexte" />
+<cr:popupStatus idStatus="status" />
+
+</html>

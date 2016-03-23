@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx" 
+xmlns:aop="http://www.springframework.org/schema/aop" xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+xsi:schemaLocation=" 
+   http://www.springframework.org/schema/beans 
+   http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+   http://www.springframework.org/schema/tx 
+   http://www.springframework.org/schema/tx/spring-tx-3.0.xsd 
+   http://www.springframework.org/schema/aop 
+   http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+   http://www.springframework.org/schema/context
+   http://www.springframework.org/schema/context/spring-context-3.0.xsd"> 
+
+    <!-- Charge et fait la correspondance des entrées properties -->    
+    <bean id="propertyConfigurer" 
+	    class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+	  <property name="locations" > 
+	      <list>	      	
+	      	<value>classpath:config.properties</value>
+	      </list>
+	  </property>
+	</bean>
+  
+    <!-- Source de données DB -->
+    <bean id="dataSource"
+        class="com.mchange.v2.c3p0.ComboPooledDataSource"  destroy-method="close">
+        <property name="driverClass" value="${db.driver}" />
+        <property name="jdbcUrl" value="${db.url}" />
+        <property name="user" value="${db.user}" />
+        <property name="password" value="${db.password}" />
+    </bean>
+
+    <!-- Configuration du manager d'entity "-->
+    <bean id="entityManagerFactory"
+        class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"
+        p:dataSource-ref="dataSource" p:persistence-unit-name="CahierTexte"> 
+        <!-- On spécifie ici l'adaptateur Spring pour l''implémentation JPA utilisée -->
+        <property name="jpaVendorAdapter">
+            <bean
+                class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter"
+                p:databasePlatform="${hibernate.dialect}"
+                p:showSql="false" p:generate-ddl="false" />
+        </property>
+        <!-- On spécifie ici le tisseur utilisée pour la modification du ByteCode, cf documentation de Spring pour plus de précisions -->
+        <property name="loadTimeWeaver">
+            <bean
+                class="org.springframework.instrument.classloading.InstrumentationLoadTimeWeaver" />
+        </property>
+    </bean>
+
+    <bean id="entityManager"
+        class="org.springframework.orm.jpa.support.SharedEntityManagerBean">
+        <property name="entityManagerFactory"
+            ref="entityManagerFactory" />
+    </bean>
+
+    <!-- le gestionnaire de transactions -->
+    <bean id="transactionManager"
+        class="org.springframework.orm.jpa.JpaTransactionManager"
+        p:entityManagerFactory-ref="entityManagerFactory" />
+
+    <!--Activation de la prise en compte des annotations de type @Required,@Autowired,@PostConstruct,
+        @PreDestroy,@Resource,@PersistenceContext,@PersistenceUnit -->
+    <context:annotation-config />   
+    <context:component-scan base-package="org.crlr.alimentation" />    
+   
+    <!--<tx:annotation-driven />-->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+    
+    <!-- persistence -->
+    <bean
+        class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor" />
+
+    <!-- traduction des exceptions -->
+    <bean
+        class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor" />
+     
+  <!-- Implémentation LDAP -->
+  <bean id="contextSource" class="org.springframework.ldap.core.support.LdapContextSource">
+    <property name="url" value="${ldap.url}" />
+    <property name="userDn" value="${ldap.user}" />
+    <property name="base" value="${ldap.baseDn}" />
+    <property name="password" value="${ldap.password}" />
+    <property name="pooled" value="true" />
+  </bean>
+    
+  <bean id="poolingContextSource" class="org.springframework.ldap.pool.factory.MutablePoolingContextSource">
+        <property name="contextSource" ref="contextSource" />
+        <property name="dirContextValidator" ref="dirContextValidator" />
+            
+        <property name="maxTotal" value="1" />
+        <property name="testOnBorrow" value="true"/>
+        <property name="testWhileIdle" value="true"/>
+        <property name="maxActive" value="1"/>
+        <property name="maxIdle" value="1"/>
+        <property name="maxWait" value="1"/>
+        <property name="whenExhaustedAction" value="1"/>
+    </bean> 
+    
+    
+<bean id="pooledContextSource"
+  class="org.springframework.ldap.pool.factory.PoolingContextSource"
+  p:minIdle="1"
+  p:maxIdle="1"
+  p:maxActive="1"
+  p:maxWait="1"
+  p:timeBetweenEvictionRunsMillis="1200000"
+  p:minEvictableIdleTimeMillis="1200000"
+  p:testOnBorrow="true"
+  p:testWhileIdle="true"
+  p:dirContextValidator-ref="dirContextValidator"
+  p:contextSource-ref="contextSource" />
+ 
+<bean id="dirContextValidator"
+  class="org.springframework.ldap.pool.validation.DefaultDirContextValidator"
+  p:base=""
+  p:filter="objectclass=*">
+  <property name="searchControls">
+    <bean class="javax.naming.directory.SearchControls"
+      p:timeLimit="3000"
+      p:countLimit="1"
+      p:searchScope="0"
+      p:returningAttributes="" />
+  </property>
+</bean>
+    
+    <bean id="ldapTemplate" class="org.springframework.ldap.core.LdapTemplate">
+        <constructor-arg ref="poolingContextSource" />
+    </bean>
+  
+  <bean id="operationLdap" class="org.crlr.alimentation.OperationLdap">       
+    <property name="brancheStructure" value="${ldap.brancheStructure}" />    
+    <property name="branchePersonne" value="${ldap.branchePersonne}" />  
+    <property name="nomProfil" value="${ldap.nomProfil}"/>  
+    <property name="ldapTemplate" ref="ldapTemplate" />
+    <property name="environnement" value="${application.env}" />
+    <property name="profilsEnseignants" value="${profil.enseignant}" />
+    <property name="profilsEleves" value="${profil.eleve}" />
+    <property name="profilsInspecteurs" value="${profil.inspecteur}" /> 
+  </bean>
+
+</beans>

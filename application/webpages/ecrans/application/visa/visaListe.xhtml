@@ -1,0 +1,470 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:crx="urn:crlr:ext" 
+    xmlns:cr="urn:crlr"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:rich="http://richfaces.org/rich">
+
+<cr:page titrePage="Synthèse des visas">    
+    <h:outputScript library="js" name="jquery-ui-1.8.20.custom.js" target="head" />
+    <h:outputScript library="js" name="jquery.qtip.js" target="head" />
+    <h:outputScript library="js/fullcalendar" name="fullcalendar.js" target="head" />
+    <h:outputScript library="js" name="visaListe.js" target="head" />
+    <h:outputScript library="js"  name="saisieDateListe.js" target="head"/>
+    <h:outputScript library="js" name="agendaCommon.js" target="head" />
+    <h:outputStylesheet library="css" name="fullcalendar.css" target="head" />
+    <h:outputStylesheet library="css" name="jquery.qtip.css" target="head" />
+    <h:outputStylesheet library="css" name="visaListe.css" target="head" />
+
+    <cr:menuAction id="idMenuAction">
+        <cr:elemMenuAction 
+              idaction="idSauver" bean="#{visaListe}" cible="sauver"
+              image="save.png" 
+              title="Sauvegarder"
+              render="idListeVisaPanel" 
+              oncomplete="setModificationFormulaire(false); resizePanel();" 
+        />    
+        <cr:elemMenuAction 
+              idaction="idRestaure" bean="#{visaListe}" cible="reload"
+              image="annuler.png" 
+              title="Annuler toutes les modifications"
+              render="idListeVisaPanel" 
+              oncomplete="setModificationFormulaire(false); resizePanel();" 
+              onclick="if (getModificationFormulaire() &amp;&amp; !confirm('Voulez-vous vraiment annuler toutes vos modifications ?')) { return false; }"
+        />    
+        <h:graphicImage
+            name="aide.png"
+            library="images/icones"  
+            title="Aide contextuelle"
+            id="idAide"
+            onclick="#{rich:component('idPopupAide')}.show();" />
+        
+    </cr:menuAction>
+
+    <cr:liena4j idliena4j="idRefreshListe" 
+        bean="#{visaListe}"
+        cible="refresh"
+        render="idListeVisaPanel"
+        oncomplete="resizePanel();"
+        status="statuspop"
+        rendered="true">
+    </cr:liena4j>
+    
+    
+    <a4j:outputPanel id="calendarDataPanel">
+        <div id='calendarData'></div>
+        <input type="text"
+             disabled="disabled"
+             style="display:none;" id="agendaJSON" value="#{saisirSeance.form.agendaJSON}"/>
+        <input type="text"
+             disabled="disabled"
+             style="display:none;" id="horairesJSON" value="#{saisirSeance.form.horairesJSON}"/>
+        <input type="text"
+             disabled="disabled"
+             style="display:none;" id="dateLundi" value="#{saisirSeance.form.dateLundi}"/>
+        <input type="text"
+             disabled="disabled"
+             style="display:none;" id="etablissementJSON" value="#{saisirSeance.form.etablissementJSON}"/>
+    </a4j:outputPanel>
+    
+    <rich:panel id="idListeVisaPanel" style="vertical-align:top; overflow:auto; ">
+        <table class="entete" style="width: 97%;">
+            <thead>
+                <tr >
+                    <th class="rf-p-hdr" colspan="6">
+                        Synthèse des visas
+                    </th>
+                </tr>
+                <tr>    
+                    <th>
+                        <a4j:commandLink 
+                           id="idtrinom" 
+                           action="#{visaListe['trierListe']}"
+                           oncomplete="resizePanel();"
+                           status="statuspop"
+                           rendered="true"
+                           render="idListeVisaPanel"
+                           style="color:#000000; -moz-text-decoration-line: none;" 
+                        >  
+                            Nom
+                            <h:graphicImage
+                                rendered="#{visaListe.form.ordreTri.colonne eq 'nom'}"
+                                library="images/icones" 
+                                name="#{visaListe.form.ordreTri.ascendant ? 'bas.gif' : 'haut.gif'}"
+                                title="Changer l'ordre de tri" />
+                            <f:setPropertyActionListener value="nom" target="#{visaListe.form.colonneTri}" />
+                        </a4j:commandLink>
+                    </th>
+                    <th style="width:200px;">
+                        <a4j:commandLink 
+                           id="idtriprenom" 
+                           action="#{visaListe['trierListe']}"
+                           oncomplete="resizePanel();"
+                           status="statuspop"
+                           rendered="true"
+                           render="idListeVisaPanel"
+                           style="color:#000000; -moz-text-decoration-line: none;" 
+                        >  
+                            Prénom
+                            <h:graphicImage
+                                rendered="#{visaListe.form.ordreTri.colonne eq 'prenom'}"
+                                library="images/icones" 
+                                name="#{visaListe.form.ordreTri.ascendant ? 'bas.gif' : 'haut.gif'}"
+                                title="Changer l'ordre de tri" />
+                            <f:setPropertyActionListener value="prenom" target="#{visaListe.form.colonneTri}" />
+                        </a4j:commandLink>
+                    </th>
+                    <th style="width:95px">
+                        <a4j:commandLink 
+                           id="idtridatederniermaj" 
+                           action="#{visaListe['trierListe']}"
+                           oncomplete="resizePanel();"
+                           status="statuspop"
+                           rendered="true"
+                           render="idListeVisaPanel"
+                           style="color:#000000; -moz-text-decoration-line: none;" 
+                        >  
+                            Dernier ajout
+                            <h:graphicImage
+                                rendered="#{visaListe.form.ordreTri.colonne eq 'dateDernierMaj'}"
+                                library="images/icones" 
+                                name="#{visaListe.form.ordreTri.ascendant ? 'bas.gif' : 'haut.gif'}"
+                                title="Changer l'ordre de tri" />
+                            <f:setPropertyActionListener value="dateDernierMaj" target="#{visaListe.form.colonneTri}" />
+                        </a4j:commandLink>
+                    </th>
+                    <th style="width:225px;">
+                        <table class="entete" width="100%;">
+                            <thead>
+                                <tr>
+                                    <th colspan="2" style="width:222px;" class="sousColonneEnteteTop">
+                                        Dernier visa
+                                    </th>
+                                </tr>
+                                <tr>    
+                                    <th style="width:131px;" class="sousColonneEnteteBottomLeft">
+				                        <a4j:commandLink 
+				                           id="idtritype" 
+				                           action="#{visaListe['trierListe']}"
+				                           oncomplete="resizePanel();"
+				                           status="statuspop"
+				                           rendered="true"
+				                           render="idListeVisaPanel"
+				                           style="color:#000000; -moz-text-decoration-line: none;" 
+				                        >  
+                                            Type
+                                            <h:graphicImage
+                                                rendered="#{visaListe.form.ordreTri.colonne eq 'type'}"
+                                                library="images/icones" 
+                                                name="#{visaListe.form.ordreTri.ascendant ? 'bas.gif' : 'haut.gif'}"
+                                                title="Changer l'ordre de tri" />
+                                            <f:setPropertyActionListener value="type" target="#{visaListe.form.colonneTri}" />
+                                        </a4j:commandLink>
+	                                </th>
+	                                <th style="width:90px;" class="sousColonneEnteteBottomRight">
+				                        <a4j:commandLink 
+				                           id="idtridatederniervisa" 
+				                           action="#{visaListe['trierListe']}"
+				                           oncomplete="resizePanel();"
+				                           status="statuspop"
+				                           rendered="true"
+				                           render="idListeVisaPanel"
+				                           style="color:#000000; -moz-text-decoration-line: none;" 
+				                        >  
+	                                       Date
+                                            <h:graphicImage
+                                                rendered="#{visaListe.form.ordreTri.colonne eq 'dateDernierVisa'}"
+                                                library="images/icones" 
+                                                name="#{visaListe.form.ordreTri.ascendant ? 'bas.gif' : 'haut.gif'}"
+                                                title="Changer l'ordre de tri" />
+                                            <f:setPropertyActionListener value="dateDernierVisa" target="#{visaListe.form.colonneTri}" />
+                                        </a4j:commandLink>
+	                                </th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </th>
+                    <th style="width:125px">Actions</th>
+                    <td style="width:50px; border-bottom-width:0px; border-right-width:0px;">&nbsp;</td>
+                </tr>
+            </thead>
+        </table>
+        
+        <table class="corps" style="width:97%;">
+        <ui:repeat id="a4jRepeateListeVisaEnseignant" value="#{visaListe.form.listeVisaEnseignant}" var="enseignantVisa" varStatus="indexEnseignant">
+            <tr class="#{indexEnseignant.index % 2 eq 0 ? 'pair' : 'impair' }" style="#{enseignantVisa.estModifie ? 'font-style: italic;' : ''}">
+                <td class="data" style="text-align: left;">#{enseignantVisa.enseignant.nom}</td>
+                <td style="width:200px; text-align: left;" class="data">#{enseignantVisa.enseignant.prenom}</td>
+                <td style="width:95px; #{enseignantVisa.vraiOuFauxExisteVisaPerime ? 'color:#B21717;' : ''}" class="data">#{cr:formatDate(enseignantVisa.dateDernierMaj, 'dd/MM/yyyy')}</td>
+                <td style="width:30px;" class="dataGauche">
+                    <h:graphicImage
+                    id="memoImageEnseignantVisa"
+                        rendered="#{enseignantVisa.typeDernierVisa eq 'MEMO'}"
+                        library="images/icones" 
+                        name="lock.png"
+                        title="Visa de type Mémo" />
+                    &nbsp; 
+                </td>
+                <td style="width:100px; text-align: left;" class="dataDroite">
+		           #{enseignantVisa.libelleProfilDernierVisa}
+		           &nbsp;
+                </td>
+                <td style="width:90px;" class="data" >
+                    #{cr:formatDate(enseignantVisa.dateDernierVisa, 'dd/MM/yyyy')}
+                    &nbsp;
+                </td>
+                <td style="width:40px;" class="dataGauche">
+	                <h:commandLink 
+                           id="idconstultererSeances" 
+                           action="#{visaListe['consulterEnseignantAgenda']}"
+                           status="statuspop"
+                           rendered="true"
+                        >       
+                        <f:ajax 
+                        execute="@form"
+                        render=":idPopupAgenda_form:idPopupAgendaRegion :idPopupAgenda_titre :formulaire_principal:calendarDataPanel"
+                        onevent="function(data) { if (data.status=='success') { #{rich:component('idPopupAgenda')}.show(); chargerAgenda(); } }"
+                        /> 
+                        <h:graphicImage
+                            library="images/icones" 
+                            name="seanceMini.png"
+                            title="Afficher le niveau de saisie de l'agenda de l'enseignant" />
+                        <f:setPropertyActionListener value="#{enseignantVisa}" target="#{visaListe.form.visaEnseignantSelected}" />           
+                    </h:commandLink>
+	            </td>
+	            <td style="width:40px;" class="dataCentre">
+                    <h:commandLink 
+                           id="idNaviguerDetailVisa" 
+                           action="#{visaListe['afficheEnseignantVisa']}"
+                           status="statuspop"
+                           rendered="true"
+                                                      
+                        >       
+                        <h:graphicImage
+                            library="images/icones" 
+                            name="loupe-icone.png"
+                            title="Consulter les séances de l'enseignant" />
+                        <f:setPropertyActionListener value="#{enseignantVisa}" target="#{visaListe.form.visaEnseignantSelected}" />           
+                    </h:commandLink>
+                </td>
+	            <td style="width:40px;" class="dataDroite">
+				    <a4j:commandLink 
+				           id="iddeplier_#{indexEnseignant.index}" 
+				           action="#{visaListe['deplierEnseignant']}"
+				           oncomplete="lancerLienAjax('idRefreshListe');"
+				           onclick="resetFormTarget(); desactiveClick(this.id, this.onclick);"
+				           status="statuspop"
+				           rendered="#{enseignantVisa.vraiOuFauxCollapse}"
+				           >
+				        <h:graphicImage
+                            library="images/icones" 
+                            name="plus.png"
+                            title="Déplier" /> 
+                        <f:setPropertyActionListener value="#{enseignantVisa}" target="#{visaListe.form.visaEnseignantSelected}" />           
+				    </a4j:commandLink>
+
+                    <a4j:commandLink 
+                        id="idreplier_#{indexEnseignant.index}" 
+                        action="#{visaListe['replierEnseignant']}"
+                        oncomplete="lancerLienAjax('idRefreshListe');"
+                        onclick="resetFormTarget(); desactiveClick(this.id, this.onclick);"
+                        status="statuspop"
+                        rendered="#{not enseignantVisa.vraiOuFauxCollapse}">
+                        <h:graphicImage
+                            library="images/icones" 
+                            name="minus.png"
+                            title="Replier" /> 
+                        <f:setPropertyActionListener value="#{enseignantVisa}" target="#{visaListe.form.visaEnseignantSelected}" />
+                    </a4j:commandLink>
+                </td>
+                <td style="width:50px; border-bottom-style:hidden; border-right-style:hidden; background-color: #FFFFFF;">&nbsp;</td>
+            </tr>
+            <tr style="#{enseignantVisa.vraiOuFauxCollapse ? 'display: none;' : 'padding-right: 30px;'}" >
+                <td colspan="9" style="padding-left:30px;">
+                    <h:outputText value="Aucun cahier de texte pour cet enseignant" rendered="#{not enseignantVisa.vraiOuFauxCollapse and empty enseignantVisa.listeVisa}" />
+                    <t:div rendered="#{not enseignantVisa.vraiOuFauxCollapse and not empty enseignantVisa.listeVisa}">
+                        <table class="SousEntete" style="width: 100%;">
+	                        <thead>
+	                            <tr>    
+		                            <th>Classe/groupe</th>
+		                            <th>Enseignement</th>
+		                            <th>Dernier ajout</th>
+		                            <th colspan="2">Type visa</th>
+		                            <th>Date visa</th>
+		                            <th colspan="4">Actions</th>
+	                            </tr>
+	                        </thead>
+	                        <ui:repeat id="a4jRepeateListeVisa" value="#{enseignantVisa.listeVisa}" var="ligne" varStatus="indexCTN">
+                                <tr class="#{indexCTN.index % 2 eq 0 ? 'pair' : 'impair' }" style="#{ligne.estModifie ? 'font-style: italic;' : ''}">
+                                    <td style="text-align:left;"><h:outputText id="listeVisaDesignation" value="#{ligne.classeGroupe.designation}" /></td>
+                                    <td style="text-align:left;"><h:outputText id="listeVisaEnsLibelle" value="#{ligne.enseignementDTO.libelle}" /></td>
+                                    <td style="#{ligne.estPerime ? 'color:#B21717;' : ''}"><h:outputText id="listeVisaDateMaj" value="#{cr:formatDate(ligne.dateMaj, 'dd/MM/yyyy')}" /></td>
+                                    <td style="width:20px; border-right-width:0px;">
+                                        <h:graphicImage
+                                            id="memoImageListVisa"
+                                            rendered="#{ligne.typeVisa eq 'MEMO'}"
+                                            library="images/icones" 
+                                            name="lock.png"
+                                            title="Visa de type Mémo" />
+                                    </td>
+                                    <td style="border-left-width:0px; text-align:left;"><h:outputText id="listeVisaProfil" value="#{ligne.libelleProfilVisa}" rendered="#{not empty ligne.dateVisa}" /></td>
+                                    <td><h:outputText id="listeVisadate" value="#{cr:formatDate(ligne.dateVisa, 'dd/MM/yyyy')}" /></td>
+                                    <td style="width:20px; border-right-width:0px; ">
+                                        <h:commandLink id="idaddvisasimple" 
+			                                action="#{visaListe.addVisaSimple}"
+			                                rendered="#{visaListe.form.profilVisaUser eq ligne.profil}"
+			                                status="statuspop">
+                                      <f:ajax execute="@form" onevent="handleEventAddVisa" 
+                                      render=":formulaire_principal:idListeVisaPanel"/>
+                                      
+			                                <h:graphicImage
+			                                    library="images/icones" 
+			                                    name="addVisaSimple.png"
+			                                    title="Poser un visa simple sur le cahier de texte de l'enseignant" /> 
+			                                <f:setPropertyActionListener value="#{enseignantVisa}" target="#{visaListe.form.visaEnseignantSelected}" />
+			                                <f:setPropertyActionListener value="#{ligne}" target="#{visaListe.form.visaSelected}" />
+			                            </h:commandLink>
+                                    </td>
+                                    <td style="width:20px; border-left-width:0px; border-right-width:0px; ">
+			                            <h:commandLink id="idaddvisamemo" 
+			                                action="#{visaListe.addVisaMemo}"
+			                                rendered="#{visaListe.form.profilVisaUser eq ligne.profil}"
+			                                status="statuspop">
+                                      <f:ajax execute="@form" onevent="handleEventAddVisa"
+                                      render=":formulaire_principal:idListeVisaPanel"/>
+			                                <h:graphicImage
+			                                    library="images/icones" 
+			                                    name="addVisaMemo.png"
+			                                    title="Poser un visa mémo sur le cahier de texte de l'enseignant" /> 
+			                                <f:setPropertyActionListener value="#{enseignantVisa}" target="#{visaListe.form.visaEnseignantSelected}" />
+			                                <f:setPropertyActionListener value="#{ligne}" target="#{visaListe.form.visaSelected}" />
+			                            </h:commandLink>
+                                    </td>
+                                    <td style="width:20px; border-left-width:0px; border-right-width:0px; ">
+			                            <h:commandLink id="iddelvisa" 
+			                                action="#{visaListe.delVisa}"			                             
+                                            rendered="#{ligne.vraiOuFauxVisaPose and visaListe.form.profilVisaUser eq ligne.profil}"
+			                                status="statuspop">
+                                      <f:ajax execute="@form" onevent="handleEventDeleteVisa"
+                                      render=":formulaire_principal:idListeVisaPanel"/>
+			                                <h:graphicImage
+			                                    library="images/icones" 
+			                                    name="delVisa.png"
+			                                    title="Supprimer le visa" /> 
+			                                <f:setPropertyActionListener value="#{enseignantVisa}" target="#{visaListe.form.visaEnseignantSelected}" />
+			                                <f:setPropertyActionListener value="#{ligne}" target="#{visaListe.form.visaSelected}" />
+			                            </h:commandLink>
+                                    </td>
+                                    <td style="width:20px; border-left-width:0px; ">
+			                            <h:commandLink id="idshowvisa" 
+			                                action="#{visaListe.afficheDetailVisa}"
+                                      
+                                            onclick="if (getModificationFormulaire() &amp;&amp; !confirm('Vous allez perdre vos modifications.  Êtes-vous sûr de continuer ?')) { return false; }"
+			                                status="statuspop">
+                                  
+			                                <h:graphicImage
+			                                    library="images/icones" 
+			                                    name="loupe-icone.png"
+			                                    title="Consulter les séances du cahier de texte de l'enseignant" /> 
+			                                <f:setPropertyActionListener value="#{enseignantVisa}" target="#{visaListe.form.visaEnseignantSelected}" />
+			                                <f:setPropertyActionListener value="#{ligne}" target="#{visaListe.form.visaSelected}" />
+			                            </h:commandLink> 
+                                    </td>
+                                </tr>
+                            </ui:repeat>
+                        </table>         
+                    </t:div> 
+                </td>
+            </tr>
+        </ui:repeat>
+        <tr >
+            <td colspan="9" style="padding-left:30px;" >
+           </td>
+        </tr>
+        </table>
+    </rich:panel>
+
+    <cr:popupConfirmSauvegardeModification 
+        libelleMessage="Voulez-vous enregistrer vos modifications avant de quitter cette page ?"
+        bean="#{visaListe}" 
+        cible="sauver"       
+        render="idListeVisaPanel" 
+        oncomplete="setModificationFormulaire(false);"
+        onErrorSauvegarde="setModificationFormulaire(true);"
+        action="" />
+   
+    <cr:popup 
+        idPopup="idPopupAide" 
+        titrePopup="Aide"
+        largeurPopup="820" 
+        tailleAuto="true" 
+        popupUseRichEditor="false">
+        <div style="overflow: auto; width: 100%; height: 500px;" > 
+            <span style="word-wrap: break-word; width:780px;display: block;float:left;white-space:normal;">
+                <h:outputText value="#{visaListe.form.texteAide}" escape="false" />
+            </span>
+        </div>
+    </cr:popup>   
+</cr:page>    
+
+<cr:popupModifiable idPopup="idPopupAgenda"
+domElementAttachment="form"
+    largeurPopup="400" maxlength="50" statusPopup="statuspop" hauteurPopup="550"
+    titrePopup="#{visaListe.form.titreAgenda} " >
+    <a4j:outputPanel id="idPopupAgendaRegion">
+        <table style="width: 100%;" >
+            <tr>
+                <td style="width: 30px;">
+                        <a4j:commandLink 
+                           id="idnaviguerprecedent" 
+                           action="#{visaListe['naviguerSemainePrecedent']}"
+                           oncomplete="chargerAgenda();"
+                           status="statuspop"
+                           rendered="true"
+                           render="formulaire_principal:calendarDataPanel idTitreSemaine idnaviguerprecedent idnaviguersuivant"
+                           style="#{visaListe.afficheSemainePrecedente ? '' : 'display:none;'}"
+                        >       
+                        <h:graphicImage
+                            library="images/icones" 
+                            name="flecheGauche.png"
+                            title="Afficher la semaine précédente" />
+                    </a4j:commandLink>
+                </td>
+                <td style="width: 240px; text-align:center;">
+                    <h:outputText id="idTitreSemaine" value="#{visaListe.titreSemaine}" />
+                </td>
+                <td style="width: 30px;">
+                        <a4j:commandLink 
+                           id="idnaviguersuivant" 
+                           action="#{visaListe['naviguerSemaineSuivant']}"
+                           oncomplete="chargerAgenda();"
+                           status="statuspop"
+                           rendered="true"
+                           style="#{visaListe.afficheSemaineSuivante ? '' : 'display:none;'}"
+                           render="formulaire_principal:calendarDataPanel idTitreSemaine idnaviguersuivant idnaviguerprecedent"
+                        >       
+                        <h:graphicImage
+                            library="images/icones" 
+                            name="flecheDroite.png"
+                            title="Afficher la semaine suivante" />
+                    </a4j:commandLink>
+                </td>
+            </tr>
+            <tr>
+		        <td colspan="3" style="width: 100%;" id="idAgenda">
+		            <div class='calendar'></div>
+		        </td>
+		    </tr>
+		</table>
+    </a4j:outputPanel>
+</cr:popupModifiable>
+
+
+<cr:popupStatus idStatus="statuspop" />
+
+</html>

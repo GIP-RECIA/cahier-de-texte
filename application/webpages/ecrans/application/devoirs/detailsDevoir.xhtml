@@ -1,0 +1,119 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:crx="urn:crlr:ext"
+    xmlns:cr="urn:crlr"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:rich="http://richfaces.org/rich">
+
+<cr:page titrePage="Gestion devoir" bean="#{detailsDevoir}" form="#{detailsDevoir.form}">
+	
+ 	<cr:menuAction id="idMenuAction">
+   		<cr:elemMenuAction idaction="idRetourToolBar" bean="#{detailsDevoir}" cible="retour"
+		        image="back.png" title="Retour"
+	            render="detailsDevoir" />
+	</cr:menuAction>
+	
+    <rich:panel header="Consulter un devoir" id="detailsDevoir">
+    
+        <h:panelGrid columns="9" class="table">
+            <cr:saisiePopup id="idSequence" titre="Séquence"
+                idPopup="idPopupSequence" decalageTitreDroite="22"
+                largeur="300"
+                valeur="#{detailsDevoir.form.intituleSequence}"
+                bean="#{detailsDevoir}"
+                modifiable="false" />
+
+            <cr:saisieDate id="dateDebutSequence" decalageTitreDroite="0" decalageTitreGauche="15" largeur="65"
+                valeur="#{detailsDevoir.form.dateDebut}"
+                titre="Début" modifiable="false" />
+
+            <cr:saisieDate id="dateFinSequence" decalageTitreDroite="0" decalageTitreGauche="5" largeur="65"
+                valeur="#{detailsDevoir.form.dateFin}"
+                titre="Fin" modifiable="false" />
+        </h:panelGrid>
+
+        <h:panelGrid  columns="5" class="table">
+            <cr:saisieTexte id="idDesignationClasseGroupe" titre="Classe/groupe" largeur="150"
+                decalageTitreGauche="0" modifiable="false" decalageTitreDroite="0"
+                valeur="#{detailsDevoir.form.designationClasseGroupe}" />
+        
+            <cr:saisieTexte id="designationEnseignement" titre="Enseignement"
+                modifiable="false" largeur="300" decalageTitreGauche="10" decalageTitreDroite="0"
+                valeur="#{detailsDevoir.form.designationEnseignement}" />
+        </h:panelGrid>
+        
+        <h:panelGrid  columns="2" class="table">
+           <cr:saisieTexte id="nomEnseignant" titre="Enseignant"
+                modifiable="false"  decalageTitreDroite="16" largeur="274"
+                valeur="#{detailsDevoir.form.civilite} #{detailsDevoir.form.nom}" /> 
+        </h:panelGrid>
+        <h:panelGrid  columns="8" class="table">
+           
+           <cr:saisieDate id="dateSeance" decalageTitreDroite="7" largeur="65"
+                    valeur="#{detailsDevoir.form.dateSeance}" titre="Date séance" modifiable="false" />
+                    
+            <cr:saisieHeureMinute id="heureDebut" titre="Heure début"
+                desc="Heure de début" valeurHeure="#{detailsDevoir.form.heureDebutSeance}" avecMinute="true"
+                valeurMinute="#{detailsDevoir.form.minuteDebutSeance}"
+                modifiable="false" decalageTitreGauche="20" decalageTitreDroite="3" bean="#{detailsDevoir}" />
+
+            <cr:saisieHeureMinute id="heureFin" titre="Heure fin"
+                desc="Heure de fin" valeurHeure="#{detailsDevoir.form.heureFinSeance}" avecMinute="true"
+                valeurMinute="#{detailsDevoir.form.minuteFinSeance}"
+                modifiable="false" decalageTitreGauche="29" bean="#{detailsDevoir}" />
+        </h:panelGrid>
+        
+        <h:panelGrid  columns="6" class="table">
+           <cr:saisieTexte id="intitule" titre="Intitulé devoir" largeur="313"
+                    decalageTitreGauche="0" decalageTitreDroite="0"
+                    valeur="#{detailsDevoir.form.intitule}"
+                    bean="#{detailsDevoir}" modifiable="false" />
+                    
+            <cr:saisieTexte id="libelleTypeDevoir" titre="Type devoir"
+                    decalageTitreGauche="20" decalageTitreDroite="6"
+                    valeur="#{detailsDevoir.form.libelleTypeDevoir}"
+                    bean="#{detailsDevoir}" modifiable="false" />
+
+            <cr:saisieDate id="date" decalageTitreGauche="40" decalageTitreDroite="1" largeur="65"
+                    valeur="#{detailsDevoir.form.dateRemise}" titre="Date remise" modifiable="false" />
+ 
+        </h:panelGrid>
+                        
+        <h:panelGrid  columns="2" class="table" >
+            <cr:saisieEditeur id="description" titre="Description" desc="saisir le commentaire"                
+                valeur="#{detailsDevoir.form.description}" decalageTitreDroite="23" modifiable="false" />
+        </h:panelGrid>
+        
+        <c:set var="listingPieceJointeNonVide" value="#{not empty detailsDevoir.form.files}"/>
+         <rich:panel id="listingPieceJointe" style="vertical-align:top; overflow:auto; width:820px; height:200px; #{listingPieceJointeNonVide ? '' : 'border:0;'}">
+            
+             <cr:table idTable="tableListingPieceJointe"
+                 liste="#{detailsDevoir.form.files}" largeur="790"                 
+                 entete="Liste des pièces jointes ajoutées au devoir"
+                 rendered="#{listingPieceJointeNonVide}">
+                 <cr:colonne libelleColonne="nom" id="">
+                     <h:outputText value="#{ligne.nom}" />
+                 </cr:colonne>
+                 <cr:colonne libelleColonne="Fichier" id="">
+                    <h:outputText value="Le fichier n'existe pas." rendered="#{not ligne.activerLien}" />
+                    <cr:lien id="idFichier" chemin="#{ligne.pathFullDownload}" rendered="#{ligne.activerLien}" bean=""
+                        image="download.png" desc="Télécharger">
+                    </cr:lien>
+                 </cr:colonne>
+             </cr:table>
+         </rich:panel>
+        
+    </rich:panel>
+    
+    <cr:popup idPopup="idPopupSequence" tailleAuto="true"
+        largeurPopup="300"
+        titrePopup="Liste des séquences">        
+    </cr:popup>
+</cr:page>
+
+</html>

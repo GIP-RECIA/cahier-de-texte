@@ -1,0 +1,487 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:crx="urn:crlr:ext"
+    xmlns:cr="urn:crlr"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:rich="http://richfaces.org/rich"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+<ui:composition>
+    <!-- 
+        grilleEmploiCommon : composant permettant le rendu de l'emploi du temps.
+        
+    -->
+     <script type="text/javascript">
+/* <![CDATA[ */
+			function affSelInterdite() {
+			     alert('La sélection de cellule est disponible uniquement sur celles qui sont enregistrées');
+			}
+/* ]]> */ </script>
+ <c:set var="listeJours"
+           value="${listeJours}" />
+    <c:set var="id"
+           value="${id}" />
+    <cr:lien id="${id}LSelEmp"
+             bean="#{constituerEmp}"
+             cible="ajoutFusionCellule"
+             render="table_${id}"
+             titre=""
+             oncomplete="" />
+    <t:inputHidden forceId="true"
+                   id="${id}CacheSelcol"
+                   value="#{constituerEmp.form.celluleSelectionne}" />
+    <rich:dataTable value="${listeJours}"
+                    width="70%"
+                    rowClasses="pair,impair"
+                    var="category"
+                    rows="#{fn:length(listeJours)}"
+                    rowKeyVar="row"
+                    styleClass="planning"
+                    id="table_${id}"
+                    headerClass="${id}"
+                    rendered="#{not empty listeJours}">
+      <rich:column width="40"
+                   styleClass=""
+                   style="text-align:center;">
+        <f:facet name="header">
+          <cr:lien id="initialiserSemaine"
+                   image="copy.png"
+                   bean="#{constituerEmp}"
+                   cible="initialiserSemaine2Avec1"
+                   sansImage="false"
+                   confirm="Votre emploi du temps de la semaine 1 va écraser celui de la semaine 2. Êtes vous sûr de vouloir continuer ?"
+                   rendered="#{constituerEmp.form.vraiOuFauxAlternanceSemaine}"
+                   oncomplete="if (#{constituerEmp.form.vraiOuFauxIncoherence} == true) #{rich:component('idPopupCheck')}.show();"
+                   desc="Initialiser la semaine 2 avec la semaine 1"
+                   render="idPopupCheck,inputModification,mainContainer,constituerEmpEntete" />
+        </f:facet>
+        <div style="width:40px;">
+        #{category.heureDebut}H#{category.minuteDebut}
+        <br />#{category.heureFin}H#{category.minuteFin}</div>
+      </rich:column>
+      <rich:column width="130"
+                   style="padding:1px"
+                   rendered="#{constituerEmp.form.jourOuvreAccessible['LUNDI']}"
+                   styleClass="corpsEmplTable">
+        <f:facet name="header">
+          <h:outputText value="Lundi" />
+        </f:facet>
+        <a4j:outputPanel id="${id}oLundi"
+                         layout="block">
+          <rich:dropTarget acceptedTypes="ResultatRechercheSequenceDTO"
+                            rendered="#{category.active}"
+                            dropListener="#{constituerEmp.onDropItem}"
+                            render="table_${id},inputModification"
+                            dropValue="#{category.map['LUNDI'].position}" />
+          <h:panelGrid columns="2"
+                       style="border:2px solid #{category.map['LUNDI'].typeCouleur.id};cursor:#{(category.active and not empty category.map['LUNDI'].idEnseignement) ? 'pointer': 'default'};margin:0;padding:0;height: 47px;width:100%; background-color:#{category.map['LUNDI'].selectionne ? 'yellow' : category.map['LUNDI'].vraiOuFauxFusion ? '#eccda6' : category.active ? '#ffffff': '#ccc'};">
+
+            <t:div onclick="#{(not empty category.map['LUNDI'].idEnseignement and category.active) ? '' : 'affSelInterdite();return;'} lancerLienAjax('#{id}LSelEmp',{'#{id}CacheSelcol': '#{category.map['LUNDI'].position}'});">
+
+              <h:panelGroup style="line-height:12px;font-size:10px;">
+
+                <div>
+                  <h:outputText rendered="#{not empty category.map['LUNDI'].classe}"
+                                value="#{category.map['LUNDI'].classe}" />
+                </div>
+                <div>
+                  <h:outputText rendered="#{not empty category.map['LUNDI'].groupe}"
+                                value="#{category.map['LUNDI'].groupe}" />
+                </div>
+                <div>
+                  <h:outputText>
+                  #{category.map['LUNDI'].matiere}</h:outputText>
+                </div>
+                <div>
+                  <t:outputText forceId="true"
+                                id="#{s}l#{category.map['LUNDI'].position}"
+                                value="#{category.map['LUNDI'].descriptionCourte}" />
+                </div>
+              </h:panelGroup>
+            </t:div>
+            <t:div style="margin:0;">
+              <h:outputText style="font-size:24px;color:red;"
+                            value=" #{category.map['LUNDI'].chaineExistModif}" />
+              <cr:lien id="idaddDesc_${id}"
+                       bean="#{constituerEmp}"
+                       cible="empty"
+                       oncomplete="#{rich:component('idPopupDesc')}.show()"
+                       image="information.png"
+                       desc="Ajouter une description."
+                       onclick="$('idCacheValeurSem').value='l';"
+                       render="idCacheValeurSem,idPopupDesc"
+                       rendered="#{(not empty category.map['LUNDI'].classe or not empty category.map['LUNDI'].groupe) and not empty category.map['LUNDI'].matiere}">
+
+                <f:setPropertyActionListener value="#{category.map['LUNDI']}"
+                                             target="#{constituerEmp.form.detailJourEmploiDTOSel}" />
+              </cr:lien>
+            </t:div>
+          </h:panelGrid>
+        </a4j:outputPanel>
+      </rich:column>
+      <rich:column width="130"
+                   style="padding:1px"
+                   rendered="#{constituerEmp.form.jourOuvreAccessible['MARDI']}"
+                   styleClass="corpsEmplTable">
+        <f:facet name="header">
+          <h:outputText value="Mardi" />
+        </f:facet>
+        <a4j:outputPanel id="${id}oMardi"
+                         layout="block">
+          <rich:dropTarget acceptedTypes="ResultatRechercheSequenceDTO"
+                           rendered="#{category.active}"
+                           dropListener="#{constituerEmp.onDropItem}"
+                           render="table_${id},inputModification"
+                           dropValue="#{category.map['MARDI'].position}" />
+          <h:panelGrid columns="2"
+                       style="border:2px solid #{category.map['MARDI'].typeCouleur.id};cursor:#{(category.active and not empty category.map['MARDI'].idEnseignement) ? 'pointer': 'default'};margin:0;padding:0;height: 47px;width:100%; background-color:#{category.map['MARDI'].selectionne ? 'yellow' : category.map['MARDI'].vraiOuFauxFusion ? '#eccda6' : category.active ? '#ffffff': '#ccc'};">
+
+            <t:div onclick="#{(not empty category.map['MARDI'].idEnseignement and category.active) ? '' : 'affSelInterdite();return;'} lancerLienAjax('#{id}LSelEmp',{'#{id}CacheSelcol': '#{category.map['MARDI'].position}'});">
+
+              <h:panelGroup style="line-height:12px;font-size:10px;">
+
+                <div>
+                  <h:outputText rendered="#{not empty category.map['MARDI'].classe}"
+                                value="#{category.map['MARDI'].classe}" />
+                </div>
+                <div>
+                  <h:outputText rendered="#{not empty category.map['MARDI'].groupe}"
+                                value="#{category.map['MARDI'].groupe}" />
+                </div>
+                <div>
+                  <h:outputText>
+                  #{category.map['MARDI'].matiere}</h:outputText>
+                </div>
+                <div>
+                  <t:outputText forceId="true"
+                                id="#{s}m#{category.map['MARDI'].position}"
+                                value="#{category.map['MARDI'].descriptionCourte}" />
+                </div>
+              </h:panelGroup>
+            </t:div>
+            <t:div style="margin:0;">
+              <h:outputText style="font-size:24px;color:red;"
+                            value=" #{category.map['MARDI'].chaineExistModif}" />
+              <cr:lien id="idaddDescMardi_${id}"
+                       bean="#{constituerEmp}"
+                       cible="empty"
+                       oncomplete="#{rich:component('idPopupDesc')}.show()"
+                       image="information.png"
+                       desc="Ajouter une description."
+                       onclick="$('idCacheValeurSem').value='m';"
+                       render="idCacheValeurSem,idPopupDesc"
+                       rendered="#{(not empty category.map['MARDI'].classe or not empty category.map['MARDI'].groupe) and not empty category.map['MARDI'].matiere}">
+
+                <f:setPropertyActionListener value="#{category.map['MARDI']}"
+                                             target="#{constituerEmp.form.detailJourEmploiDTOSel}" />
+              </cr:lien>
+            </t:div>
+          </h:panelGrid>
+        </a4j:outputPanel>
+      </rich:column>
+      <rich:column width="130"
+                   style="padding:1px"
+                   rendered="#{constituerEmp.form.jourOuvreAccessible['MERCREDI']}"
+                   styleClass="corpsEmplTable">
+        <f:facet name="header">
+          <h:outputText value="Mercredi" />
+        </f:facet>
+        <a4j:outputPanel id="${id}oMercredi"
+                         layout="block">
+          <rich:dropTarget acceptedTypes="ResultatRechercheSequenceDTO"
+                            rendered="#{category.active}"
+                            dropListener="#{constituerEmp.onDropItem}"
+                            render="table_${id},inputModification"
+                            dropValue="#{category.map['MERCREDI'].position}" />
+          <h:panelGrid columns="2"
+                       style="border:2px solid #{category.map['MERCREDI'].typeCouleur.id};cursor:#{(category.active and not empty category.map['MERCREDI'].idEnseignement) ? 'pointer': 'default'};margin:0;padding:0;height: 47px;width:100%; background-color:#{category.map['MERCREDI'].selectionne ? 'yellow' : category.map['MERCREDI'].vraiOuFauxFusion ? '#eccda6' : category.active ? '#ffffff': '#ccc'};">
+
+            <t:div onclick="#{(not empty category.map['MERCREDI'].idEnseignement and category.active) ? '' : 'affSelInterdite();return;'} lancerLienAjax('#{id}LSelEmp',{'#{id}CacheSelcol': '#{category.map['MERCREDI'].position}'});">
+
+              <h:panelGroup style="line-height:12px;font-size:10px;">
+
+                <div>
+                  <h:outputText rendered="#{not empty category.map['MERCREDI'].classe}"
+                                value="#{category.map['MERCREDI'].classe}" />
+                </div>
+                <div>
+                  <h:outputText rendered="#{not empty category.map['MERCREDI'].groupe}"
+                                value="#{category.map['MERCREDI'].groupe}" />
+                </div>
+                <div>
+                  <h:outputText>
+                  #{category.map['MERCREDI'].matiere}</h:outputText>
+                </div>
+                <div>
+                  <t:outputText forceId="true"
+                                id="#{s}me#{category.map['MERCREDI'].position}"
+                                value="#{category.map['MERCREDI'].descriptionCourte}" />
+                </div>
+              </h:panelGroup>
+            </t:div>
+            <t:div style="margin:0;">
+              <h:outputText style="font-size:24px;color:red;"
+                            value=" #{category.map['MERCREDI'].chaineExistModif}" />
+              <cr:lien id="idaddDescMercr_${id}"
+                       bean="#{constituerEmp}"
+                       cible="empty"
+                       oncomplete="#{rich:component('idPopupDesc')}.show()"
+                       image="information.png"
+                       desc="Ajouter une description."
+                       onclick="$('idCacheValeurSem').value='me';"
+                       render="idCacheValeurSem,idPopupDesc"
+                       rendered="#{(not empty category.map['MERCREDI'].classe or not empty category.map['MERCREDI'].groupe) and not empty category.map['MERCREDI'].matiere}">
+
+                <f:setPropertyActionListener value="#{category.map['MERCREDI']}"
+                                             target="#{constituerEmp.form.detailJourEmploiDTOSel}" />
+              </cr:lien>
+            </t:div>
+          </h:panelGrid>
+        </a4j:outputPanel>
+      </rich:column>
+      <rich:column width="130"
+                   style="padding:1px"
+                   rendered="#{constituerEmp.form.jourOuvreAccessible['JEUDI']}"
+                   styleClass="corpsEmplTable">
+        <f:facet name="header">
+          <h:outputText value="Jeudi" />
+        </f:facet>
+        <a4j:outputPanel id="${id}oJeudi"
+                         layout="block">
+          <rich:dropTarget acceptedTypes="ResultatRechercheSequenceDTO"
+                            rendered="#{category.active}"
+                            dropListener="#{constituerEmp.onDropItem}"
+                            render="table_${id},inputModiciation"
+                            dropValue="#{category.map['JEUDI'].position}" />
+          <h:panelGrid columns="2"
+                       style="border:2px solid #{category.map['JEUDI'].typeCouleur.id};cursor:#{(category.active and not empty category.map['JEUDI'].idEnseignement) ? 'pointer': 'default'};margin:0;padding:0;height: 47px;width:100%; background-color:#{category.map['JEUDI'].selectionne ? 'yellow' : category.map['JEUDI'].vraiOuFauxFusion ? '#eccda6' : category.active ? '#ffffff': '#ccc'};">
+
+            <t:div onclick="#{(not empty category.map['JEUDI'].idEnseignement and category.active) ? '' : 'affSelInterdite();return;'} lancerLienAjax('#{id}LSelEmp',{'#{id}CacheSelcol': '#{category.map['JEUDI'].position}'});">
+
+              <h:panelGroup style="line-height:12px;font-size:10px;">
+
+                <div>
+                  <h:outputText rendered="#{not empty category.map['JEUDI'].classe}"
+                                value="#{category.map['JEUDI'].classe}" />
+                </div>
+                <div>
+                  <h:outputText rendered="#{not empty category.map['JEUDI'].groupe}"
+                                value="#{category.map['JEUDI'].groupe}" />
+                </div>
+                <div>
+                  <h:outputText>
+                  #{category.map['JEUDI'].matiere}</h:outputText>
+                </div>
+                <div>
+                  <t:outputText forceId="true"
+                                id="#{s}j#{category.map['JEUDI'].position}"
+                                value="#{category.map['JEUDI'].descriptionCourte}" />
+                </div>
+              </h:panelGroup>
+            </t:div>
+            <t:div style="margin:0;">
+              <h:outputText style="font-size:24px;color:red;"
+                            value=" #{category.map['JEUDI'].chaineExistModif}" />
+              <cr:lien id="idaddDescJEUDI_${id}"
+                       bean="#{constituerEmp}"
+                       cible="empty"
+                       oncomplete="#{rich:component('idPopupDesc')}.show()"
+                       image="information.png"
+                       desc="Ajouter une description."
+                       onclick="$('idCacheValeurSem').value='j';"
+                       render="idCacheValeurSem,idPopupDesc"
+                       rendered="#{(not empty category.map['JEUDI'].classe or not empty category.map['JEUDI'].groupe) and not empty category.map['JEUDI'].matiere}">
+
+                <f:setPropertyActionListener value="#{category.map['JEUDI']}"
+                                             target="#{constituerEmp.form.detailJourEmploiDTOSel}" />
+              </cr:lien>
+            </t:div>
+          </h:panelGrid>
+        </a4j:outputPanel>
+      </rich:column>
+      <rich:column width="130"
+                   style="padding:1px"
+                   rendered="#{constituerEmp.form.jourOuvreAccessible['VENDREDI']}"
+                   styleClass="corpsEmplTable">
+        <f:facet name="header">
+          <h:outputText value="Vendredi" />
+        </f:facet>
+        <a4j:outputPanel id="${id}oVendredi"
+                         layout="block">
+          <rich:dropTarget acceptedTypes="ResultatRechercheSequenceDTO"
+                            rendered="#{category.active}"
+                            dropListener="#{constituerEmp.onDropItem}"
+                            render="table_${id},inputModification"
+                            dropValue="#{category.map['VENDREDI'].position}" />
+          <h:panelGrid columns="2"
+                       style="border:2px solid #{category.map['VENDREDI'].typeCouleur.id};cursor:#{(category.active and not empty category.map['VENDREDI'].idEnseignement) ? 'pointer': 'default'};margin:0;padding:0;height: 47px;width:100%; background-color:#{category.map['VENDREDI'].selectionne ? 'yellow' : category.map['VENDREDI'].vraiOuFauxFusion ? '#eccda6' : category.active ? '#ffffff': '#ccc'};">
+
+            <t:div onclick="#{(not empty category.map['VENDREDI'].idEnseignement and category.active) ? '' : 'affSelInterdite();return;'} lancerLienAjax('#{id}LSelEmp',{'#{id}CacheSelcol': '#{category.map['VENDREDI'].position}'});">
+
+              <h:panelGroup style="line-height:12px;font-size:10px;">
+
+                <div>
+                  <h:outputText rendered="#{not empty category.map['VENDREDI'].classe}"
+                                value="#{category.map['VENDREDI'].classe}" />
+                </div>
+                <div>
+                  <h:outputText rendered="#{not empty category.map['VENDREDI'].groupe}"
+                                value="#{category.map['VENDREDI'].groupe}" />
+                </div>
+                <div>
+                  <h:outputText>
+                  #{category.map['VENDREDI'].matiere}</h:outputText>
+                </div>
+                <div>
+                  <t:outputText forceId="true"
+                                id="#{s}v#{category.map['VENDREDI'].position}"
+                                value="#{category.map['VENDREDI'].descriptionCourte}" />
+                </div>
+              </h:panelGroup>
+            </t:div>
+            <t:div style="margin:0;">
+              <h:outputText style="font-size:24px;color:red;"
+                            value=" #{category.map['VENDREDI'].chaineExistModif}" />
+              <cr:lien id="idaddDescVENDREDI_${id}"
+                       bean="#{constituerEmp}"
+                       cible="empty"
+                       oncomplete="#{rich:component('idPopupDesc')}.show()"
+                       image="information.png"
+                       desc="Ajouter une description."
+                       onclick="$('idCacheValeurSem').value='v';"
+                       render="idCacheValeurSem,idPopupDesc"
+                       rendered="#{(not empty category.map['VENDREDI'].classe or not empty category.map['VENDREDI'].groupe) and not empty category.map['VENDREDI'].matiere}">
+
+                <f:setPropertyActionListener value="#{category.map['VENDREDI']}"
+                                             target="#{constituerEmp.form.detailJourEmploiDTOSel}" />
+              </cr:lien>
+            </t:div>
+          </h:panelGrid>
+        </a4j:outputPanel>
+      </rich:column>
+      <rich:column width="130"
+                   style="padding:1px"
+                   rendered="#{constituerEmp.form.jourOuvreAccessible['SAMEDI']}"
+                   styleClass="corpsEmplTable">
+        <f:facet name="header">
+          <h:outputText value="Samedi" />
+        </f:facet>
+        <a4j:outputPanel id="${id}oSamedi"
+                         layout="block">
+          <rich:dropTarget acceptedTypes="ResultatRechercheSequenceDTO"
+                            rendered="#{category.active}"
+                            dropListener="#{constituerEmp.onDropItem}"
+                            render="table_${id},inputModification"
+                            dropValue="#{category.map['SAMEDI'].position}" />
+          <h:panelGrid columns="2"
+                       style="border:2px solid #{category.map['SAMEDI'].typeCouleur.id};cursor:#{(category.active and not empty category.map['SAMEDI'].idEnseignement) ? 'pointer': 'default'};margin:0;padding:0;height: 47px;width:100%; background-color:#{category.map['SAMEDI'].selectionne ? 'yellow' : category.map['SAMEDI'].vraiOuFauxFusion ? '#eccda6' : category.active ? '#ffffff': '#ccc'};">
+
+            <t:div onclick="#{(not empty category.map['SAMEDI'].idEnseignement and category.active) ? '' : 'affSelInterdite();return;'} lancerLienAjax('#{id}LSelEmp',{'#{id}CacheSelcol': '#{category.map['SAMEDI'].position}'});">
+
+              <h:panelGroup style="line-height:12px;font-size:10px;">
+
+                <div>
+                  <h:outputText rendered="#{not empty category.map['SAMEDI'].classe}"
+                                value="#{category.map['SAMEDI'].classe}" />
+                </div>
+                <div>
+                  <h:outputText rendered="#{not empty category.map['SAMEDI'].groupe}"
+                                value="#{category.map['SAMEDI'].groupe}" />
+                </div>
+                <div>
+                  <h:outputText>
+                  #{category.map['SAMEDI'].matiere}</h:outputText>
+                </div>
+                <div>
+                  <t:outputText forceId="true"
+                                id="#{s}s#{category.map['SAMEDI'].position}"
+                                value="#{category.map['SAMEDI'].descriptionCourte}" />
+                </div>
+              </h:panelGroup>
+            </t:div>
+            <t:div style="margin:0;">
+              <h:outputText style="font-size:24px;color:red;"
+                            value=" #{category.map['SAMEDI'].chaineExistModif}" />
+              <cr:lien id="idaddDescSAMEDI_${id}"
+                       bean="#{constituerEmp}"
+                       cible="empty"
+                       oncomplete="#{rich:component('idPopupDesc')}.show()"
+                       image="information.png"
+                       desc="Ajouter une description."
+                       onclick="$('idCacheValeurSem').value='s';"
+                       render="idCacheValeurSem,idPopupDesc"
+                       rendered="#{(not empty category.map['SAMEDI'].classe or not empty category.map['SAMEDI'].groupe) and not empty category.map['SAMEDI'].matiere}">
+
+                <f:setPropertyActionListener value="#{category.map['SAMEDI']}"
+                                             target="#{constituerEmp.form.detailJourEmploiDTOSel}" />
+              </cr:lien>
+            </t:div>
+          </h:panelGrid>
+        </a4j:outputPanel>
+      </rich:column>
+      <rich:column width="130"
+                   style="padding:1px"
+                   rendered="#{constituerEmp.form.jourOuvreAccessible['DIMANCHE']}"
+                   styleClass="corpsEmplTable">
+        <f:facet name="header">
+          <h:outputText value="Dimanche" />
+        </f:facet>
+        <a4j:outputPanel id="${id}oDimanche"
+                         layout="block">
+          <rich:dropTarget acceptedTypes="ResultatRechercheSequenceDTO"
+                            rendered="#{category.active}"
+                            dropListener="#{constituerEmp.onDropItem}"
+                            render="table_${id},inputModification"
+                            dropValue="#{category.map['DIMANCHE'].position}" />
+          <h:panelGrid columns="2"
+                       style="border:2px solid #{category.map['DIMANCHE'].typeCouleur.id};cursor:#{(category.active and not empty category.map['DIMANCHE'].idEnseignement) ? 'pointer': 'default'};margin:0;padding:0;height: 47px;width:100%; background-color:#{category.map['DIMANCHE'].selectionne ? 'yellow' : category.map['DIMANCHE'].vraiOuFauxFusion ? '#eccda6' : category.active ? '#ffffff': '#ccc'};">
+
+            <t:div onclick="#{(not empty category.map['DIMANCHE'].idEnseignement and category.active) ? '' : 'affSelInterdite();return;'} lancerLienAjax('#{id}LSelEmp',{'#{id}CacheSelcol': '#{category.map['DIMANCHE'].position}'});">
+
+              <h:panelGroup style="line-height:12px;font-size:10px;">
+
+                <div>
+                  <h:outputText rendered="#{not empty category.map['DIMANCHE'].classe}"
+                                value="#{category.map['DIMANCHE'].classe}" />
+                </div>
+                <div>
+                  <h:outputText rendered="#{not empty category.map['DIMANCHE'].groupe}"
+                                value="#{category.map['DIMANCHE'].groupe}" />
+                </div>
+                <div>
+                  <h:outputText>
+                  #{category.map['DIMANCHE'].matiere}</h:outputText>
+                </div>
+                <div>
+                  <t:outputText forceId="true"
+                                id="#{s}d#{category.map['DIMANCHE'].position}"
+                                value="#{category.map['DIMANCHE'].descriptionCourte}" />
+                </div>
+              </h:panelGroup>
+            </t:div>
+            <t:div style="margin:0;">
+              <h:outputText style="font-size:24px;color:red;"
+                            value=" #{category.map['DIMANCHE'].chaineExistModif}" />
+              <cr:lien id="idaddDescDimanche_${id}"
+                       bean="#{constituerEmp}"
+                       cible="empty"
+                       oncomplete="#{rich:component('idPopupDesc')}.show()"
+                       image="information.png"
+                       desc="Ajouter une description."
+                       onclick="$('idCacheValeurSem').value='d';"
+                       render="idCacheValeurSem,idPopupDesc"
+                       rendered="#{(not empty category.map['DIMANCHE'].classe or not empty category.map['DIMANCHE'].groupe) and not empty category.map['DIMANCHE'].matiere}">
+
+                <f:setPropertyActionListener value="#{category.map['DIMANCHE']}"
+                                             target="#{constituerEmp.form.detailJourEmploiDTOSel}" />
+              </cr:lien>
+            </t:div>
+          </h:panelGrid>
+        </a4j:outputPanel>
+      </rich:column>
+    </rich:dataTable>
+  </ui:composition>
+</html>

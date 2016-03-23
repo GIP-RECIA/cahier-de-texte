@@ -1,0 +1,30 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:crx="urn:crlr:ext"
+    xmlns:cr="urn:crlr"
+    xmlns:rich="http://richfaces.org/rich">
+
+<cr:page titrePage="Gestion devoir" bean="#{ajoutDevoir}" form="#{ajoutDevoir.form}" bean1="#{popupPiecesJointes}" form1="#{popupPiecesJointes.form}">
+	<cr:menuAction id="idMenuAction">
+   		<cr:elemMenuAction idaction="idRetour" bean="#{ajoutDevoir}" cible="retour"
+		        image="back.png" title="Retour"
+	            render="consulterSequence" />
+		<cr:elemMenuAction idaction="idAjouter" bean="#{ajoutDevoir}" cible="ajouter"
+		        image="add.png" title="Ajouter" />
+		<cr:elemMenuAction idaction="idReinitialiser" bean="#{ajoutDevoir}" cible="reset"
+		        image="eraser.png" tilte="Réinitialiser"
+	            render="ajoutDevoir" />
+	</cr:menuAction>  
+    
+    <cr:ajoutDevoir />
+</cr:page>
+<cr:popupPiecesJointes idPopup="idPopupPiecesJointesDevoirs" tailleAuto="true" largeurPopup="600"
+        titrePopup="Pièces jointes" listeDepotCahier="" statusPopup="statuspopup"
+        bean="#{ajoutSeance}" raffraichirTabAfterUpload="devoirUniqueajoutDevoir" />     
+<cr:popupStatus idStatus="statuspop" />
+</html>

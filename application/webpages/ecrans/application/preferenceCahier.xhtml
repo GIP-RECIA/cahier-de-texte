@@ -1,0 +1,108 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:cr="urn:crlr"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:rich="http://richfaces.org/rich"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:a4j="http://richfaces.org/a4j" 
+    >
+    
+
+<cr:page titrePage="#{contexteUtilisateur.utilisateurDTO.profil eq 'PARENT' ? 'Sélection de l&#700;élève' : 'Etablissement courant'}" bean="#{prefCahierTexte}" form="#{prefCahierTexte.form}" fishEye="false">
+    <h:outputScript library="js" name="jquery-ui-1.8.17.custom.min.js" target="head" />
+    <cr:menuAction id="idMenuAction" autreAction="false" />
+        
+        <rich:panel header="#{contexteUtilisateur.utilisateurDTO.profil eq 'PARENT' ? 'Sélection de l&#700;élève' : 'Etablissement courant'} " id="cahierdetexte">
+        <div style="width: 100%; text-align: center; margin-top: 10px; font-weight: bold;">
+            <center>
+                <h:panelGrid columns="1"
+                    rendered="#{contexteUtilisateur.utilisateurDTO.profil eq 'PARENT'}">
+                    <h:outputText
+                        value="Vous êtes en cours de consultation du cahier de texte de l'élève #{prefCahierTexte.form.enfantSelectionne.nom} #{prefCahierTexte.form.enfantSelectionne.prenom}" />
+                </h:panelGrid>
+            </center>
+        </div>
+        
+        <cr:spacer height="5" />
+        
+        <div style="width: 100%; text-align: center;">
+	        <h:panelGrid
+	            columns="1" rendered="#{not empty prefCahierTexte.form.listeEnfant}"
+	            style="width:340px;margin:auto;">
+	            <h:outputText
+	                value="Sélectionner un autre élève pour voir son cahier de texte" />
+	            
+	            <cr:saisieListe id="listeEleves"
+                              valeur="#{prefCahierTexte.form.enfantSelectionne}" 
+                              titre="" 
+                              rendered="true" 
+                              style="width:100%"
+                              >
+	                    	 <a4j:ajax event="change" render="cahierdetexte"
+	                    		listener="#{prefCahierTexte['selectionnerEnfant']}" />
+	                    		
+                              <f:converter converterId="selectOneDtoConverter" />
+                              <f:selectItems itemLabel="#{user.nom} #{user.prenom}" itemValue="#{user}" value="#{prefCahierTexte.form.listeEnfant}" var="user" />
+                              <f:attribute name="converterListe" value="#{prefCahierTexte.form.listeEnfant}" />
+                        </cr:saisieListe>
+	        </h:panelGrid> 
+	        <h:panelGrid columns="3"
+	            rendered="#{not empty prefCahierTexte.form.listeEtablissement}"
+	            style="width:600px;margin:auto;">
+	            
+	            <cr:saisiePopup id="designationEtablissement" titre="Sélectionner un établissement"
+	                    modifiable="false"
+	                    lienModifiable="true"
+	                    largeur="350"
+	                    idPopup="idPopupEtablissement" decalageTitreGauche="14"
+	                    valeur="#{prefCahierTexte.form.etablissementSelectionne.designation}"
+	                    bean="#{prefCahierTexte}" />
+	        </h:panelGrid>
+        </div>    
+    </rich:panel>
+
+</cr:page>    
+
+
+<cr:popupListeFiltrable idPopup="idPopupEtablissement" 
+        tailleAuto="true"
+        largeurPopup="490"
+        hauteur="300"
+        titrePopup="Liste des établissements">
+        
+        <cr:tableSaisiePopup 
+            bean="#{prefCahierTexte}" 
+            cible="selectionnerEtablissement"
+            liste="#{prefCahierTexte.form.listeEtablissement}" largeur="450"
+            render=":formulaire_principal:cahierdetexte"
+            valeur="#{prefCahierTexte.form.etablissementSelectionne}"
+            fermetureSiMsg="true" status="statuspop"
+            avecPagination="false">
+            <rich:column 
+                    filterValue="#{prefCahierTexte.form.filtreEtablissement}" 
+                    filterExpression="#{fn:containsIgnoreCase(ligne.designation,bean.form.filtreEtablissement)}"
+                   
+                    >
+                    <f:facet name="header">
+                        <h:panelGroup>
+                            <h:outputText value="Désignation : " />
+                            <h:inputText value="#{prefCahierTexte.form.filtreEtablissement}"
+                                        id="filterText">
+                                <a4j:ajax event="keyup" render="idPopupEtablissement_table" 
+                                    status="statuspop" oncomplete="transfertFocus(this.id,'#{rich:clientId('filterText')}');">
+                                    <a4j:attachQueue requestDelay="500" />
+                                </a4j:ajax>  
+                            </h:inputText>
+                        </h:panelGroup>
+                    </f:facet>
+                    <h:outputText value="#{ligne.designation}"/>
+            </rich:column>
+        </cr:tableSaisiePopup>
+</cr:popupListeFiltrable>
+
+<cr:popupStatus idStatus="statuspop" />
+
+
+</html>

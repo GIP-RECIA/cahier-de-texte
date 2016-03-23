@@ -1,0 +1,73 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:crx="urn:crlr:ext"
+    xmlns:cr="urn:crlr"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:rich="http://richfaces.org/rich">
+<ui:composition>
+    <!-- 
+        listeDevoirCommon : composant permettant le rendu du tableau de la liste des devoirs.
+        
+        propriétés : 
+        * id : obligatoire.
+        - embarquer : si l'écran est une partie d'un autre outil il est alors embarqué.
+    -->
+
+    <c:set var="embarquer"
+        value="${(not empty embarquer and embarquer) ? true : false}" />
+      <c:set var="ecritureAutorise" value="${(empty ecritureAutorise or ecritureAutorise)  ? true : false}"/>
+        
+    <h:panelGrid columns="2" class="table" rendered="#{rendered}">
+    
+        <rich:panel id="${idListe}"
+            rendered="#{listingNonVide}"
+            style="vertical-align:top; overflow:auto;width:570px; height:145px; #{listingDevoirNonVide ? '' : 'border:0;'}">
+            <cr:table idTable="table${idListe}" largeur="560" nbLignes="2"
+                liste="#{ajoutSeance.form.listeDevoir}"
+                headerClass="tabPiecesJointesDevoirs"
+                entete="Liste des devoirs ajoutés à la séance"
+                rendered="#{listingDevoirNonVide}">
+                <cr:colonne libelleColonne="Intitulé du devoir" taille="100" id="">
+                    <h:outputText value="#{ligne.intitule}" />
+                </cr:colonne>
+                <cr:colonne libelleColonne="Type de devoir"  taille="100" id="">
+                    <h:outputText value="#{ligne.typeDevoir}" />
+                </cr:colonne>
+                <cr:colonne libelleColonne="Description du devoir" taille="100" id="">
+                    <h:outputText escape="false" 
+                        title="#{ligne.descriptionSansBalise}"
+                        value="#{ligne.descriptionSansBaliseAbrege}" />
+                </cr:colonne>
+                <cr:colonne libelleColonne="Date de remise"  taille="100" id="">
+                    <h:outputText
+                        value="#{cr:formatDate(ligne.dateRemise, 'dd/MM/yyyy')}" />
+                </cr:colonne>
+                <cr:colonne libelleColonne="Actions" align="center" rendered="#{ecritureAutorise}"  taille="100" id="">
+                    <cr:lien id="${idListe}selectionLigne" bean="#{ajoutSeance}"
+                        cible="#{embarquer ? 'modifierDevoirEmploi' : 'modifierDevoir'}" image="edit.gif" desc="Modifier"
+                        render="#{embarquer ? 'zoneSeance' : 'listingPieceJointeDevoir'}">
+                        <f:setPropertyActionListener value="#{ligne}"
+                            target="#{ajoutSeance.form.devoirSelectionne}" />
+                    </cr:lien>
+                    <cr:lien bean="#{ajoutSeance}" id="${idListe}supprimer"
+                        confirm="Etes-vous sur de vouloir supprimer ce devoir ?"
+                        cible="supprimerDevoir" image="delete.gif" desc="Supprimer"
+                        render="#{embarquer ? 'zoneSeance' : 'listingPieceJointeDevoir'}"
+                        oncomplete="if (!(window.modificationEnCours === undefined)) modificationEnCours='true';"
+                        >
+                        <f:setPropertyActionListener value="#{ligne}"
+                            target="#{ajoutSeance.form.resultatSelectionne}" />
+                    </cr:lien>
+                </cr:colonne>
+            </cr:table>
+        </rich:panel>
+        <cr:lien bean="#{ajoutSeance}" id=""
+            cible="nouveauDevoirEmp" image="ajouter.gif" desc="Nouveau devoir" rendered="#{embarquer and listingNonVide}"
+            render="zoneSeance" />                        
+    </h:panelGrid>   
+</ui:composition>
+</html>

@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<faces-config version="2.0" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xi="http://www.w3.org/2001/XInclude"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-facesconfig_2_0.xsd">
+    
+    
+    <application>       
+        <el-resolver>org.springframework.web.jsf.el.SpringBeanFacesELResolver</el-resolver>	    
+	    <locale-config>
+	       <default-locale>fr</default-locale>
+	    </locale-config>
+	    <navigation-handler>
+           org.crlr.web.application.SpringMultiNavigationHandler
+        </navigation-handler>
+        <message-bundle>            
+            messages
+        </message-bundle>
+    </application>
+ 
+ 
+    <!-- Backing Beans -->
+    
+    <managed-bean>
+        <managed-bean-name>contexteApplication</managed-bean-name>
+        <managed-bean-class>
+            org.crlr.web.contexte.ContexteApplication
+        </managed-bean-class>
+        <managed-bean-scope>application</managed-bean-scope>
+    </managed-bean>
+    
+     <managed-bean>
+        <managed-bean-name>enseignant</managed-bean-name>
+        <managed-bean-class>
+            org.crlr.web.application.control.EnseignantControl
+        </managed-bean-class>
+        <managed-bean-scope>view</managed-bean-scope>
+        <managed-property>
+            <property-name>sequenceService</property-name>
+            <property-class>org.crlr.services.SequenceService</property-class>
+            <value>#{sequenceService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>groupeClasseService</property-name>
+            <property-class>org.crlr.services.GroupeClasseService</property-class>
+            <value>#{groupeClasseService}</value>
+        </managed-property>
+    </managed-bean>
+    
+     <managed-bean>
+        <managed-bean-name>enseignant2</managed-bean-name>
+        <managed-bean-class>
+            org.crlr.web.application.control.EnseignantControl
+        </managed-bean-class>
+        <managed-bean-scope>view</managed-bean-scope>
+        <managed-property>
+            <property-name>sequenceService</property-name>
+            <property-class>org.crlr.services.SequenceService</property-class>
+            <value>#{sequenceService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>groupeClasseService</property-name>
+            <property-class>org.crlr.services.GroupeClasseService</property-class>
+            <value>#{groupeClasseService}</value>
+        </managed-property>
+  
+    </managed-bean>
+     
+    <managed-bean>
+        <managed-bean-name>contexteUtilisateur</managed-bean-name>
+        <managed-bean-class>
+            org.crlr.web.contexte.ContexteUtilisateur
+        </managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+    </managed-bean>   
+
+</faces-config>

@@ -1,0 +1,229 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:crx="urn:crlr:ext"
+	xmlns:cr="urn:crlr"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:rich="http://richfaces.org/rich">
+
+<cr:page
+		titrePage="Ajout séquence" 
+		bean="#{ajoutSequence}"
+		form="#{ajoutSequence.form}">
+	<cr:menuAction id="idMenuAction">
+		<cr:elemMenuAction 
+				idaction="idAjouter" 
+				bean="#{ajoutSequence}"
+				cible="ajouter" 
+				image="save.png" 
+				title="Sauvegarder"
+				render="ajoutSequence_panel"
+		/>
+	</cr:menuAction>
+
+	<a4j:queue requestDelay="100" ignoreDupResponce="true"/>
+
+	<rich:panel header="Ajouter une séquence" id="ajoutSequence_panel">
+		<h:panelGrid columns="6" class="table">
+			<cr:saisiePopup 
+					id="intituleEnseignement" 
+					titre="Enseignement*"
+					idPopup="idPopupEnseignement"
+					styleClassError="${fn:contains(ajoutSequence.form.listeChampsObligatoire, 'SEQUENCE_06')}"
+					valeur="#{ajoutSequence.form.enseignementSelectionne.intitule}"
+					modifiable="false" 
+					lienModifiable="true" 
+					largeur="250"
+					bean="#{ajoutSequence}">
+				<a4j:ajax 
+						event="blur"
+						listener="#{ajoutSequence['chargerInfosEnseignement']}"
+						render="designationEnseignement"
+				/>
+			</cr:saisiePopup>
+			<h:selectOneRadio 
+					id="selectionClasseOuGroupe"
+					styleClassError="${fn:contains(ajoutSequence.form.listeChampsObligatoire, 'SEQUENCE_07') ? 'messageErreur' : ''}"
+					value="#{ajoutSequence.form.typeGroupeSelectionne}">
+				<a4j:ajax 
+						event="click"
+						listener="#{ajoutSequence['resetClasseGroupeSelectionne']}"
+						render="ajoutSequence_panel,:idPopupGroupeClasse_titre"
+				/>
+				<f:selectItem itemLabel="Classe*" itemValue="CLASSE"/>
+				<f:selectItem itemLabel="Groupe*" itemValue="GROUPE"/>
+			</h:selectOneRadio>
+			<cr:saisiePopup 
+					id="intituleGroupeClasse"
+					idPopup="idPopupGroupeClasse" 
+					bean="#{ajoutSequence}"
+					modifiable="false"
+					styleClassError="${fn:contains(ajoutSequence.form.listeChampsObligatoire, 'SEQUENCE_07')}"
+					lienModifiable="#{not empty ajoutSequence.form.typeGroupeSelectionne}"
+					valeur="#{ajoutSequence.form.groupeClasseSelectionne.intitule}"
+			/>
+		</h:panelGrid>
+
+		<h:panelGrid columns="5" class="table" style="padding-right: 220px;">
+			<h:outputLabel
+					rendered="true"
+					style="padding-right: 5px; padding-left: 5px;" 
+					styleClass="libelle"
+					value="Couleur"
+			/>
+			<t:div 
+					id="couleurSelection"
+					style="border:1px solid gray;width:20px;height:20px;background-color:#{ajoutSequence.form.typeCouleur.id}" 
+			/>
+			<h:outputLabel 
+					rendered="true"
+					style="padding-right: 5px; padding-left: 5px;" 
+					styleClass="libelle"
+					value="Palette"
+			/>
+			<cr:saisiePaletteCouleur
+					listeCouleur="#{ajoutSequence.form.listeCouleur}"
+					onClick="return true; jQuery('#idPopupEvent_form\\:couleurSelection').css('background-color', '#{coul.id}');"
+					valeur="#{ajoutSequence.form.typeCouleur}"
+			/>
+			<cr:spacer height="15"/>
+		</h:panelGrid>
+
+		<h:panelGrid columns="2" class="table">
+			<cr:saisieTexte 
+					id="intituleSequence" 
+					titre="Intitulé*"
+					styleClassError="${fn:contains(ajoutSequence.form.listeChampsObligatoire, 'SEQUENCE_08')}"
+					valeur="#{ajoutSequence.form.intitule}" 
+					bean="#{ajoutSequence}"
+					largeur="390"
+			/>
+			<h:outputText value=""/>
+		</h:panelGrid>
+		<h:panelGrid columns="6" class="table">
+			<cr:saisieDate 
+					id="dateDebutSequence" 
+					decalageTitreGauche="0"
+					styleClassError="${fn:contains(ajoutSequence.form.listeChampsObligatoire, 'SEQUENCE_09')}"
+					valeur="#{ajoutSequence.form.dateDebut}" 
+					titre="Date de début*"
+			/>
+			<h:outputText value=""/>
+
+			<cr:saisieDate 
+					id="dateFinSequence" 
+					decalageTitreGauche="0"
+					styleClassError="${fn:contains(ajoutSequence.form.listeChampsObligatoire, 'SEQUENCE_10')}"
+					valeur="#{ajoutSequence.form.dateFin}" 
+					titre="Date de fin*"
+			/>
+			<h:outputText value=""/>
+
+		</h:panelGrid>
+
+		<h:panelGrid columns="2" class="table">
+			<cr:saisieEditeur 
+					id="descriptionSequence" 
+					titre="Description*"
+					desc="saisir le commentaire"
+					styleClassError="${fn:contains(ajoutSequence.form.listeChampsObligatoire, 'SEQUENCE_25')}"
+					valeur="#{ajoutSequence.form.description}" 
+					decalageTitreDroite="65"
+			/>
+		</h:panelGrid>
+
+	</rich:panel>
+
+</cr:page>
+
+<cr:popupListeFiltrable 
+		idPopup="idPopupGroupeClasse" 
+		tailleAuto="true"
+		largeurPopup="300" 
+		hauteur="200"
+		titrePopup="Liste des #{ajoutSequence.form.typeGroupeSelectionne eq 'GROUPE' ? 'groupes' : 'classes'}">
+	<cr:tableSaisiePopup 
+			bean="#{ajoutSequence}"
+			cible="selectionnerGroupeClasse"
+			liste="#{ajoutSequence.listeGroupeClasse}" 
+			largeur="275"
+			render=":formulaire_principal:ajoutSequence_panel"
+			valeur="#{ajoutSequence.form.groupeClasseSelectionne}"
+			status="statuspop" 
+			avecPagination="false">
+		<rich:column 
+				width="275px" 
+				filterBy="#{ligne.intitule}"
+				filterEvent="onkeyup"
+				filterValue="#{ajoutSequence.form.filtreClasseGroupe}"
+				filterMethod="#{ajoutSequence.form.doFilterClasseGroupe}">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Intitulé : "/>
+					<h:inputText 
+							value="#{ajoutSequence.form.filtreClasseGroupe}"
+							id="filterText">
+						<a4j:ajax 
+								event="keyup" 
+								render="panelidPopupGroupeClasse"
+								status="statuspop" 
+								requestDelay="500"
+								oncomplete="transfertFocus(this.id,this.id);" 
+						/>
+					</h:inputText>
+				</h:panelGroup>
+			</f:facet>
+			<h:outputText value="#{ligne.intitule}"/>
+		</rich:column>
+	</cr:tableSaisiePopup>
+</cr:popupListeFiltrable>
+
+<cr:popupListeFiltrable 
+		idPopup="idPopupEnseignement" 
+		tailleAuto="true"
+		largeurPopup="400" 
+		hauteur="200" 
+		titrePopup="Liste des enseignements">
+	<cr:tableSaisiePopup 
+			bean="#{ajoutSequence}"
+			cible="selectionnerEnseignement"
+			liste="#{ajoutSequence.form.listeEnseignementSelectionne}"
+			largeur="375" 
+			render=":formulaire_principal:ajoutSequence_panel"
+			valeur="#{ajoutSequence.form.enseignementSelectionne}"
+			status="statuspop" 
+			avecPagination="false">
+		<rich:column 
+				width="275px" 
+				filterBy="#{ligne.intitule}"
+				filterEvent="onkeyup"
+				filterValue="#{ajoutSequence.form.filtreEnseignement}"
+				filterMethod="#{ajoutSequence.form.doFilterEnseignement}">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Intitulé : "/>
+					<h:inputText 
+							value="#{ajoutSequence.form.filtreEnseignement}"
+							id="filterText">
+						<a4j:ajax 
+								event="keyup" 
+								render="panelidPopupEnseignement"
+								status="statuspop" 
+								requestDelay="500"
+								oncomplete="transfertFocus(this.id,this.id);"
+						/>
+					</h:inputText>
+				</h:panelGroup>
+			</f:facet>
+			<h:outputText value="#{ligne.intitule}"/>
+		</rich:column>
+	</cr:tableSaisiePopup>
+</cr:popupListeFiltrable>
+
+<cr:popupStatus idStatus="statuspop"/>
+
+</html>

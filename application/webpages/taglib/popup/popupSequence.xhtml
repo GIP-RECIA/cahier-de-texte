@@ -1,0 +1,46 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"  
+    xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:a4j="http://richfaces.org/a4j" 
+    xmlns:f="http://java.sun.com/jsf/core"    
+    xmlns:t="http://myfaces.apache.org/tomahawk"  
+    xmlns:cr="urn:crlr"
+    xmlns:rich="http://richfaces.org/rich">
+
+<ui:composition>
+
+<cr:popup idPopup="idPopupSequence"
+              largeurPopup="600"
+              tailleAuto="true"
+              titrePopup="Liste des séquences">
+              
+      <t:div id="idPopupSequenceRegion"
+             style="overflow: auto; height:400px;">
+        <cr:tableSaisiePopup bean="#{sequenceControl}"
+                             cible="selectionnerSequence"
+                             largeur="560"
+                             liste="#{sequenceControl.form.listeSequence}"
+                             render="#{render}"
+                             valeur="#{sequenceControl.form.sequenceSelectionnee}">
+                             
+          <cr:colonne id=""
+                      libelleColonne="Intitulé">
+            <h:outputText value="#{ligne.intitule}" />
+          </cr:colonne>
+          <cr:colonne id=""
+                      libelleColonne="Classe/Groupe">
+            <h:outputText value="#{ligne.designationClasseGroupe}" />
+          </cr:colonne>
+          <cr:colonne id=""
+                      libelleColonne="Enseignement">
+            <h:outputText value="#{ligne.designationEnseignement}" />
+          </cr:colonne>
+        </cr:tableSaisiePopup>
+      </t:div>
+    </cr:popup>
+    
+</ui:composition>
+
+</html>

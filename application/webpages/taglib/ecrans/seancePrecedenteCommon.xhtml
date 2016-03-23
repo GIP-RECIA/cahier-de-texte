@@ -1,0 +1,136 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:crx="urn:crlr:ext"
+    xmlns:cr="urn:crlr"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:rich="http://richfaces.org/rich">
+<ui:composition>
+    <!-- 
+        seancePrecedenteCommon : composant permettant le rendu du sous-formulaire de consultation 
+        d'une séance précédente  
+    -->    
+ 
+    <div>
+    <a4j:queue requestDelay="100" ignoreDupResponce="true"/>
+       
+    </div>      
+                   
+    <rich:panel id="seancePrecedente">
+        <h:panelGrid columns="4" class="table">
+            <cr:saisieTexte titre="Intitulé"  modifiable="false" largeur="319" decalageTitreGauche="0" id=""
+                decalageTitreDroite="16" valeur="#{ajoutSeance.form.seancePrecedente.intitule}" 
+                />
+            <cr:saisieDate id="dateSeancePrecedente" decalageTitreGauche="10" largeur="65" modifiable="false" 
+                decalageTitreDroite="10" valeur="#{ajoutSeance.form.seancePrecedente.date}" 
+                titre="Date" />
+        </h:panelGrid>
+        
+        <h:panelGrid columns="6" class="table">
+            <cr:saisieHeureMinute id="heureDebutSeancePrecedente" titre="Heure début"
+                desc="Heure de début" valeurHeure="#{ajoutSeance.form.seancePrecedente.heureDebut}" avecMinute="true"
+                valeurMinute="#{ajoutSeance.form.seancePrecedente.minuteDebut}"
+                modifiable="false" decalageTitreDroite="10" bean="#{ajoutSeance}" />
+
+            <cr:saisieHeureMinute id="heureFinSeancePrecedente" titre="Heure fin"
+                desc="Heure de fin" valeurHeure="#{ajoutSeance.form.seancePrecedente.heureFin}" avecMinute="true"
+                valeurMinute="#{ajoutSeance.form.seancePrecedente.minuteFin}"
+                modifiable="false" decalageTitreGauche="10" bean="#{ajoutSeance}" />
+        </h:panelGrid>
+        <h:panelGrid columns="2" class="table">
+            <cr:saisieEditeur id="descriptionSeancePrecedente" titre="Description"
+                desc="Description de la séance précédente" largeur="500" modifiable="false"
+                valeur="#{ajoutSeance.form.seancePrecedente.description}" decalageTitreDroite="12" 
+                 />
+        </h:panelGrid>
+        <c:set var="listingPieceJointeNonVide" value="#{not empty ajoutSeance.form.seancePrecedente.listePieceJointeDTO}"/>
+        <c:set var="listingDevoirNonVide" value="#{not empty ajoutSeance.form.seancePrecedente.listeDevoirDTO}"/> 
+        <c:set var="listingNonVide" value="#{listingPieceJointeNonVide or listingDevoirNonVide}"/>
+        <h:panelGrid id="listingPieceJointeDevoirSeancePrecedente" columns="1" class="table" rendered="#{listingPieceJointeNonVide}">
+            <rich:panel id="listingPieceJointeSeancePrecedente"
+                rendered="#{listingNonVide}"
+                style="vertical-align:top; overflow:auto; width:600px; height:145px; #{listingPieceJointeNonVide ? '' : 'border:0;'}">
+                <cr:table idTable="tableListingPieceJointeSeancePrecedente" largeur="590"
+                    liste="#{ajoutSeance.form.seancePrecedente.listePieceJointeDTO}" nbLignes="2"
+                    headerClass="tabPiecesJointesDevoirs"
+                    entete="Liste des pièces jointes ajoutées à la séance précédente"
+                    rendered="#{listingPieceJointeNonVide}">
+                    <cr:colonne libelleColonne="Nom" id="">
+                        <h:outputText value="#{ligne.nom}" />
+                    </cr:colonne>
+                    <cr:colonne libelleColonne="Actions" align="center" id="">
+                        <cr:lien id="dlFichierSeancePrecedente" chemin="#{ligne.pathFullDownload}" rendered="true" bean=""
+                                 image="download.png" desc="Télécharger"/>    
+                    </cr:colonne>
+                </cr:table>
+            </rich:panel>
+        </h:panelGrid>
+        <h:panelGrid columns="2" class="table" rendered="#{listingDevoirNonVide}">
+            <rich:panel id="listeDevoirSeancePrecedente"
+                rendered="#{listingDevoirNonVide}"
+                style="vertical-align:top; overflow:auto;width:600px; height:145px; #{listingDevoirNonVide ? '' : 'border:0;'}">
+                <cr:table idTable="tableDevoirSeancePrecedente" largeur="590" nbLignes="2"
+                    liste="#{ajoutSeance.form.seancePrecedente.listeDevoirDTO}"
+                    headerClass="tabPiecesJointesDevoirs"
+                    entete="Liste des devoirs ajoutés à la séance précédente"
+                    rendered="#{listingDevoirNonVide}">
+                    <cr:colonne libelleColonne="Intitulé du devoir" id="">
+                        <h:outputText value="#{ligne.intitule}" />
+                    </cr:colonne>
+                    <cr:colonne libelleColonne="Type de devoir" id="">
+                        <h:outputText value="#{ligne.typeDevoir}" />
+                    </cr:colonne>
+                    <cr:colonne libelleColonne="Description du devoir" id="">
+                        <h:outputText escape="false"
+                            title="#{ligne.descriptionSansBalise}"
+                            value="#{ligne.descriptionSansBaliseAbrege}" />
+                    </cr:colonne>
+                    <cr:colonne libelleColonne="Date de remise" id="">
+                        <h:outputText
+                            value="#{cr:formatDate(ligne.dateRemise, 'dd/MM/yyyy')}" />
+                    </cr:colonne>
+                    <cr:colonne libelleColonne="Actions" align="center" id="">
+                        <cr:lien 
+                            bean="#{ajoutSeance}" id="detailDevoir#{ligne.id}" rendered="true"
+                            oncomplete="#{rich:component('idDetailDevoirSeancePrecedente')}.show()"
+                            render="idDetailDevoirSeancePrecedente"
+                            image="loupe-icone.png" desc="Détail du devoir"
+                            >
+                            <f:setPropertyActionListener value="#{ligne}"
+                                target="#{ajoutSeance.form.devoirSelectionneSeancePrecedente}" />
+                        </cr:lien>
+                    </cr:colonne>
+                    
+                </cr:table>
+            </rich:panel>
+        </h:panelGrid>   
+    </rich:panel>
+
+    
+    <cr:popup idPopup="idDetailDevoirSeancePrecedente" 
+        tailleAuto="true"
+        largeurPopup="400"
+        hauteur="200"
+        titrePopup="Devoir">    
+    
+        <h:panelGrid  columns="2" class="table">
+            <h:outputText value="Intitulé" />
+            <h:inputText id="idDetailDevoirSeancePrecedenteIntitule" value="#{ajoutSeance.form.devoirSelectionneSeancePrecedente.intitule}" readonly="true"/>
+            <h:outputText value="Date" />
+            <h:inputText value="#{ajoutSeance.form.devoirSelectionneSeancePrecedente.dateRemise}" readonly="true"/>
+            <h:outputText value="Type devoir" />
+            <h:inputText id="idDetailDevoirSeancePrecedenteType" value="#{ajoutSeance.form.devoirSelectionneSeancePrecedente.typeDevoir}" readonly="true"/>
+        </h:panelGrid>
+        <t:div style="overflow-y:auto; height:100px; width:380px; border-bottom: thin solid buttonface; border-right: thin solid buttonface; border-top: thin solid buttonshadow; border-left: thin solid buttonshadow;">
+            <t:div style="margin-left: 5px;">
+                <h:outputText escape="false" 
+                    title="Description du devoir"
+                    value="#{ajoutSeance.form.devoirSelectionneSeancePrecedente.description}" />
+            </t:div>
+        </t:div>
+    </cr:popup>
+</ui:composition>    
+</html>

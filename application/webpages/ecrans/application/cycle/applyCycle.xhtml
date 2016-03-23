@@ -1,0 +1,335 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:crx="urn:crlr:ext"
+    xmlns:cr="urn:crlr"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:rich="http://richfaces.org/rich"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    >
+
+<cr:page 	titrePage="Appliquer une séquence pédagogique sur un cahier de texte" 
+			libXiti="Travail_Collaboratif"
+		>    
+    <h:outputScript library="js" name="jquery-ui-1.8.20.custom.js" target="head" />
+    <h:outputScript library="js" name="jquery.qtip.js" target="head" />
+    <h:outputScript library="js" name="applyCycle.js" target="head" />
+    <h:outputStylesheet library="css" name="jquery.qtip.css" target="head" />
+    <h:outputStylesheet library="css" name="applyCycle.css" target="head" />
+    
+    <cr:menuAction id="idMenuActionPrinc">
+        <t:div id="idMenuAction">
+            <cr:elemMenuAction 
+                    idaction="idRetourPrecedent" 
+                    bean="#{applyCycle}" 
+                    cible="retour"
+                    title="Retour"
+                    rendered="true"
+                    render="idPanelApplyCycle,idPanelListeSeance"
+                    status="statuspop" 
+                    image="back.png" />
+	        <cr:elemMenuAction 
+	              idaction="idSauver" bean="#{applyCycle}" cible="sauver"
+	              image="save.png" 
+	              title="Sauvegarder"
+	              render="idPanelApplyCycle,idPanelListeSeance,idMenuAction" 
+	              status="statuspop"
+	              rendered="#{applyCycle.affichageSauver}"
+	              oncomplete="setModificationFormulaire(false);" />
+	        <cr:elemMenuAction idaction="idGenerer" bean="#{applyCycle}"
+	              cible="genererSeance"
+	              image="start.png" 
+	              title="Générer les séances sur le cahier de texte de la classe/groupe choisie"
+	              rendered="#{applyCycle.affichageGenerer}"
+	              render="idPanelApplyCycle,idPanelListeSeance,idMenuAction"
+	              oncomplete="setModificationFormulaire(true); appliquerGestionModification(); "
+	              status="statuspop" />
+	        <cr:elemMenuAction idaction="idReset" bean="#{applyCycle}"
+	              cible="reset"
+	              image="eraser.png" 
+	              title="Ré-initialiser le formulaire"
+	              rendered="true"
+	              render="idPanelApplyCycle,idPanelListeSeance,idMenuAction"
+	              oncomplete="setModificationFormulaire(false);"
+	              status="statuspop"  />
+        </t:div>	              
+    </cr:menuAction>
+    
+    <t:div style="display: none;"><cr:saisieEditeur rendered="true" id="saisieEditeurInvisible" commentaire="Editeur bidon qui permet de faire marcher dans le composant cr:saisieCycleSeance les champs de saisie de editeur" /></t:div>
+    
+    <a4j:jsFunction action="#{applyCycle.modifieEnseignement}"
+                    execute="@this"
+                    status="statuspop"
+                    name="modifieEnseignement"
+                    oncomplete="setModificationFormulaire(true); if (#{!empty applyCycle.afficheErreur}) afficheErreurEnseignement();;"
+                    render="idPanelListeSeance"
+                    >
+      <a4j:param assignTo="#{applyCycle.form.ligneSeanceId}" name="ligneSeanceId" />
+      <a4j:param assignTo="#{applyCycle.form.ligneEnseignementId}" name="ligneEnseignementId" />
+    </a4j:jsFunction>
+    
+    <div id="idPopupErreurEnseignement" style="display: none" title='Aucune séquence définie'>
+         Aucune séquence n'a été définie à cette date pour cette classe/groupe et cet enseignement.
+         <br/><br/>
+         <b>Veuillez créer une nouvelle séquence :</b>
+         <br/><img src="../../../resources/images/icones/sequenceAjout.png"/> Menu Séquence > Ajout de séquence
+    </div>
+    
+    <cr:lien id="calculeDateSeance" bean="#{applyCycle}"
+            cible="caclulerDateSeance"
+            oncomplete=""
+            render="idPanelApplyCycle,idPanelListeSeance,idMenuAction"
+            titre="" />    
+
+    <cr:lien id="idResetPanelCritere" bean="#{applyCycle}"
+            cible="viderListeSeance"
+            oncomplete=""
+            render="idPanelApplyCycle,idPanelListeSeance,idMenuAction"
+            titre="" />    
+    
+    <a4j:outputPanel id="idPanelApplyCycle">
+        <rich:panel header="#{applyCycle.form.titreEcran}">
+            <table class="grille" style="">
+                <tr>
+                    <td>
+	                    <cr:selectClasseGroupe 
+		                  oncomplete= "setModificationFormulaire(false);"
+		                  render = "idPanelApplyCycle idPanelListeSeance idMenuAction"
+		                  tousClasseGroupe = "false"
+		                  choixGroupesDeClass = "false" 
+		                />
+                    </td>
+                    <td>
+                        <cr:saisieDate id="datedepart"
+	                        decalageTitreGauche="5"
+	                        decalageTitreDroite="5"
+	                        valeur="#{applyCycle.form.dateDepart}"
+	                        titre="A partir du" 
+	                        oncomplete="lancerLienAjax('idResetPanelCritere');"
+	                    />
+                    </td>
+                    <td>
+                        <t:div rendered="#{not empty applyCycle.form.listeEnseignement}">
+                            <h:outputLabel styleClass="libelle" rendered="true" value="Enseignement par défaut" />
+                            <cr:saisieListe desc="Enseignement"
+                                 donnees=""
+                                 id="selectEnseignementDefaut"
+                                 rendered="true"
+                                 style="width: 180px; vertical-align:middle;"
+                                 titre=""
+                                 onchange="lancerLienAjax('idResetPanelCritere');"
+                                 valeur="#{applyCycle.form.enseignementDafaultDTO}">
+                              <f:converter converterId="selectOneDtoConverter" />
+                              <f:selectItem itemLabel=""
+                                            itemValue="" />
+                              <f:selectItems itemLabel="#{enseignementDTO.intitule}"
+                                             itemValue="#{enseignementDTO}"
+                                             value="#{applyCycle.form.listeEnseignement}"
+                                             var="enseignementDTO" />
+                              <f:attribute name="converterListe"
+                                           value="#{applyCycle.form.listeEnseignement}" />
+                            </cr:saisieListe>            
+                        </t:div>                           
+                    </td>
+                </tr>
+            </table>
+        </rich:panel>
+    </a4j:outputPanel>
+    
+    <t:div id="idPanelListeSeance">
+        <t:div id="idPanelListeSeanceConent" rendered="#{not empty applyCycle.form.listeSeance}">
+	        <table class="entete" style="width: 90%;">
+	            <thead>
+	                <tr>
+	                    <th class="rf-p-hdr" colspan="6">
+	                        Liste des séances de la séquence pédagogiques
+	                    </th>
+	                </tr>
+	                <tr>    
+	                    <th>Intitulé</th>
+	                    <th>Enseignement</th>
+	                    <th>Enseignement retenu</th>
+	                    <th title="Conserver la séance"></th>
+	                    <th>Date</th>
+	                    <th>Actions</th>
+	                </tr>
+	            </thead>
+	            <ui:repeat value="#{applyCycle.form.listeSeance}" var="ligne" varStatus="varstatus">
+	                <tr class="#{varstatus.index % 2 eq 0 ? 'pair' : 'impair' }" >
+	                    <td class="gauche"><h:outputText value="#{ligne.seanceDTO.intitule}" /></td>
+	                    <td class="gauche"><h:outputText value="#{ligne.enseignement}" /></td>
+	                    <td class="center">
+	                        <cr:saisieListe desc="Enseignement"
+	                             donnees=""
+	                             id="selectEnseignement"
+	                             rendered="true"
+	                             styleClass="checkSauvegarde"
+	                             style="width: 180px; vertical-align:middle;"
+	                             titre=""
+	                             onchange="initModifieEnseignement(this, #{ligne.id}); lancerLienAjax('idRefreshAfterModification');"
+	                             valeur="#{ligne.enseignementDTO}">
+			                  <f:converter converterId="selectOneDtoConverter" />
+			                  <f:selectItem itemLabel=""
+			                                itemValue="" />
+			                  <f:selectItems itemLabel="#{enseignementDTO.intitule}"
+			                                 itemValue="#{enseignementDTO}"
+			                                 value="#{applyCycle.form.listeEnseignement}"
+			                                 var="enseignementDTO" />
+			                  <f:attribute name="converterListe"
+			                               value="#{applyCycle.form.listeEnseignement}" />
+			                </cr:saisieListe>                      
+	                    </td>
+	                    <td class="gauche"><h:selectBooleanCheckbox id="idGarderSeance"  value="#{ligne.vraiOuFauxChecked}" styleClass="checkSauvegarde" /></td>
+	                    <td class="center">
+	                        <rich:calendar id="idDateSeance" value="#{ligne.seanceDTO.date}" 
+			                    rendered="true" disabled="" readonly=""
+			                    locale="fr" popup="true" datePattern="dd/MM/yyyy" inputStyle="width: 70px;"  
+			                    inputClass="#{styleClassError}"
+			                    required="" requiredMessage=""
+			                    showApplyButton="false" cellWidth="24px" cellHeight="22px" jointPoint="bottomRight" direction="bottomLeft">
+			                    <a4j:ajax event="change" oncomplete="
+			                            var nomClassLien = '.recalculeDateSeance#{ligne.id}';
+			                            lancerLienSelecteurAjax(nomClassLien);
+			                            " >
+			                    </a4j:ajax>
+			                </rich:calendar>
+			                <cr:liena4j idliena4j="recalculeDateSeance" bean="#{applyCycle}"
+			                    cible="recaclulerDateSeance"
+			                    styleClass="recalculeDateSeance#{ligne.id}"
+			                    oncomplete=""
+			                    status="statuspop"
+			                    render="idPanelApplyCycle,idPanelListeSeance,idMenuAction"
+			                    title="" >
+			                    <f:setPropertyActionListener value="#{ligne}" target="#{applyCycle.form.seanceSelected}" />
+			                </cr:liena4j>                    
+	                    </td>
+	                    <td class="center">
+	                        <cr:lien bean="#{applyCycle}"
+			                    id="selectionner"
+			                    cible="afficherSeance"
+			                    image="edit.gif"
+			                    desc="Modifier/Consulter"
+			                    render=":idPopupSeance_form:idPopupSeance_panel"
+			                    oncomplete="#{rich:component('idPopupSeance')}.show(); #{rich:component('idPopupSeance')}.moveTo(10, 10);"
+			                    status="statuspop" >
+			                    <f:setPropertyActionListener value="#{ligne}" target="#{applyCycle.form.seanceSelected}" />
+	                        </cr:lien>                    
+	                    </td>
+	                </tr>
+	            </ui:repeat>
+	        </table>        
+	    </t:div>
+    </t:div>
+    
+    <cr:popupConfirmSauvegardeModification 
+        libelleMessage="Voulez-vous enregistrer vos modifications avant de quitter cette page ?"
+        bean="#{applyCycle}" 
+        cible="sauver" 
+        render="idPanelApplyCycle,idPanelListeSeance,idMenuAction" 
+        oncomplete="setModificationFormulaire(false);" 
+        action="" />
+    
+    <cr:liena4j idliena4j="idRefreshAfterModification" 
+        bean="#{applyCycle}"
+        cible="refreshListeSeance"
+        oncomplete=""
+        render="idPanelListeSeance"
+        status="statuspop" 
+    />    
+</cr:page>
+
+<cr:popupModifiable idPopup="idPopupSeance" largeurPopup="800" popupUseRichEditor="true" maxlength="50" statusPopup="statusPopup" titrePopup="Détail de la séance">
+        <cr:menuAction id="idMenuActionPopupSeance" surcharge="false" rendered="true">
+            <cr:elemMenuAction 
+              idaction="idValiderSeance" 
+              bean="#{applyCycle}" cible="validerSeance"
+              image="valider.png" 
+              title="Valider la saisie"
+              oncomplete="
+              if (#{facesContext.maximumSeverity == null or facesContext.maximumSeverity.ordinal le 0} ) {
+                #{rich:component('idPopupSeance')}.hide();
+                lancerLienAjax('idRefreshAfterModification');  
+              }" 
+              rendered="true" 
+            />
+        </cr:menuAction>
+        <rich:tabPanel switchType="client" selectedTab="seance" id="richTabPanel">
+            <rich:tab id="SEANCE" header="#{ajoutSeance.form.seanceTitre}" name="tabSeance">
+                <t:div style="height:450px; overflow:auto;">
+                    <cr:saisieSeance
+                        seance="#{ajoutSeance.form.seance}"
+                        readOnly="false"
+                        formulaire_contenant="idPopupSeance_form"
+                        idPopupPiecesJointes="idPopupPiecesJointes"
+                        id_saisieSeance="idSaisieSeance"
+                        affichageSequence="#{ajoutSeance.form.afficheSelectionSequenceSeance}"
+                        showAnnotations="true"
+                        listeSequence="#{ajoutSeance.form.listeSequenceSeance}"
+                        sequenceSelected="#{ajoutSeance.form.seance.sequenceDTO}"
+                        controleur="#{ajoutSeance}" 
+                        cible="chargerSequence"
+                        bean="#{ajoutSeance}"
+                        cibleResetSeance="resetSeance"
+                        cibleDeletePieceJointeSeance="deletePieceJointeSeance" 
+                        cibleAjouterPieceJointeSeance="ajouterPieceJointeSeance"
+                        cibleAfterAjouterPieceJointeSeance="afterAjouterPieceJointeSeance"
+                        cibleResetSeanceAnnotations="resetSeanceAnnotations"
+                        cibleChargeImagesLatex="chargeImagesLatex"
+                        cibleChargeImagesLatexAnnotations="chargeImagesLatexAnnotations"
+                        checkModification="true"
+                        afficheDate="false"
+                        onchangedate=""
+                        />
+                </t:div>
+            </rich:tab>
+            <rich:tab id="TAB_DEVOIR" header="Travail à faire" rendered="true">
+                <t:div id="idListeDesDevoirsSeance" styleClass="listeDesDevoirsSeance" >
+                    <c:forEach items="#{ajoutSeance.form.seance.devoirs}" var="devoir" varStatus="status">
+                        <cr:saisieDevoir
+                           formulaire_contenant="idPopupSeance_form"
+                           id_saisieDevoir="idSaisieDevoirSeance${status.index}"
+                           devoirDTO="#{devoir}"
+                           readOnly="false"
+                           id_devoirConteneur="idListeDesDevoirsSeance"
+                           idPopupPiecesJointes="idPopupPiecesJointes"
+                           listeTypeDevoir="#{ajoutSeance.form.listeTypeDevoir}"
+                           controleur="#{ajoutSeance}"
+                           cibleResetDevoir="resetDevoir"
+                           cibleDeleteDevoir="deleteDevoir"
+                           cibleDeletePieceJointe="deletePieceJointe" 
+                           cibleAjouterPieceJointe="ajouterPieceJointe"
+                           cibleAfterAjouterPieceJointe="afterAjouterPieceJointe"
+                           cibleAfficherChargeTravail="afficherChargeTravail"
+                           cibleChargeImagesLatex="chargeImagesLatexDevoir"
+                           listeDate="#{ajoutSeance.form.listeDateRemiseDevoir}"
+                           checkModification="true"
+                           id_popupChargeTravail="idPopupChargeTravailSeance"
+                        /> 
+                    </c:forEach>
+                </t:div>
+                <t:div style="height:32px; padding-top:5px;" rendered="true">
+                    <cr:lien id="idAjouterDevoirSeance" bean="#{ajoutSeance}"
+                        cible="ajouterDevoir"
+                        render="idListeDesDevoirsSeance"
+                        image="add.png"
+                        desc="Ajouter un travail à faire" />
+                </t:div>
+            </rich:tab>
+        </rich:tabPanel>
+</cr:popupModifiable>
+
+
+<cr:popupGroupeClasse  render=":formulaire_principal:idPanelApplyCycle,:formulaire_principal:idPanelListeSeance,:formulaire_principal:idMenuAction"/>
+
+<cr:popupPiecesJointes 
+    idPopup="idPopupPiecesJointes" tailleAuto="true"
+    largeurPopup="660" titrePopup="Pièces jointes"
+    statusPopup="statuspopup" raffraichirTabAfterUpload="#{ajoutSeance.form.raffraichirTabAfterUpload}" />
+
+<cr:popupStatus idStatus="statuspop" />
+
+</html>

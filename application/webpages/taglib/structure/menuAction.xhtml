@@ -1,0 +1,82 @@
+<html 
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:c="http://java.sun.com/jsp/jstl/core" 
+    xmlns:cr="urn:crlr"
+    xmlns:crx="urn:crlr:ext" 
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:rich="http://richfaces.org/rich"
+>
+      
+<ui:composition>
+    <c:set var="rendered" value="${empty rendered ? true : rendered}"/>
+    <c:set var="autreAction" value="${empty autreAction ? true : autreAction}"/>
+    <c:set var="surcharge" value="${empty surcharge ? true : surcharge}" />
+    
+    <rich:toolbar height="32px" id="#{empty id ? 'barreAction' : id}" rendered="#{rendered}" 
+    styleClass="menuToolbar" >
+        <h:outputScript library="js"  name="gestionEvenement.js" target="head"/>
+        <c:choose>
+            <c:when test="${surcharge}">
+                <c:forEach items="#{menu.listeAction}" var="node">
+                    <c:choose>
+                        <c:when test="${empty node.listeSousAction}">
+                            <rich:menuItem 
+                                value="idMenuAction#{node.action}" 
+                                mode="ajax"   
+                                onclick="idActionEnCours='idMenuAction#{node.action}';"
+                                styleClass="navigationPage" 
+                                icon="#{cr:concat('/resources/images/icones/', node.image)}" 
+                                title="#{node.libelle}">                 
+                            <a4j:jsFunction name="callAction_idMenuAction#{node.action}" action="#{node.actionArbre}"/>  
+                            </rich:menuItem>       
+                        </c:when>
+                        <c:otherwise>
+                               <c:forEach items="#{node.listeSousAction}" var="action">                                
+                                 <a4j:jsFunction name="callAction_idMenuAction#{action.action}" action="#{action.actionArbre}" />
+                               </c:forEach>                              
+                               
+                            <rich:dropDownMenu icon="#{cr:concat('/resources/images/icones/', node.image)}" submitMode="ajax" mode="ajax" title="#{node.libelle}"  >
+                                <f:facet name="label">
+                                    <h:graphicImage value="#{cr:concat('/resources/images/icones/', node.image)}"/>
+                                </f:facet>
+                                
+                                <c:forEach items="#{node.listeSousAction}" var="action">
+                                    <rich:menuItem 
+                                        value="idMenuAction#{action.action}"
+                                        mode="ajax"                                      
+                                        styleClass="navigationPage" 
+                                        title="#{action.libelle}"
+                                        label="#{action.libelle}"  
+                                        onclick="idActionEnCours='idMenuAction#{action.action}';"
+                                        icon="#{cr:concat('/resources/images/icones/', action.image)}" />                                    
+                                </c:forEach>
+                            </rich:dropDownMenu>   
+                        </c:otherwise>
+                    </c:choose>
+                </c:forEach>
+                
+                <a4j:outputPanel ajaxRendered="true">
+                    <t:graphicImage library="images/icones" name="sep1.gif" rendered="#{autreAction}"/>
+                </a4j:outputPanel>
+                
+            </c:when>
+        </c:choose>
+        
+        <t:div id="#{empty id ? 'barreActionAdd' : cr:concat(id,'Add')}"
+        style="white-space: nowrap;"
+         >
+            <a4j:outputPanel ajaxRendered="true">
+            <ui:insert/>
+            </a4j:outputPanel>
+        </t:div>
+    </rich:toolbar>
+    
+    
+    
+    
+  </ui:composition>
+</html>

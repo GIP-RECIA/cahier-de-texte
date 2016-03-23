@@ -1,0 +1,157 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:a4j="http://richfaces.org/a4j" xmlns:crx="urn:crlr:ext"
+	xmlns:cr="urn:crlr" xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:rich="http://richfaces.org/rich">
+
+
+
+<h:head>
+	<title>Cahier de Texte - Liste de séances</title>
+	<h:outputStylesheet library="css" name="seancePrintListe.css" />
+</h:head>
+
+
+<body>
+	<h3 style="text-align: center;">Cahier de texte - Liste de
+		séances</h3>
+	<div class="footer">Cahier de texte - Liste de séances</div>
+
+	<ui:remove>DEBUT LISTES DES SCEANCEs 
+    <rich:panel id="listingSeances" styleClass="listSeancesPanel" />
+
+	</ui:remove>
+	<a4j:repeat value="#{listeSeances.listSeances}" var="ligne">
+
+		<rich:panel id="panelSeance" styleClass="panelSeance panelSeanceList"
+			style="page-break-inside: avoid;">
+			<f:facet name="header">
+				<t:panelGroup
+					style="background-color: #{ligne.typeCouleur.id}; border: 3px groove #{ligne.typeCouleur.id};">
+					<h:outputText
+						value="#{cr:formatDate(ligne.date, 'dd/MM/yyyy')} - #{ligne.printSequenceDTO.intitule} - #{ligne.sequenceDTO.typeGroupe == 'CLASSE' ? 'Classe' :'Groupe'} #{ligne.sequenceDTO.groupesClassesDTO.designation} - #{ligne.enseignantDTO.civilite} #{ligne.enseignantDTO.prenom} #{ligne.enseignantDTO.nom} "
+						style="color:#{ligne.typeCouleur.couleurTexte}; text-decoration:none;" />
+				</t:panelGroup>
+			</f:facet>
+
+			<h:panelGrid id="detailSeance" style="display:table;"
+				styleClass="panelSeanceDetail" columns="2" width="100%;"
+				columnClasses="detailSeanceLeft, detailSeanceRight" rules="">
+
+				<h:panelGroup>
+					<t:div style="page-break-inside: avoid;">
+						<t:div id="displayDuTampon" styleClass="divTampon"
+							rendered="#{(not empty ligne.visaDirecteur or not empty ligne.visaInspecteur) and (not readOnly)}">
+							<cr:tamponVisa
+								dateVisaDirecteur="#{ligne.visaDirecteur.dateVisa}"
+								typeVisaDirecteur="#{ligne.visaDirecteur.typeVisa}"
+								dateVisaInspecteur="#{ligne.visaInspecteur.dateVisa}"
+								typeVisaInspecteur="#{ligne.visaInspecteur.typeVisa}" />
+						</t:div>
+						<h:panelGrid columns="2" styleClass="intitule"
+							rendered="#{not empty ligne.intitule}">
+
+							<h:outputLabel styleClass="libelle" value="Intitulé :" />
+							<h:outputText value="#{ligne.intitule}" />
+							<h:outputLabel styleClass="libelle"
+								value="Dernière modification :" />
+							<h:panelGroup>
+								<h:outputText
+									value="#{cr:formatDate(ligne.dateMaj, 'dd/MM/yyyy')}"
+									styleClass="#{ligne.visaPerime ? 'fondRouge dateModif' : 'dateModif'}" />
+								<small> <h:graphicImage library="images/icones"
+										name="lock.png" rendered="#{ligne.visaDirecteurMemo}"
+										title="Visamémo Directeur" styleClass="iconInText" /> <h:graphicImage
+										library="images/icones" name="lock.png"
+										rendered="#{ligne.visaInspecteurMemo}"
+										title="Visamémo Inspecteur" styleClass="iconInText" />
+								</small>
+							</h:panelGroup>
+
+						</h:panelGrid>
+
+						<t:div styleClass="description"
+							rendered="#{not empty ligne.descriptionHTML}">
+							<h:outputText escape="false" value="#{ligne.descriptionHTML}" />
+
+						</t:div>
+
+						<rich:panel id="panelpieceJointe"
+							rendered="#{not empty ligne.files}"
+							styleClass="panelPiecesJointe">
+							<h:outputLabel styleClass="libelle" value="Pièces Jointes :" />
+							<h:panelGrid
+								id="pieceJointeDetail#{varStatusSeance.index}#{varStatus.index}"
+								style="display:block;" styleClass="panelPieceJointeDetail">
+								<a4j:repeat value="#{ligne.files}" var="pieceJointe">
+									<h:outputText styleClass="pieceJointeLien"
+										value="#{pieceJointe.nom}" />
+								</a4j:repeat>
+							</h:panelGrid>
+						</rich:panel>
+					</t:div>
+				</h:panelGroup>
+
+				<ui:remove>La partie affichage des devoirs </ui:remove>
+				<h:panelGrid id="devoirSeance"
+					styleClass="seanceDevoirDiv seanceDevoirDivList">
+
+					<a4j:repeat rendered="#{not empty ligne.devoirs}"
+						value="#{ligne.devoirs}" var="devoirDTO">
+						<rich:panel id="panelDevoir"
+							styleClass="panelDevoir  panelDevoirInList"
+							style="page-break-inside: avoid;">
+							<f:facet name="header">
+								<h:outputText
+									value="Pour le #{cr:formatDate(devoirDTO.dateRemise, 'dd/MM/yyyy')} : #{devoirDTO.intitule}"
+									style="font-weight:bold;" />
+							</f:facet>
+							<h:panelGrid id="devoirDetail" style="display:block;">
+
+								<h:panelGrid columns="2"
+									rendered="#{not empty devoirDTO.typeDevoirDTO}">
+
+									<h:outputLabel styleClass="libelle" value="Type :" />
+									<h:outputText value="#{devoirDTO.typeDevoirDTO.libelle}" />
+								</h:panelGrid>
+
+								<h:outputText rendered="#{not empty devoirDTO.descriptionHTML}"
+									escape="false" styleClass="description"
+									value="#{devoirDTO.descriptionHTML}" />
+
+								<rich:panel id="panelpieceJointeDevoir"
+									rendered="#{not empty devoirDTO.files}"
+									styleClass="panelPiecesJointe">
+									<h:outputLabel styleClass="libelle" value="Pièces Jointes :" />
+									<h:panelGrid id="pieceJointeDevoirDetail"
+										style="display:block;" styleClass="panelPieceJointeDetail">
+
+										<a4j:repeat value="#{devoirDTO.files}" var="pieceJointe">
+
+											<h:outputText styleClass="pieceJointeLien"
+												value="#{pieceJointe.nom}" />
+										</a4j:repeat>
+									</h:panelGrid>
+								</rich:panel>
+							</h:panelGrid>
+						</rich:panel>
+					</a4j:repeat>
+				</h:panelGrid>
+				<ui:remove>FIN devoirSeance</ui:remove>
+			</h:panelGrid>
+		</rich:panel>
+
+	</a4j:repeat>
+
+	<ui:remove>
+		<rich:panel />FIN LISTE DES SCEANCES <cr:page />
+	</ui:remove>
+</body>
+
+</html>

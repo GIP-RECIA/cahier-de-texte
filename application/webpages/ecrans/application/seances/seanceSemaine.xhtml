@@ -1,0 +1,312 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:crx="urn:crlr:ext" 
+    xmlns:cr="urn:crlr"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:rich="http://richfaces.org/rich">
+
+<cr:page titrePage="Séances par classe" bean="#{seanceSemaine}" form="#{seanceSemaine.form}">    
+    <h:outputScript library="js" name="jquery-ui-1.8.20.custom.js" target="head" />
+    <h:outputScript library="js" name="jquery.qtip.js" target="head" />
+    <h:outputScript library="js" name="seanceSemaine.js" target="head" />
+    <h:outputScript library="js"  name="saisieDateListe.js" target="head"/>
+    <h:outputStylesheet library="css" name="jquery.qtip.css" target="head" />
+    <h:outputStylesheet library="css" name="seanceSemaine.css" target="head" />
+
+    <cr:menuAction id="idMenuAction">
+        <cr:elemMenuAction 
+              idaction="idChercher" bean="#{seanceSemaine}" cible="rechercher"
+              image="binocular.png" 
+              title="Recherche les séances"
+              render="idPanelResultat,idPanelResultatListeDiv,outilRecherche2" 
+              oncomplete="resizePanel(); mettreTooltips();"
+              />
+    </cr:menuAction>
+    
+    
+    <rich:panel header="Séances par classe" id="panelRecherche" />
+                
+    <cr:saisieDate rendered="false" id="saisieDateInvisible" valeur="" titre="Date bidon qui permet de faire marcher dans le composant cr:saisieSeance les champs de saisie de date" />  
+    <t:div style="display: none;"><cr:saisieEditeur rendered="true" id="saisieEditeurInvisible" commentaire="Editeur bidon qui permet de faire marcher dans le composant cr:saisieSeance les champs de saisie de editeur" /></t:div>
+    
+    <cr:lien id="refreshRecheche" bean="#{seanceSemaine}"
+            cible="rechercher"
+            oncomplete="resizePanel(); mettreTooltips();"
+            render="idPanelResultat,idPanelResultatListeDiv,outilRecherche2"
+            titre="" />
+    
+    <rich:panel id="outilRecherche">
+        <table class="table" >
+            <tr>
+		        <td style="#{seanceSemaine.form.modeArchive ? 'vertical-align: middle;' : 'display:none;'}">
+		            <cr:saisieListe id="selectAnnee" titre="Année scolaire"
+		               rendered="#{seanceSemaine.form.modeArchive}" 
+		               largeur="100" decalageTitreGauche="0" decalageTitreDroite="0" 
+		               valeur="#{seanceSemaine.form.idAnneeScolaire}" 
+		               donnees="#{seanceSemaine.form.listeAnneeScolaire}"
+		               proprieteLibelle="exercice" proprieteValeur="id">
+		               <a4j:ajax event="change" 
+		                   listener="#{seanceSemaine['selectionnerAnneeScolaire']}" 
+		                   render="idPanelResultat,idPanelResultatListeDiv,outilRecherche,outilRecherche2" />
+		            </cr:saisieListe>            
+		        </td>
+                <td style="vertical-align: middle;">    
+			        <cr:selectClasseGroupe  
+			              oncomplete= "resizePanel(); mettreTooltips();"
+			              render = "idPanelResultat,idPanelResultatListeDiv,outilRecherche,outilRecherche2"                
+			              />
+			    </td>
+			</tr>
+        </table>
+			    
+          <cr:selectEnseignement enseignementTypeOncomplete="resizePanel(); mettreTooltips();"
+render="idPanelResultat idPanelResultatListeDiv outilRecherche outilRecherche2" />
+        
+        <hr/>
+    </rich:panel>
+    <rich:panel id="outilRecherche2" style="#{seanceSemaine.form.vraiOuFauxRechercheActive ? '' : 'display: none;'}" >
+        <table class="table">
+            <tr>
+                <td style="vertical-align:middle;">
+                    <h:selectOneRadio id="selectiontypeAffichage"
+                        style="padding-left:10px;"
+                        value="#{seanceSemaine.form.typeAffichage}"
+                        >
+                        <a4j:ajax event="click"
+                           listener="#{seanceSemaine['resetTypeAffichage']}"
+                           render="idVisuSemaine,idChoixDate,idListeDesDevoirsPanel,idPanelResultatListeDiv" 
+                           oncomplete="resizePanel(); mettreTooltips();"
+                           />
+                        <f:selectItem itemLabel="Semainier" itemValue="SEMAINE" />
+                        <f:selectItem itemLabel="Liste" itemValue="LISTE" />
+                    </h:selectOneRadio>
+                </td>
+                <td style="vertical-align:middle;">
+                    <t:div id="idChoixDate" style="display:#{seanceSemaine.form.typeAffichage eq 'LISTE' ? 'inline' : 'none'};" >
+                        <cr:saisieDate 
+                            id="idDateDebut" 
+                            decalageTitreGauche="15" 
+                            largeur="65"
+                            titre="Du"
+                            valeur="#{seanceSemaine.form.dateDebut}"
+                            oncomplete="lancerLienAjax('refreshRecheche');"
+                             />
+                        <cr:saisieDate 
+                            id="idDateFin" 
+                            decalageTitreGauche="15" 
+                            largeur="65"
+                            titre="Au"
+                            oncomplete="lancerLienAjax('refreshRecheche');"
+                            valeur="#{seanceSemaine.form.dateFin}" />
+                    </t:div>
+                </td>
+            </tr>
+        </table>
+        <t:div id="idVisuSemaine" style="display:#{seanceSemaine.form.typeAffichage eq 'LISTE' ? 'none' : ''};">
+        <cr:barreSemaine id="idBarreSemaine"
+             rendered=""
+             listeSemaine="#{seanceSemaine.form.listeBarreSemaine}"
+             listeMois="#{seanceSemaine.form.listeMois}" style="cursor:pointer"
+             onclick="lancerLienAjax('idSelectionSemaine',{'idCacheValeurSem': '#{sem.numeroSemaine}'});" />
+        
+        <cr:lien id="idSelectionSemaine" bean="#{seanceSemaine}"
+            cible="selectionnerSemaine"
+            oncomplete="resizePanel(); mettreTooltips();"
+            render="idBarreSemaine,idPanelResultat"
+            titre="" />
+        <t:inputHidden forceId="true" id="idCacheValeurSem"
+            value="#{seanceSemaine.form.numeroSemaineSelectionne}" />
+        
+        <t:div id="idPanelResultat" styleClass="semainier" style="overflow: auto; ">
+            <rich:dataTable value="#{seanceSemaine.form.liste}" rowClasses="pair,impair"
+            var="category" rowKeyVar="row" styleClass="planning"
+            id="table">
+                <f:facet name="header">
+                    <h:panelGrid columns="5" styleClass="enteteCalTable">
+                        <h:outputText styleClass="titreCalTable" value="#{seanceSemaine.form.titreNavigateurSemaine}"/>
+                    </h:panelGrid>
+                </f:facet>
+                
+                <c:forEach items="#{seanceSemaine.form.listeJoursOuvre}" var="jourOuvre">            
+                    <cr:seanceSemaineColonne jourColonne="#{jourOuvre.jourName}" jourHeaderFooter="#{jourOuvre.displayName}" />
+                </c:forEach>
+                            
+            </rich:dataTable>
+        </t:div>
+    </t:div>
+    <t:div id="idPanelResultatListeDiv" style="#{seanceSemaine.form.typeAffichage eq 'LISTE' ? '' : 'display:none;'}">
+        <rich:panel id="idListeDesDevoirsPanel"   
+                 style="vertical-align:top; overflow:auto; ">
+            <cr:table idTable="idtableListingDevoirsSea" style="" avecPagination="false"
+                liste="#{seanceSemaine.form.listeSeance}" entete="Liste des séances" >
+                <cr:colonne libelleColonne="Enseignement" id="" taille="150">
+                    <h:outputText value="#{ligne.matiere}" />
+                </cr:colonne>
+                <cr:colonne libelleColonne="Enseignant" id="" taille="150">
+                    <h:outputText value="#{ligne.denomination} #{ligne.nom} " />
+                </cr:colonne>
+                <cr:colonne libelleColonne="Intitulé" id="" taille="150">
+                    <h:outputText value="#{ligne.seance.intitule}" />
+                </cr:colonne>
+                <cr:colonne libelleColonne="Date" id="" taille="50">
+                    <h:outputText value="#{cr:formatDate(ligne.seance.date, 'dd/MM/yyyy')}" />
+                </cr:colonne>
+                <cr:colonne libelleColonne="" align="center" id="" taille="20">
+                    <cr:lien id="iddlSeaFichier" 
+                        rendered="true" 
+                        bean="#{seanceSemaine}" 
+                        cible="naviguerDetailSeance" 
+                        image="#{ligne.seance.accesEcriture ? 'edit.gif' : 'loupe-icone.png' }" 
+                        desc="#{ligne.seance.accesEcriture ? 'Modifier la séance' : 'Consulter la séance' }"
+                        render="idPopupConsulterSeance_form:idPopupConsulterSeance_panel,idPopupConsulterSeance_form:idtabPanelDetailJourSeance "
+                        oncomplete="#{rich:component('idPopupConsulterSeance')}.show(); appliqueRotationTampon();">
+                        <f:setPropertyActionListener value="#{ligne}" target="#{seanceSemaine.form.selectSeance}" />         
+                    </cr:lien>   
+                </cr:colonne>
+            </cr:table>
+           </rich:panel>
+        </t:div>  
+    </rich:panel>
+    <cr:popupChargeTravail
+        idPopup="idPopupChargeTravail" 
+        listeDevoirPrincipal="#{ajoutSeance.form.devoirSelected.chargeTravail.listeDevoirPrincipal}"  
+        listeDevoirComplement="#{ajoutSeance.form.devoirSelected.chargeTravail.listeDevoirComplement}"
+        groupeOuClasse="#{ajoutSeance.form.devoirSelected.chargeTravail.groupeOuClasse}"
+    />
+</cr:page>    
+
+<cr:popupGroupeClasse 
+    render="idPanelResultat,idPanelResultatListeDiv,outilRecherche,outilRecherche2"
+    oncomplete="resizePanel(); mettreTooltips();"  />
+
+<cr:popupEnseignement oncomplete="resizePanel(); mettreTooltips();"
+   render="formulaire_principal:outilRecherche,formulaire_principal:outilRecherche2,formulaire_principal:idPanelResultat,formulaire_principal:idPanelResultatListeDiv"
+                        />
+       
+<cr:popupPiecesJointes 
+    idPopup="idPopupPiecesJointes" tailleAuto="true"
+    largeurPopup="660" titrePopup="Pièces jointes"
+    statusPopup="statuspopup" raffraichirTabAfterUpload="#{ajoutSeance.form.raffraichirTabAfterUpload}" />
+
+<cr:popupModifiable idPopup="idPopupConsulterSeance"
+    largeurPopup="800" maxlength="50" statusPopup="statuspop"
+    titrePopup="Détail de la séance">
+    <a4j:outputPanel id="idPopupConsulterSeanceRegion">
+        <cr:menuAction id="idMenuActionPopupSeance" surcharge="false" rendered="#{seanceSemaine.form.selectSeance.seance.accesEcriture}">
+            <cr:elemMenuAction 
+              idaction="idSauverSeance" 
+              bean="#{ajoutSeance}" cible="sauver"
+              image="save.png" 
+              title="Sauvegarder"
+              render="formulaire_principal:idPanelResultat,formulaire_principal:idPanelResultatListeDiv"
+              oncomplete="
+              if (#{facesContext.maximumSeverity == null or facesContext.maximumSeverity.ordinal le 0} ) {
+                lancerLienAjax('idChercher');
+                #{rich:component('idPopupConsulterSeance')}.hide();  
+              }" 
+              rendered="#{ajoutSeance.form.seance.accesEcriture}"
+            />
+            <cr:elemMenuAction 
+              idaction="idDeleteSeance" bean="#{ajoutSeance}" cible="deleteSeance"
+              image="delete.png" 
+              title="Supprimer la séance"
+              confirm="Voulez-vous vraiment supprimer cette séance ?"
+              render="formulaire_principal:idPanelResultat,formulaire_principal:idPanelResultatListeDiv" 
+              oncomplete="if (#{facesContext.maximumSeverity == null or facesContext.maximumSeverity.ordinal le 0} ) {
+                lancerLienAjax('idChercher'); 
+                #{rich:component('idPopupConsulterSeance')}.hide();
+              }" 
+              rendered="#{ajoutSeance.form.seance.accesEcriture}"
+            />
+            <cr:elemMenuAction 
+              idaction="idCopierSeance" 
+              bean="#{ajoutSeance}" cible="copier"
+              image="copy.png" 
+              title="Copier la séance"
+              oncomplete="" 
+              rendered="#{contexteUtilisateur.utilisateurDTO.profil eq 'ENSEIGNANT'}" 
+            />
+            <cr:elemMenuAction 
+              idaction="idCollerSeance" 
+              bean="#{ajoutSeance}" 
+              cible="coller"
+              render="idPopupConsulterSeance_panel"
+              image="coller.png" 
+              title="Coller la séance"
+              oncomplete="" 
+              rendered="#{ajoutSeance.form.seance.accesEcriture and ajoutSeance.form.seanceCopie != null}" 
+            />
+        </cr:menuAction>
+        <rich:tabPanel selectedTab="tabSeance" switchType="client" activeItem="TAB_SEANCE" 
+            id="idtabPanelDetailJourSeance" rendered="true" >
+            <rich:tab id="TAB_SEANCE" header="#{ajoutSeance.form.seanceTitre}" rendered="true">
+                <t:div style="height:450px; overflow:auto;">
+                    <cr:saisieSeance
+                        seance="#{ajoutSeance.form.seance}"
+                        readOnly="#{not ajoutSeance.form.seance.accesEcriture}"
+                        showAnnotations="#{ajoutSeance.form.seance.accesEcriture}"
+                        formulaire_contenant="idPopupConsulterSeance_form"
+                        idPopupPiecesJointes="idPopupPiecesJointes"
+                        id_saisieSeance="idSaisieSeance"
+                        affichageSequence="#{ajoutSeance.form.afficheSelectionSequenceSeance}"
+                        listeSequence="#{ajoutSeance.form.listeSequenceSeance}"
+                        sequenceSelected="#{ajoutSeance.form.seance.sequenceDTO}"
+                        controleur="#{ajoutSeance}" 
+                        cible="chargerSequence"
+                        bean="#{ajoutSeance}"
+                        cibleResetSeance="resetSeance"
+                        cibleDeletePieceJointeSeance="deletePieceJointeSeance" 
+                        cibleAjouterPieceJointeSeance="ajouterPieceJointeSeance"
+                        cibleAfterAjouterPieceJointeSeance="afterAjouterPieceJointeSeance"
+                        cibleResetSeanceAnnotations="resetSeanceAnnotations"
+                        cibleChargeImagesLatex="chargeImagesLatex"
+                        cibleChargeImagesLatexAnnotations="chargeImagesLatexAnnotations"
+                        checkModification="false"
+                    />
+                </t:div>
+            </rich:tab>
+            <rich:tab id="TAB_DEVOIR" header="Travail à faire" rendered="true">
+                <t:div id="idListeDesDevoirsSeance" styleClass="listeDesDevoirsSeance">
+                    <c:forEach items="#{ajoutSeance.form.seance.devoirs}" var="devoir" varStatus="status">
+                        <cr:saisieDevoir
+                           formulaire_contenant="idPopupConsulterSeance_form"
+                           id_saisieDevoir="idSaisieDevoirSeance${status.index}"
+                           devoirDTO="#{devoir}"
+                           readOnly="#{not ajoutSeance.form.seance.accesEcriture}"
+                           id_devoirConteneur="idListeDesDevoirsSeance"
+                           idPopupPiecesJointes="idPopupPiecesJointes"
+                           listeTypeDevoir="#{ajoutSeance.form.listeTypeDevoir}"
+                           controleur="#{ajoutSeance}"
+                           cibleResetDevoir="resetDevoir"
+                           cibleDeleteDevoir="deleteDevoir"
+                           cibleDeletePieceJointe="deletePieceJointe" 
+                           cibleAjouterPieceJointe="ajouterPieceJointe"
+                           cibleAfterAjouterPieceJointe="afterAjouterPieceJointe"
+                           cibleAfficherChargeTravail="afficherChargeTravail"
+                           cibleChargeImagesLatex="chargeImagesLatexDevoir"
+                           checkModification="false"
+                        /> 
+                    </c:forEach>
+                </t:div>
+                <t:div style="height:32px; padding-top:5px; #{ajoutSeance.form.seance.accesEcriture ? '' : 'display:none;'}">
+                    <cr:lien id="idAjouterDevoirSeance" bean="#{ajoutSeance}"
+                        cible="ajouterDevoir"
+                        render="idListeDesDevoirsSeance"
+                        showAnnotations="#{ajoutSeance.form.seance.accesEcriture}"
+                        image="add.png"
+                        desc="Ajouter un travail à faire" />
+                </t:div>
+            </rich:tab>
+        </rich:tabPanel>
+    </a4j:outputPanel>
+</cr:popupModifiable>
+
+
+<cr:popupStatus idStatus="statuspop" />
+
+</html>

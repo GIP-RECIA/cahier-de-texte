@@ -1,0 +1,116 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:cr="urn:crlr"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:rich="http://richfaces.org/rich"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+  <ui:composition>
+    <ui:remove>
+                
+<!-- 
+        saisieHeureMinute : composant permettant le rendu de deux 
+        champs de formulaire de type liste représentant les heures et les minutes.
+        
+        propriétés : 
+        * id : identifiant du composant.
+        - titre : libellé (optionnel) du champ. 
+        - desc : description du champ (tooltip).
+        * valeurHeure : valueBinding
+        * valeurMinute : valueBinding
+        - modifiable      
+        - largeur : largeur du champ. par défaut 100 pixels.   
+        - avecMinute : indique si la liste des minutes doit être rendu. par défaut non rendu.
+        * bean : le bean.   
+    -->
+        
+</ui:remove>
+    <c:set value="${empty largeur ? '100' : largeur}"
+           var="largeur" />
+    <c:set value="${empty avecHeure ? true : avecHeure}"
+           var="avecHeure" />
+    <c:set value="${empty avecMinute ? false : avecMinute}"
+           var="avecMinute" />
+    <c:set value="${(empty cibleHeure and avecHeure) ? bean.form.listeHeures : cibleHeure}"
+           var="cibleHeure" />
+    <c:set value="${(empty cibleMinute and avecMinute) ? bean.form.listeMinutes : cibleMinute}"
+           var="cibleMinute" />
+    <c:set var="styleClassError" value="${empty styleClassError or !styleClassError  ? '' : 'messageErreur'}" />          
+        
+           <t:panelGroup style="white-space: nowrap;">
+           
+           <h:outputLabel rendered="#{not empty titre}"
+                     style="padding-right: 10px; padding-left: 10px; float: left; width: 50px;"
+                     styleClass="libelle"
+                     title="${titre}"
+                     value="#{titre}"></h:outputLabel>
+                     
+      
+      <rich:select disabled="#{!modifiable}"
+                   enableManualInput="false"
+                   id="${id}_heure"
+                   listWidth="50px"
+                   rendered="#{avecHeure}"
+                   style="display: inline;"
+                   styleClass="#{styleClass}"
+                   title="${titre}"
+                   value="#{valeurHeure}">
+        <f:selectItem itemLabel="" itemValue="-1" />
+        <f:selectItems value="#{cibleHeure}" />
+      </rich:select>
+      <ui:remove>
+          onChange event gérer directement par jQuery pour avoir 
+      un comportement standardiser par rapport aux navigateurs 
+      </ui:remove>
+      
+    
+      <script>
+      /* <![CDATA[ */      
+      jQuery(document).ready(function () {
+          /* Marche plus : on va tester le click sur la div jQuery cree pour simuler une liste deroulante.
+          var elem = jQuery('input[id$="#{id}_heureInput"], input[id$="#{id}_minuteInput"]');
+          elem.change(function(event) {
+            alert('change');
+            onChange_HeureMinute(event); 
+            #{onchange}
+            });
+          */
+
+          var elem = jQuery('div[id$="#{id}_heureItems"], div[id$="#{id}_minuteItems"]');
+          elem.click(function(event) {
+              onChange_HeureMinute(event); 
+              #{onchange}
+              });
+
+          if ('#{styleClassError}' != '') {
+        	  jQuery('input[id$="#{id}_heureInput"]').parent().addClass('messageErreur');
+        	  jQuery('input[id$="#{id}_minuteInput"]').parent().addClass('messageErreur');                        	 
+          }
+                          
+      });
+      /* ]]> */
+      </script>
+      <h:outputLabel rendered="#{avecHeure}"
+                     style="padding-right: 10px; padding-left: 0px; display: inline;"
+                     styleClass="champ"
+                     value="h"></h:outputLabel>
+      <rich:select disabled="#{!modifiable}"
+                   enableManualInput="false"
+                   id="${id}_minute"
+                   listWidth="50px"
+                   rendered="#{avecMinute}"
+                   styleClass="#{styleClass}"
+                   style="display: inline;"
+                   value="#{valeurMinute}">
+        <ui:insert />
+        <f:selectItem itemLabel="" itemValue="-1" />
+        <f:selectItems value="#{cibleMinute}" />
+      </rich:select>
+      <h:outputLabel rendered="#{avecMinute}"
+                     style="padding-right: 10px; padding-left: 0px; display: inline;"
+                     styleClass="champ"
+                     value="min"></h:outputLabel>
+   </t:panelGroup>
+  </ui:composition>
+</html>

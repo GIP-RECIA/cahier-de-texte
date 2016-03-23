@@ -1,0 +1,59 @@
+
+
+.pickList div.rf-pick-src-cptn, .pickList div.rf-pick-tgt-cptn{
+	color: #000000;
+}
+
+
+.pickList button.rf-pick-add-all,.pickList button.rf-pick-rem-all {
+	display: none;
+}
+
+.pickList td  {
+	vertical-align: middle;
+}
+
+input.pickSelector  {
+	display: block;
+	width: 35ex;
+}
+
+/*
+div.pickSelector {
+	margin-left: auto;
+	margin-right: auto;
+	width: 44em;
+	text-align: center;
+		margin-bottom: 1em;
+}
+*/
+div.pickSelector {
+	text-align: center;
+}
+
+div.pickSelector > div {
+	display: inline-block;
+	text-align: left;
+	margin-top: 2em;
+}
+
+div.pickList > table > tbody > tr > td > table {
+	border-spacing: 1em;
+}
+
+div.rf-pick-lst-scrl {
+	max-height: 15em !important;
+	min-height: 15em !important;
+	width: 35ex !important;
+	
+}
+div.AlertRmAlltext {
+	margin-bottom: 1em;
+}
+div#idPopupAlertRmAll_container {
+	width: 33% !important;
+	left: 33% !important;
+	top: 33% !important;
+	white-space: normal;
+	
+}

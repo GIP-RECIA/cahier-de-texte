@@ -1,0 +1,155 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:crx="urn:crlr:ext"
+    xmlns:cr="urn:crlr"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:rich="http://richfaces.org/rich">
+
+<cr:page titrePage="Gestion Séance" bean="#{consulterSeance}" form="#{consulterSeance.form}">  
+    <cr:menuAction id="idMenuAction">
+  		<cr:elemMenuAction idaction="idRetourToolBar" bean="#{consulterSeance}" cible="retour"
+	        image="back.png" title="Retour"
+    		render="consulterSeance" />
+  	</cr:menuAction>
+
+    <rich:panel header="#{consulterSeance.form.titreDePage}" id="consulterSeance">
+        <h:panelGrid columns="9" class="table">
+            <cr:saisiePopup id="idSequence" titre="Séquence"
+                idPopup="idPopupSequence" decalageTitreDroite="22"
+                largeur="200"
+                valeur="#{consulterSeance.form.sequenceSelectionnee.intitule}"
+                bean="#{consulterSeance}"
+                lienModifiable="#{consulterSeance.form.modifiable}"
+                modifiable="false" />
+
+            <cr:saisieDate id="dateDebutSequence" decalageTitreDroite="0" decalageTitreGauche="15" largeur="65"
+                valeur="#{consulterSeance.form.sequenceSelectionnee.dateDebut}"
+                titre="Début" modifiable="false" />
+
+            <cr:saisieDate id="dateFinSequence" decalageTitreDroite="0" decalageTitreGauche="5" largeur="65"
+                valeur="#{consulterSeance.form.sequenceSelectionnee.dateFin}"
+                titre="Fin" modifiable="false" />
+        </h:panelGrid>
+        
+        <h:panelGrid  columns="4" class="table">
+            <cr:saisieTexte id="idClasseGroupe" titre="Classe/groupe" largeur="60"
+                modifiable="false" decalageTitreDroite="0"
+                valeur="#{consulterSeance.form.sequenceSelectionnee.designationClasseGroupe}" /> 
+                       
+            <cr:saisieTexte id="designationEnseignement" titre="Enseignement"
+                modifiable="false" largeur="200" decalageTitreGauche="10" decalageTitreDroite="0"
+                valeur="#{consulterSeance.form.designationEnseignement}" />
+        </h:panelGrid>
+        
+        <h:panelGrid columns="6" class="table">
+            <cr:saisieTexte id="nomEnseignant" titre="Enseignant"
+                modifiable="false" largeur="200" decalageTitreDroite="16"
+                valeur="#{consulterSeance.form.civilite} #{consulterSeance.form.nom}" />
+                
+            <cr:saisieTexte id="intitule" titre="Intitulé" modifiable="#{consulterSeance.form.modifiable}"
+                decalageTitreDroite="15" decalageTitreGauche="10" largeur="263" valeur="#{consulterSeance.form.intitule}" />
+
+            <cr:saisieDate id="date" decalageTitreGauche="10" modifiable="#{consulterSeance.form.modifiable}"
+                decalageTitreDroite="0" valeur="#{consulterSeance.form.date}" largeur="65"
+                titre="Date" />
+                
+              
+        </h:panelGrid>
+        <h:panelGrid columns="6" class="table">
+            <cr:saisieHeureMinute id="heureDebut" titre="Heure début" modifiable="#{consulterSeance.form.modifiable}"
+                desc="Heure de début" valeurHeure="#{consulterSeance.form.heureDebut}" avecMinute="true"
+                valeurMinute="#{consulterSeance.form.minuteDebut}"  decalageTitreDroite="8"
+                bean="#{consulterSeance}" />
+
+
+            <cr:saisieHeureMinute id="heureFin" titre="Heure fin" modifiable="#{consulterSeance.form.modifiable}"
+                desc="Heure de fin" valeurHeure="#{consulterSeance.form.heureFin}" avecMinute="true"
+                valeurMinute="#{consulterSeance.form.minuteFin}" decalageTitreDroite="24"
+                decalageTitreGauche="80" bean="#{consulterSeance}" />
+        </h:panelGrid>
+
+        <h:panelGrid columns="2" class="table">
+            <cr:saisieEditeur id="descriptionSeance" titre="Description"
+                desc="saisir le commentaire" modifiable="#{consulterSeance.form.modifiable}"
+                valeur="#{consulterSeance.form.description}" decalageTitreDroite="14" />
+                                
+        </h:panelGrid>
+
+        <h:panelGrid id="listingPieceJointeDevoir" columns="2" class="table">
+            <c:set var="listingPieceJointeNonVide" value="#{not empty consulterSeance.form.files}"/>
+            <c:set var="listingDevoirNonVide" value="#{not empty consulterSeance.form.listeDevoir}"/> 
+            <rich:panel id="listingPieceJointe"
+                style="vertical-align:top; overflow:auto; width:320px; height:200px; #{listingPieceJointeNonVide ? '' : 'border:0;'}">
+                <cr:table idTable="tableListingPieceJointe" largeur="290"
+                    liste="#{consulterSeance.form.files}"
+                    entete="Liste des pièces jointes ajoutées à la séance"
+                    rendered="#{listingPieceJointeNonVide}">
+                    <cr:colonne libelleColonne="nom" id="">
+                        <h:outputText value="#{ligne.nom}" />
+                    </cr:colonne>
+                    <cr:colonne libelleColonne="Fichier" align="center" id="">
+                        <h:outputText value="Le fichier n'existe pas." rendered="#{not ligne.activerLien}" />
+                        <cr:lien id="idRetour" chemin="#{ligne.pathFullDownload}" rendered="#{ligne.activerLien}" bean=""
+                            image="download.png" desc="Télécharger" />
+                     </cr:colonne>
+                </cr:table>
+            </rich:panel>
+            <rich:panel id="listingDevoir"
+                style="vertical-align:top; overflow:auto;width:520px; height:200px; #{listingDevoirNonVide ? '' : 'border:0;'}">
+                <cr:table idTable="tableListingDevoir" largeur="490"
+                    liste="#{consulterSeance.form.listeDevoir}"
+                    entete="Liste des devoirs ajoutés à la séance"
+                    rendered="#{listingDevoirNonVide}">
+                    <cr:colonne libelleColonne="Intitulé du devoir" id="">
+                        <h:outputText value="#{ligne.intitule}" />
+                    </cr:colonne>
+                    <cr:colonne libelleColonne="Type de devoir" id="">
+                        <h:outputText value="#{ligne.typeDevoir}" />
+                    </cr:colonne>
+                    <cr:colonne libelleColonne="Description du devoir" id="">
+                        <h:outputText  
+	                        escape="false" 
+	                        title="#{ligne.descriptionSansBalise}"
+	                        value="#{ligne.descriptionSansBaliseAbrege}" 
+                        />
+                    </cr:colonne>
+                    <cr:colonne libelleColonne="Date de remise" id="">
+                        <h:outputText
+                            value="#{cr:formatDate(ligne.dateRemise, 'dd/MM/yyyy')}" />
+                    </cr:colonne>
+					<cr:colonne libelleColonne="" id="">
+						<cr:lien bean="#{consulterSeance}" id="idDetailDev"							
+							cible="naviguerVersDetailDevoir" image="selectionner.gif" desc="Détail du devoir"
+							render="listingDevoir">
+							<f:setPropertyActionListener value="#{ligne}"
+								target="#{consulterSeance.form.devoirSelDTO}" />
+						</cr:lien>
+					</cr:colonne>
+				</cr:table>
+            </rich:panel>
+        </h:panelGrid>
+    </rich:panel>
+
+   <cr:popup idPopup="idPopupSequence" tailleAuto="true"
+        largeurPopup="300"
+        titrePopup="Liste des séquences">
+        <cr:tableSaisiePopup bean="#{consulterSeance}"         
+            liste="#{consulterSeance.listeSequenceSelectionnee}" render="consulterSeance"
+            valeur="#{consulterSeance.form.sequenceSelectionnee}">
+            <cr:colonne taille="30" libelleColonne="Code" id="">
+                <h:outputText value="#{ligne.code}" />
+            </cr:colonne>
+            <cr:colonne  taille="350" libelleColonne="Intitulé" id="">
+                <h:outputText value="#{ligne.intitule}" />
+            </cr:colonne>
+        </cr:tableSaisiePopup>
+    </cr:popup>
+
+</cr:page>
+    
+</html>

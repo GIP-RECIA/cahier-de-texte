@@ -1,0 +1,121 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:a4j="http://richfaces.org/a4j" xmlns:crx="urn:crlr:ext"
+    xmlns:cr="urn:crlr" 
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:rich="http://richfaces.org/rich"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+<ui:composition>
+    <!-- 
+        grilleEmploiCommon : composant permettant le rendu de l'emploi du temps.
+        
+    -->
+    
+    
+    <rich:dataTable value="#{listeJours}" var="category"
+        rows="#{fn:length(listeJours)}" rowKeyVar="row" rendered="#{not empty listeJours}"
+        styleClass="planning" id="#{s}table"
+        headerClass="${id}">
+
+        <rich:column style="width:50px;text-align:center;font-weight:bold;">
+            <div style="width: 50px;">#{category.heureDebut}H#{category.minuteDebut}</div>
+        </rich:column>
+
+        <rich:column width="150" style="padding:1px; background-color:#{(not category.active or not entete['LUNDI'].vraiOuFauxActif) ? '#ccc' : 'white'}" 
+            styleClass="corpsEmplTable"
+            rendered="#{joursOuvres['LUNDI']}">
+            <f:facet name="header">
+                <h:outputText value="Lundi" />
+            </f:facet>
+            <ui:repeat value="#{category.map['LUNDI']}" var="emploi">
+				<div onclick="lancerLienAjax('idSelJour',{'idCacheValeurJour': '#{emploi.position}'});"
+					style="cursor: pointer;margin: 2px 0px; padding: 0; width: 100%; background-color: #{fn:length(category.map['LUNDI']) != 1 ? 'red' : emploi.vraiOuFauxFusion ? '#eccda6' : 'white'}; display:#{entete['LUNDI'].vraiOuFauxActif ? 'block' : 'none'};">
+				<h:outputText style="font-style:italic;border-bottom-style:dotted;" value="${emploi.civiliteNomPrenom}" /><br />
+				<h:outputText value="${emploi.matiereCourt}" />
+		        </div>	      
+			</ui:repeat>
+        </rich:column>
+
+        <rich:column width="150" style="padding:1px; background-color:#{(not category.active or not entete['MARDI'].vraiOuFauxActif) ? '#ccc' : 'white'}" 
+            styleClass="corpsEmplTable"
+            rendered="#{joursOuvres['MARDI']}">
+            <f:facet name="header">
+                <h:outputText value="Mardi" />
+            </f:facet>
+            <ui:repeat value="#{category.map['MARDI']}" var="emploi">
+                <div onclick="lancerLienAjax('idSelJour',{'idCacheValeurJour': '#{emploi.position}'});"
+                    style="cursor: pointer;margin: 2px 0px; padding: 0; width: 100%; background-color: #{fn:length(category.map['MARDI']) != 1 ? 'red' : emploi.vraiOuFauxFusion ? '#eccda6' : 'white'}; display:#{entete['MARDI'].vraiOuFauxActif ? 'block' : 'none'};">
+                <h:outputText style="font-style:italic;border-bottom-style:dotted;" value="${emploi.civiliteNomPrenom}" /><br />
+                <h:outputText value="${emploi.matiereCourt}" />
+                </div>
+            </ui:repeat>
+        </rich:column>
+
+        <rich:column width="150" style="padding:1px; background-color:#{(not category.active or not entete['MERCREDI'].vraiOuFauxActif) ? '#ccc' : 'white'}" 
+            styleClass="corpsEmplTable"
+            rendered="#{joursOuvres['MERCREDI']}">
+            <f:facet name="header"><h:outputText value="Mercredi" /></f:facet>
+            <ui:repeat value="#{category.map['MERCREDI']}" var="emploi">
+               <div onclick="lancerLienAjax('idSelJour',{'idCacheValeurJour': '#{emploi.position}'});"
+                    style="cursor: pointer;margin: 2px 0px; padding: 0; width: 100%; background-color: #{fn:length(category.map['MERCREDI']) != 1 ? 'red' : emploi.vraiOuFauxFusion ? '#eccda6' : 'white'}; display:#{entete['MERCREDI'].vraiOuFauxActif ? 'block' : 'none'};">
+                <h:outputText style="font-style:italic;border-bottom-style:dotted;" value="${emploi.civiliteNomPrenom}" /><br />
+                <h:outputText value="${emploi.matiereCourt}" />
+                </div>
+            </ui:repeat>
+        </rich:column>
+
+        <rich:column width="150" style="padding:1px; background-color:#{(not category.active or not entete['JEUDI'].vraiOuFauxActif) ? '#ccc' : 'white'}" 
+            styleClass="corpsEmplTable"
+            rendered="#{joursOuvres['JEUDI']}">
+            <f:facet name="header"><h:outputText value="Jeudi" /></f:facet>
+            <ui:repeat value="#{category.map['JEUDI']}" var="emploi">
+               <div onclick="lancerLienAjax('idSelJour',{'idCacheValeurJour': '#{emploi.position}'});"
+                    style="cursor: pointer;margin: 2px 0px; padding: 0; width: 100%; background-color: #{fn:length(category.map['JEUDI']) != 1 ? 'red' : emploi.vraiOuFauxFusion ? '#eccda6' : 'white'}; display:#{entete['JEUDI'].vraiOuFauxActif ? 'block' : 'none'};">
+                <h:outputText style="font-style:italic;border-bottom-style:dotted;" value="${emploi.civiliteNomPrenom}" /><br />
+                <h:outputText value="${emploi.matiereCourt}" />
+                </div>
+            </ui:repeat>
+        </rich:column>
+
+        <rich:column width="150" style="padding:1px; background-color:#{(not category.active or not entete['VENDREDI'].vraiOuFauxActif) ? '#ccc' : 'white'}" 
+            styleClass="corpsEmplTable"
+            rendered="#{joursOuvres['VENDREDI']}">
+            <f:facet name="header"><h:outputText value="Vendredi" /></f:facet>
+            <ui:repeat value="#{category.map['VENDREDI']}" var="emploi">
+                <div onclick="lancerLienAjax('idSelJour',{'idCacheValeurJour': '#{emploi.position}'});"
+                    style="cursor: pointer;margin: 2px 0px; padding: 0; width: 100%; background-color: #{fn:length(category.map['VENDREDI']) != 1 ? 'red' : emploi.vraiOuFauxFusion ? '#eccda6' : 'white'}; display:#{entete['VENDREDI'].vraiOuFauxActif ? 'block' : 'none'};">
+                <h:outputText style="font-style:italic;border-bottom-style:dotted;" value="${emploi.civiliteNomPrenom}" /><br />
+                <h:outputText value="${emploi.matiereCourt}" /></div>
+            </ui:repeat>
+        </rich:column>
+
+        <rich:column width="150" style="padding:1px; background-color:#{(not category.active or not entete['SAMEDI'].vraiOuFauxActif) ? '#ccc' : 'white'}" 
+            styleClass="corpsEmplTable"
+            rendered="#{joursOuvres['SAMEDI']}">
+            <f:facet name="header"> <h:outputText value="Samedi" /> </f:facet>
+            <ui:repeat value="#{category.map['SAMEDI']}" var="emploi">
+                <div onclick="lancerLienAjax('idSelJour',{'idCacheValeurJour': '#{emploi.position}'});"
+                    style="cursor: pointer;margin: 2px 0px; padding: 0; width: 100%; background-color: #{fn:length(category.map['SAMEDI']) != 1 ? 'red' : emploi.vraiOuFauxFusion ? '#eccda6' : 'white'}; display:#{entete['SAMEDI'].vraiOuFauxActif ? 'block' : 'none'};">
+                <h:outputText style="font-style:italic;border-bottom-style:dotted;" value="${emploi.civiliteNomPrenom}" /><br />
+                <h:outputText value="${emploi.matiereCourt}" /></div>
+            </ui:repeat>
+        </rich:column>
+
+        <rich:column width="150" style="padding:1px; background-color:#{(not category.active or not entete['DIMANCHE'].vraiOuFauxActif) ? '#ccc' : 'white'}" 
+            styleClass="corpsEmplTable"
+            rendered="#{joursOuvres['DIMANCHE']}">
+            <f:facet name="header"><h:outputText value="Dimanche" /></f:facet>
+            <ui:repeat value="#{category.map['DIMANCHE']}" var="emploi">
+                <div onclick="lancerLienAjax('idSelJour',{'idCacheValeurJour': '#{emploi.position}'});"
+                    style="cursor: pointer;margin: 2px 0px; padding: 0; width: 100%; background-color: #{fn:length(category.map['DIMANCHE']) != 1 ? 'red' : emploi.vraiOuFauxFusion ? '#eccda6' : 'white'}; display:#{entete['DIMANCHE'].vraiOuFauxActif ? 'block' : 'none'};">
+                <h:outputText style="font-style:italic;border-bottom-style:dotted;" value="${emploi.civiliteNomPrenom}" /><br />
+                <h:outputText value="${emploi.matiereCourt}" /></div>
+            </ui:repeat>
+        </rich:column>
+
+    </rich:dataTable>
+</ui:composition>
+</html>

@@ -1,0 +1,127 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:cr="urn:crlr"
+    >
+<ui:composition>
+
+
+<c:set var="checkSauvegarde" value="${(not empty checkSauvegarde and checkSauvegarde) ? true : false}"/>
+
+<h:outputScript library="js"
+                    name="jquery.qtip.js"
+                    target="head" />
+                    
+<t:div id="#{empty id ? 'idBarreSemaine' : id}" style="position: relative; height:35px;" >
+    <a4j:repeat value="#{listeSemaine}" var="sem" iterationStatusVar="myVarStatus">
+        <ui:fragment rendered="#{not empty render}">     
+				<t:div
+				  style="
+				 position: absolute;
+				 left: #{myVarStatus.index * 100 / myVarStatus.rowCount}%;
+				 top:0px;
+				 height: 16px;
+				 width:#{(100 / myVarStatus.rowCount) }%;
+				 text-align: center; 
+				 background-color : #{sem.couleur}; 
+				 color: #{sem.textColor}; 
+				 border-width: 1px; 
+				 border-style: solid;
+				 border-top-color: #{sem.couleurBordureTop};  
+				 border-left-color: #{sem.couleurBordureTop};
+				 border-bottom-color: #{sem.couleurBordureBottom};
+				 border-right-color: #{sem.couleur};
+				 padding: 0px; 
+				 #{style}"
+				>
+				<a4j:commandLink 				    
+	                action="#{bean[cible]}"
+	                rendered="true"
+	                render="#{render}"
+	                oncomplete="#{oncomplete}" 
+	                status="status"
+	                style="
+	                   color: #{sem.textColor};
+	                   -moz-text-blink: none;
+                       -moz-text-decoration-color: none;
+	  			       -moz-text-decoration-line: none;
+					   -moz-text-decoration-style: none;
+					   background-repeat: none;
+					   font-size: 12px;
+					   white-space: nowrap;
+	                   "	                 
+	                >
+	                   <ui:remove><a4j:param name="numSem" value="#{sem}" assignTo="#{semaineSelectionnee}" /></ui:remove>
+                     <f:setPropertyActionListener value="#{sem}" target="#{semaineSelectionnee}"/>
+                     <div style="border-right: 1px solid #{sem.couleurBordureBottom}; margin-right: 1px;">                     
+				        <h:outputText value="#{sem.numeroSemaine}" title="#{cr:formatDate(sem.lundi, 'dd/MM/yyyy')}  #{cr:formatDate(sem.dimanche, 'dd/MM/yyyy')}"/>
+				     </div>
+				 </a4j:commandLink>
+		     </t:div>
+		</ui:fragment>
+        <ui:fragment rendered="#{empty render}">     
+            <div id="idSem#{cr:formatDate(sem.lundi, 'ddMMyy')}" style="
+                 position: absolute;
+                 left: #{myVarStatus.index * 100 / myVarStatus.rowCount}%;
+                 top:0px;
+                 height: 15px;
+                 width:#{100/myVarStatus.rowCount }%;
+                 cursor:pointer;
+                 text-align: center; 
+                 background-color : #{sem.couleur}; 
+                 color: #{sem.textColor};
+                 padding:0px;
+                 border-width: 1px; 
+                 border-style: solid;
+                 border-top-color: #{sem.couleurBordureTop};  
+                 border-left-color: #{sem.couleurBordureTop};
+                 border-bottom-color: #{sem.couleurBordureBottom};
+                 border-right-color: #{sem.couleur};
+                  
+                 #{style}"
+                 ondblclick="#{ondblclick}"
+                 onclick="#{checkSauvegarde ? cr:concat(cr:concat('checkSaveBarreSemaine(this.id, ',sem.numeroSemaine),');') : onclick}"
+                >
+                    <div style="border-right: 1px solid #{sem.couleurBordureBottom}; margin-right: 1px;">
+	                   <h:outputText value="#{sem.numeroSemaine}" title="#{cr:formatDate(sem.lundi, 'dd/MM/yyyy')}  #{cr:formatDate(sem.dimanche, 'dd/MM/yyyy')}"/>
+	                </div>
+					     
+	        </div>
+        </ui:fragment>
+    </a4j:repeat>
+        <a4j:repeat value="#{listeMois}" var="mois">
+            <div style="
+                position: absolute;
+                left: #{mois.positionLeft}%;
+                width: #{mois.positionRight - mois.positionLeft}%;
+                height: 16px;
+                top:17px;
+                text-align: center;
+                 
+                background-color : #{mois.moisCourant ? mois.couleur : richSkin.barreMoisColor}; 
+                color: #{mois.couleurTexte}; 
+                border-width: 1px; 
+                border-style: solid;
+                border-top-color: #{mois.moisCourant ? mois.couleurBordureTop : richSkin.barreMoisTopColor};  
+                border-left-color: #{mois.moisCourant ? mois.couleurBordureTop : richSkin.barreMoisTopColor};
+                border-bottom-color: #{mois.moisCourant ? mois.couleurBordureBottom : richSkin.barreMoisBottomColor};
+                border-right-color: #{mois.moisCourant ? mois.couleur : richSkin.barreMoisColor};
+                padding: 0px;
+                #{mois.nbrSemaine eq 0.0 ? 'display:none' : ''}
+                " 
+                title="#{mois.nbrSemaine le 3 ? mois.libelle : ''}"
+                >
+             <div style="border-right: 1px solid #{mois.moisCourant ? mois.couleurBordureBottom : richSkin.barreMoisBottomColor}; margin-right: 1px;">
+               <h:outputText 
+                value="#{mois.nbrSemaine le 3 ? ' ' : mois.libelle}"
+                />
+             </div>
+            </div>
+           </a4j:repeat>
+</t:div>
+</ui:composition>
+</html>

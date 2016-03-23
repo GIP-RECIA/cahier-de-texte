@@ -1,0 +1,62 @@
+.description {
+    word-wrap: break-word; 
+    border: 1px dotted #{richSkin.headerGradientColor}; 
+    white-space: normal;
+     width: 100%;
+      display: block;
+}
+
+.dragDropSeance {
+    background-color: white;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #c0c0c0;
+}
+
+div.listeDesDevoirsCycleSeance {
+    vertical-align:top; 
+    overflow-y:auto; 
+    overflow-x: hidden;
+    height:380px; 
+    border-style:solid; 
+    border-width:1px; 
+    border-color:#c0c0c0;
+    background-color: #ffffff;
+}
+table.entete tr.pair {
+    background-color: #FFFFFF;
+}
+table.entete tr.impair {
+    background-color: #DDDDDD;
+}
+
+table.entete tr.pair.dropSeanceHover {
+    background-color: #{richSkin.headerGradientColor};
+}   
+
+table.entete tr.impair.dropSeanceHover {
+    background-color: #{richSkin.headerGradientColor};
+}   
+
+table.entete {
+    border-collapse : collapse;
+}   
+
+table.entete th {
+    text-align: center;
+    vertical-align: middle;
+    border-width: 1px;
+    border-style: solid;
+    background-color: #{richSkin.headerBackgroundColor};
+    border-color: #{richSkin.tableBorderColor};
+}
+
+table.entete td {
+    text-align: left;
+    vertical-align: middle;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #{richSkin.tableBorderColor};
+}
+
+ 

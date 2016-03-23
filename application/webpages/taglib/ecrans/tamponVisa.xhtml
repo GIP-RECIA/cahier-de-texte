@@ -1,0 +1,58 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:a4j="http://richfaces.org/a4j"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:cr="urn:crlr"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:rich="http://richfaces.org/rich"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+  <ui:composition>
+  
+    <h:outputScript library="js" name="jquery-jangle.js" target="head" />
+    <h:outputScript library="js" name="tamponVisa.js" target="head" />
+    <h:outputStylesheet library="css" name="tamponVisa.css" target="head" />
+  
+     <table class="tamponTable" >
+         <tr>
+             <td class="tamponTd" style="#{dateVisaDirecteur != null ?  
+                      typeVisaDirecteur eq 'MEMO' ? 
+                      cr:concat(cr:concat('background-image: url(', cr:concat(facesContext.externalContext.requestContextPath, '/resources/images/icones/tampon-cadena.png')) , ')') :
+                      cr:concat(cr:concat('background-image: url(', cr:concat(facesContext.externalContext.requestContextPath, '/resources/images/icones/tampon.png')) , ')') 
+                      : 
+                      'display : none;'} "
+             
+                  >
+                  <t:div styleClass="tamponImage"  
+                  title="#{typeVisaDirecteur eq 'MEMO' ? 'Visa de type Mémo' : 'Visa de type simple'}"                            
+                  >                           
+                     <span class="dateTampon">
+                         Visa Chef<br/>
+			  			d'établissement<br/>
+                          #{cr:formatDate(dateVisaDirecteur, 'dd/MM/yyyy')}
+                     </span>
+                 </t:div>                              
+             </td>
+             
+             <td class="tamponTd" style="#{dateVisaInspecteur != null ?  
+                      typeVisaInspecteur eq 'MEMO' ? 
+                      cr:concat(cr:concat('background-image: url(', cr:concat(facesContext.externalContext.requestContextPath, '/resources/images/icones/tampon-cadena.png')) , ')') :
+                      cr:concat(cr:concat('background-image: url(', cr:concat(facesContext.externalContext.requestContextPath, '/resources/images/icones/tampon.png')) , ')') 
+                      : 
+                      'display : none;'} "
+             
+                  >
+                  <t:div styleClass="tamponImage" 
+                  title="#{typeVisaInspecteur eq 'MEMO' ? 'Visa de type Mémo' : 'Visa de type simple'}"                            
+                  >                           
+                     <span class="dateTampon">
+                          Visa Inspecteur<br/>
+                          #{cr:formatDate(dateVisaInspecteur, 'dd/MM/yyyy')}
+                     </span>
+                 </t:div>                              
+             </td>
+         </tr>
+     </table>     
+  </ui:composition>
+</html>

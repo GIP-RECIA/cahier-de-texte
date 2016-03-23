@@ -1,0 +1,165 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:crx="urn:crlr:ext"
+    xmlns:cr="urn:crlr"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:rich="http://richfaces.org/rich">
+
+<cr:page titrePage="Gestion devoir" 
+         bean="#{modifierDevoir}" form="#{modifierDevoir.form}"
+         bean1="#{popupPiecesJointes}" form1="#{popupPiecesJointes.form}" >
+    
+    <cr:menuAction id="idMenuAction">
+        <cr:elemMenuAction idaction="idRetourToolBar" bean="#{modifierDevoir}" cible="retour"
+                image="back.png" title="Retour"
+                render="modifierDevoir" />
+        <cr:elemMenuAction idaction="idModif" bean="#{modifierDevoir}" cible="modifier"
+                image="save.png" title="Modifier" />        
+    </cr:menuAction>
+    
+    <rich:panel header="Modifier un devoir" id="modifierDevoir">
+    
+        <h:panelGrid columns="9" class="table">
+            <cr:saisiePopup id="idSequence" titre="Séquence"
+                idPopup="idPopupSequence" decalageTitreDroite="22"
+                largeur="300"
+                valeur="#{modifierDevoir.form.intituleSequence}"
+                bean="#{modifierDevoir}"
+                modifiable="false" />
+
+            <cr:saisieDate id="dateDebutSequence" decalageTitreDroite="0" decalageTitreGauche="15" largeur="65"
+                valeur="#{modifierDevoir.form.dateDebut}"
+                titre="Début" modifiable="false" />
+
+            <cr:saisieDate id="dateFinSequence" decalageTitreDroite="0" decalageTitreGauche="5" largeur="65"
+                valeur="#{modifierDevoir.form.dateFin}"
+                titre="Fin" modifiable="false" />
+        </h:panelGrid>
+
+        <h:panelGrid  columns="5" class="table">
+            <cr:saisieTexte id="idDesignationClasseGroupe" titre="Classe/groupe" largeur="150"
+                decalageTitreGauche="0" modifiable="false" decalageTitreDroite="0"
+                valeur="#{modifierDevoir.form.designationClasseGroupe}" />
+        
+            <cr:saisieTexte id="designationEnseignement" titre="Enseignement"
+                modifiable="false" largeur="300" decalageTitreGauche="10" decalageTitreDroite="0"
+                valeur="#{modifierDevoir.form.designationEnseignement}" />
+        </h:panelGrid>
+        
+        <h:panelGrid  columns="2" class="table">
+           <cr:saisieTexte id="nomEnseignant" titre="Enseignant"
+                modifiable="false"  decalageTitreDroite="16" largeur="274"
+                valeur="#{modifierDevoir.form.civilite} #{modifierDevoir.form.nom}" /> 
+        </h:panelGrid>
+        <h:panelGrid  columns="8" class="table">
+           
+           <cr:saisieDate id="dateSeance" decalageTitreDroite="7" largeur="65"
+                    valeur="#{modifierDevoir.form.dateSeance}" titre="Date séance" modifiable="false" />
+                    
+            <cr:saisieHeureMinute id="heureDebut" titre="Heure début"
+                desc="Heure de début" valeurHeure="#{modifierDevoir.form.heureDebutSeance}" avecMinute="true"
+                valeurMinute="#{modifierDevoir.form.minuteDebutSeance}"
+                modifiable="false" decalageTitreGauche="20" decalageTitreDroite="3" bean="#{modifierDevoir}" />
+
+            <cr:saisieHeureMinute id="heureFin" titre="Heure fin"
+                desc="Heure de fin" valeurHeure="#{modifierDevoir.form.heureFinSeance}" avecMinute="true"
+                valeurMinute="#{modifierDevoir.form.minuteFinSeance}"
+                modifiable="false" decalageTitreGauche="29" bean="#{modifierDevoir}" />
+        </h:panelGrid>
+
+    <div>
+    <cr:lien id="idcheckuploadDev" bean="#{modifierDevoir}" cible="checkMessageUpload"                
+                render="modifierDevoir" titre="" />
+    <cr:lien id="idchecksizeFileUploadDev" bean="#{modifierDevoir}" cible="checkMessageSizeFileUpload"                
+                render="idchecksizeFileUploadDev" titre="" />
+    <cr:lien id="idChercherChargeTravail" bean="#{modifierDevoir}" cible="chercherChargeTravail" 
+             oncomplete="if (#{modifierDevoir.form.chargeTravail.affichageCharge}) #{rich:component('idPopupChargeTravail')}.show(); " 
+             render="modifierDevoir,idPopupChargeTravail" rendered="false" />        
+                       
+    </div>
+   
+        <h:panelGrid  columns="7" class="table">
+            <h:outputText value="Intitulé *" />
+            <h:inputText value="#{modifierDevoir.form.intitule}" id="intituleDev" maxlength="50" />
+
+            <cr:saisieDate id="dateDev" decalageTitreGauche="5" decalageTitreDroite="5"
+                    valeur="#{modifierDevoir.form.dateRemise}" titre="Date *" 
+                    oncomplete="lancerLienAjax('idChercherChargeTravail');"
+                    />
+            
+            <h:graphicImage value="${cr:concat(iconesDir,'message-avertissant.gif')}" id="afficherListeChargeTravail"
+                            title="Afficher les autres devoirs à rendre le même jour"
+                            rendered="#{modifierDevoir.form.chargeTravail.affichageCharge}" 
+                            onclick="#{rich:component('idPopupChargeTravail')}.show();" 
+                            style="cursor:pointer;" />
+            
+            <h:outputText value="Type de devoir" />
+            <h:selectOneMenu id="typeDevoir" value="#{modifierDevoir.form.idTypeDevoir}">
+              <f:selectItems value="#{modifierDevoir.form.listeTypeDevoir}" />
+            </h:selectOneMenu>
+        
+        </h:panelGrid>
+        <h:panelGrid  columns="6" class="table">
+            <cr:saisieEditeur id="descriptionDev" titre="Description"
+                desc="saisir le commentaire"                
+                valeur="#{modifierDevoir.form.description}" />
+        </h:panelGrid>
+        <h:panelGrid columns="3" style="padding:0;marin:0;" class="table">
+            <h:panelGrid columns="1" style="padding-top: 4px;" class="table">
+                <h:outputText value="Sélectionner une pièce jointe" />
+            </h:panelGrid>
+            <h:panelGrid columns="1" class="table">
+                <cr:lien id="idLienPieceJointe" bean="#{modifierDevoir}" cible="ouverturePopupPj"
+                    oncomplete="#{rich:component('idPPJModDevoirs')}.show();"
+                    render="idPPJModDevoirs"
+                    image="iconePieceJointe.png" desc="Sélectionner une pièce jointe.">
+                </cr:lien>
+            </h:panelGrid>          
+        </h:panelGrid>
+        
+         <c:set var="listingPieceJointeNonVideDev" value="#{not empty modifierDevoir.form.files}"/>
+         <rich:panel id="listingPieceJointeDev" rendered="#{listingPieceJointeNonVideDev}" style="vertical-align:top; overflow:auto;margin:auto;width:810px; height:100px; #{listingPieceJointeNonVideDev ? '' : 'border:0;'}">
+             <cr:table idTable="tableListingPieceJointeDev" largeur="780"
+                 liste="#{modifierDevoir.form.files}" rendered="#{listingPieceJointeNonVideDev}"
+                 entete="Liste des pièces jointes ajoutées au devoir" >
+                 <cr:colonne libelleColonne="nom" id="">
+                     <h:outputText value="#{ligne.nom}" />
+                 </cr:colonne>
+                 <cr:colonne libelleColonne="Actions" align="center" id="">            
+                     <cr:lien id="idFichier" chemin="#{ligne.pathFullDownload}" rendered="#{ligne.activerLien}" bean=""
+                        image="download.png" desc="Télécharger"/>
+                     <cr:lien bean="#{modifierDevoir}" id="supprimer" confirm="Etes-vous sur de vouloir supprimer cette pièce jointe ?"
+                         cible="supprimerPieceJointe" image="delete.gif" desc="Supprimer"
+                         render="modifierDevoir">
+                         <f:setPropertyActionListener value="#{ligne}"
+                             target="#{modifierDevoir.form.resultatSelectionnePieceJointe}" />
+                     </cr:lien>
+                 </cr:colonne>
+             </cr:table>
+         </rich:panel>
+        
+    </rich:panel>
+    
+    <cr:popup idPopup="idPopupSequence" tailleAuto="true"
+        largeurPopup="300"
+        titrePopup="Liste des séquences">        
+    </cr:popup>
+    
+    <cr:popupChargeTravail
+        idPopup="idPopupChargeTravail" 
+        listeDevoirPrincipal="#{modifierDevoir.form.chargeTravail.listeDevoirPrincipal}"  
+        listeDevoirComplement="#{modifierDevoir.form.chargeTravail.listeDevoirComplement}"
+        groupeOuClasse="#{modifierDevoir.form.chargeTravail.groupeOuClasse}"
+     />
+
+</cr:page>
+<cr:popupPiecesJointes idPopup="idPPJModDevoirs" tailleAuto="true" largeurPopup="600"
+        titrePopup="Pièces jointes" statusPopup="statuspop"
+        raffraichirTabAfterUpload="modifierDevoir" />     
+<cr:popupStatus idStatus="statuspop" />
+</html>

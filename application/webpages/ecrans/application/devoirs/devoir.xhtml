@@ -1,0 +1,308 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:a4j="http://richfaces.org/a4j"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:cr="urn:crlr"
+      xmlns:crx="urn:crlr:ext"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:rich="http://richfaces.org/rich"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+  <cr:page bean="#{devoir}"
+           form="#{devoir.form}"
+           titrePage="Travail à faire / Devoirs">
+    <h:outputScript library="js"
+                    name="jquery-ui-1.8.20.custom.js"
+                    target="head" />
+    <h:outputScript library="js"
+                    name="jquery.qtip.js"
+                    target="head" />
+    <h:outputScript library="js"
+                    name="devoir.js"
+                    target="head" />
+    <h:outputScript library="js"
+                    name="saisieDateListe.js"
+                    target="head" />
+    <h:outputStylesheet library="css"
+                        name="jquery.qtip.css"
+                        target="head" />
+    <h:outputStylesheet library="css"
+                        name="devoir.css"
+                        target="head" />
+    <cr:menuAction id="idMenuAction">
+      <cr:elemMenuAction bean="#{devoir}"
+                         cible="rechercher"
+                         idaction="idChercher"
+                         image="binocular.png"
+                         oncomplete="resizePanel();"
+                         render="outilRecherche2,idPanelResultat,idPanelResultatListeDiv"
+                         title="Rechercher" />
+    </cr:menuAction>
+    
+    <cr:lien id="refreshRecheche" bean="#{devoir}"
+            cible="rechercher"
+            oncomplete="resizePanel(); "
+            render="outilRecherche2,idPanelResultat,idPanelResultatListeDiv"
+            titre="" />
+    
+    
+    <cr:saisieDate id="saisieDateInvisible"
+                   rendered="false"
+                   titre="Date bidon qui permet de faire marcher dans le composant cr:saisieSeance les champs de saisie de date"
+                   valeur="" />
+    <t:div style="display: none;">
+      <cr:saisieEditeur commentaire="Editeur bidon qui permet de faire marcher dans le composant cr:saisieSeance les champs de saisie de editeur"
+                        id="saisieEditeurInvisible"
+                        rendered="true" />
+    </t:div>
+    <rich:panel id="outilRecherche">
+      <t:div rendered="#{devoir.form.affichageClasseGroupe}">
+        <cr:selectClasseGroupe oncomplete="resizePanel();"
+                               render="idPanelResultat,idPanelResultatListeDiv,outilRecherche,outilRecherche2">
+        </cr:selectClasseGroupe>
+      </t:div>
+      <h:panelGrid class="table"
+                   columns="1">
+        <h:selectOneRadio id="selectionTypeDevoirCategorie"
+                          style="padding-left:10px; vertical-align:middle;"
+                          value="#{devoir.form.categorieSelectionne}">
+                          
+          <a4j:ajax event="click"
+                    listener="#{devoir['filtreParTypeDevoir']}"
+                    oncomplete="resizePanel();"
+                    render="idPanelResultat,idPanelResultatListeDiv,outilRecherche2" />
+          <f:selectItem itemLabel="Travail à faire et devoirs"
+                        itemValue="NORMAL" />
+          <f:selectItem itemLabel="Devoirs seuls"
+                        itemValue="DEVOIR" />
+        </h:selectOneRadio>
+        <cr:selectEnseignement enseignementTypeOncomplete="resizePanel();"
+        render="idPanelResultat idPanelResultatListeDiv outilRecherche outilRecherche2"></cr:selectEnseignement>
+       
+      </h:panelGrid>
+      <hr />
+    </rich:panel>
+    
+    <t:div id="outilRecherche2" style="#{devoir.form.vraiOuFauxRechercheActive ? 'width: 100%;' : 'display: none;' }" >
+      
+      <table class="table">
+        <tr>
+          <td style="vertical-align:middle;">
+            <h:selectOneRadio id="selectiontypeAffichage"
+                              style="padding-left:10px;"
+                              value="#{devoir.form.typeAffichage}">
+              <a4j:ajax event="click"
+                        listener="#{devoir['resetTypeAffichage']}"
+                        oncomplete="resizePanel();"
+                        render="idVisuSemaine,idChoixDate,idListeDesDevoirsPanel,idPanelResultatListeDiv" />
+              <f:selectItem itemLabel="Semainier"
+                            itemValue="SEMAINE" />
+              <f:selectItem itemLabel="Liste"
+                            itemValue="LISTE" />
+            </h:selectOneRadio>
+          </td>
+          <td style="vertical-align:middle;">
+            <t:div id="idChoixDate"
+                   style="display:#{devoir.form.typeAffichage eq 'LISTE' ? 'inline' : 'none'};">
+
+              <cr:saisieDate decalageTitreGauche="15"
+                             id="idDateDebut"
+                             largeur="65"
+                             titre="Du"
+                             valeur="#{devoir.form.dateDebut}" 
+                             oncomplete="lancerLienAjax('refreshRecheche');"
+                             />
+              <cr:saisieDate decalageTitreGauche="15"
+                             id="idDateFin"
+                             largeur="65"
+                             titre="Au"
+                             valeur="#{devoir.form.dateFin}" 
+                             oncomplete="lancerLienAjax('refreshRecheche');"
+                             />
+            </t:div>
+          </td>
+        </tr>
+      </table>
+
+    <t:div id="idVisuSemaine"
+           style="display:#{devoir.form.typeAffichage eq 'LISTE' ? 'none' : ''};">
+
+      <cr:barreSemaine id="idBarreSemaine"
+                       listeMois="#{devoir.form.listeMois}"
+                       listeSemaine="#{devoir.form.listeBarreSemaine}"
+                       onclick="lancerLienAjax('idSelectionSemaine',{'idCacheValeurSem': '#{sem.numeroSemaine}'});"
+                       rendered=""
+                       style="cursor:pointer" />
+      <cr:lien bean="#{devoir}"
+               cible="selectionnerSemaine"
+               id="idSelectionSemaine"
+               oncomplete="resizePanel();"
+               render="idBarreSemaine,idPanelResultat,"
+               titre="" />
+      <t:inputHidden forceId="true"
+                     id="idCacheValeurSem"
+                     value="#{devoir.form.numeroSemaineSelectionne}" />
+      <t:div id="idPanelResultat"
+             style="overflow: auto;"
+             styleClass="semainier">
+        <rich:dataTable id="table"
+                        rowClasses="pair,impair"
+                        rowKeyVar="row"
+                        styleClass="planning"
+                        value="#{devoir.form.liste}"
+                        var="category">
+          <f:facet name="header">
+            <h:panelGrid columns="5"
+                         styleClass="enteteCalTable">
+              <h:outputText styleClass="titreCalTable"
+                            value="#{devoir.form.titreNavigateurSemaine}" />
+            </h:panelGrid>
+          </f:facet>
+          
+          <c:forEach items="#{devoir.form.listeJoursOuvre}" var="jourOuvre">
+            <cr:devoirColonne jourColonne="#{jourOuvre.jourName}" jourHeaderFooter="#{jourOuvre.displayName}" />
+          </c:forEach>
+          
+         
+        </rich:dataTable>
+      </t:div>
+    </t:div>
+    <t:div id="idPanelResultatListeDiv"
+           style="#{devoir.form.typeAffichage eq 'LISTE' ? '' : 'display:none;'}">
+
+      <rich:panel id="idListeDesDevoirsPanel"
+                  style="vertical-align:top; overflow:auto;">
+        <cr:table avecPagination="false"
+                  entete="Liste du travail à faire et/ou des devoirs"
+                  idTable="idtableListingDevoirsSea"
+                  liste="#{devoir.form.listeDevoir}"
+                  style="">
+          <cr:colonne id=""
+                      libelleColonne="Enseignement"
+                      taille="150">
+            <h:outputText value="#{ligne.matiere}" />
+          </cr:colonne>
+          <cr:colonne id=""
+                      libelleColonne="Enseignant"
+                      taille="150">
+            <h:outputText value="#{ligne.denomination} #{ligne.nom} " />
+          </cr:colonne>
+          <cr:colonne id=""
+                      libelleColonne="Intitulé"
+                      taille="150">
+            <h:outputText value="#{ligne.intitule}" />
+          </cr:colonne>
+          <cr:colonne id=""
+                      libelleColonne="Type"
+                      taille="60">
+            <h:outputText value="#{ligne.typeDevoirDTO.libelle}" />
+          </cr:colonne>
+          <cr:colonne id=""
+                      libelleColonne="Description"
+                      taille="300">
+            <h:outputText escape="false"
+                          title="#{ligne.descriptionSansBalise}"
+                          value="#{ligne.descriptionSansBaliseAbrege}" 
+                          style="white-space: normal;"
+                          />
+          </cr:colonne>
+          <cr:colonne id=""
+                      libelleColonne="Pour le"
+                      taille="50">
+            <h:outputText value="#{cr:formatDate(ligne.dateRemise, 'dd/MM/yyyy')}" />
+          </cr:colonne>
+          <cr:colonne align="center"
+                      id=""
+                      libelleColonne=""
+                      taille="20">
+            <cr:lien bean="#{devoir}"
+                     cible="naviguerDetailDevoir"
+                     desc="#{ligne.seance.accesEcriture ? 'Modifier le travail à faire' : 'Consulter le travail à faire'}"
+                     id="iddlSeaFichier"
+                     image="#{ligne.seance.accesEcriture ? 'edit.gif' : 'loupe-icone.png'}"
+                     oncomplete="#{rich:component('idPopupConsulterDevoir')}.show();"
+                     render="idPopupConsulterDevoir_form:idPopupConsulterDevoir_panel"
+                     rendered="true">
+              <f:setPropertyActionListener target="#{devoir.form.selectDevoir}"
+                                           value="#{ligne}" />
+            </cr:lien>
+          </cr:colonne>
+        </cr:table>
+      </rich:panel>
+    </t:div>
+  </t:div>  
+
+    <cr:popupChargeTravail groupeOuClasse="#{devoir.form.devoirSelected.chargeTravail.groupeOuClasse}"
+                           idPopup="idPopupChargeTravail"
+                           listeDevoirComplement="#{devoir.form.devoirSelected.chargeTravail.listeDevoirComplement}"
+                           listeDevoirPrincipal="#{devoir.form.devoirSelected.chargeTravail.listeDevoirPrincipal}" />
+  </cr:page>
+  <cr:popupPiecesJointes idPopup="idPopupPiecesJointes"
+                         largeurPopup="660"
+                         raffraichirTabAfterUpload="#{devoir.form.raffraichirTabAfterUpload}"
+                         statusPopup="statuspopup"
+                         tailleAuto="true"
+                         titrePopup="Pièces jointes" />
+  <cr:popupGroupeClasse oncomplete="resizePanel();"
+                        render="idPanelResultat,idPanelResultatListeDiv,outilRecherche" />
+  <cr:popupModifiable idPopup="idPopupConsulterDevoir"
+                      largeurPopup="800"
+                      maxlength="50"
+                      statusPopup="statuspop"
+                      titrePopup="Détail du travail à faire">
+    <a4j:outputPanel id="idPopupConsulterDevoirRegion">
+      <cr:menuAction id="idMenuActionPopupDevoir"
+                     rendered="#{devoir.form.devoirSelected.seance.accesEcriture}"
+                     surcharge="false">
+        <cr:elemMenuAction bean="#{devoir}"
+                           cible="sauverDevoir"
+                           idaction="idSauverDevoir"
+                           image="save.png"
+                           oncomplete="
+                            if (#{facesContext.maximumSeverity == null or facesContext.maximumSeverity.ordinal le 0} ) { 
+                                #{rich:component('idPopupConsulterDevoir')}.hide(); 
+                                resizePanel();
+                           }
+                           "
+                           render="formulaire_principal:idPanelResultat,formulaire_principal:idPanelResultatListeDiv"
+                           rendered="true"
+                           title="Sauvegarder" />
+        <cr:elemMenuAction bean="#{devoir}"
+                           cible="deleteDevoir"
+                           confirm="Voulez-vous vraiment supprimer ce travail à faire ?"
+                           idaction="idDeleteDevoir"
+                           image="delete.png"
+                           oncomplete="if (#{facesContext.maximumSeverity == null or facesContext.maximumSeverity.ordinal le 0} ) { #{rich:component('idPopupConsulterDevoir')}.hide(); } resizePanel();"
+                           render="formulaire_principal:idPanelResultat,formulaire_principal:idPanelResultatListeDiv"
+                           rendered="true"
+                           title="Supprimer le travail à faire" />
+      </cr:menuAction>
+      <t:div style="height:450px; overflow:auto;">
+        <cr:saisieDevoir checkModification="false"
+                         cibleAfficherChargeTravail="afficherChargeTravail"
+                         cibleAfterAjouterPieceJointe="afterAjouterPieceJointe"
+                         cibleAjouterPieceJointe="ajouterPieceJointe"
+                         cibleChargeImagesLatex="chargeImagesLatexDevoir"
+                         cibleDeleteDevoir="deleteDevoir"
+                         cibleDeletePieceJointe="deletePieceJointe"
+                         cibleResetDevoir="resetDevoir"
+                         controleur="#{devoir}"
+                         deleteDevoir="false"
+                         devoirDTO="#{devoir.form.devoirSelected}"
+                         formulaire_contenant="idPopupConsulterDevoir_form"
+                         idPopupPiecesJointes="idPopupPiecesJointes"
+                         id_devoirConteneur="idPopupConsulterDevoirRegion"
+                         id_saisieDevoir="idDetailDevoir"
+                         listeTypeDevoir="#{devoir.form.listeTypeDevoir}"
+                         readOnly="#{not devoir.form.devoirSelected.seance.accesEcriture}" />
+      </t:div>
+    </a4j:outputPanel>
+  </cr:popupModifiable>
+<cr:popupEnseignement bean="#{devoir}" oncomplete="resizePanel();"
+                        render="idPanelResultat,idPanelResultatListeDiv,outilRecherche,outilRecherche2"
+                        />
+ 
+  <cr:popupStatus idStatus="statuspop" />
+</html>

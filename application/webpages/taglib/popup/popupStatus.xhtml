@@ -1,0 +1,36 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:a4j="http://richfaces.org/a4j"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:rich="http://richfaces.org/rich"
+      xmlns:cr="urn:crlr">
+      
+  <ui:composition>
+  
+    <ui:param name="waitPanelId"
+              value="#{idStatus}_wait" />
+
+<ui:remove>
+  Le onstart est lié à le a4j:status du popupStatus dans page.xhtml
+  Le onstop est lié à le formulaire.  Donc, il faut cacher celui de page.xhtml (status_wait) dans tout les cas
+</ui:remove>
+
+    <a4j:status id="#{idStatus}"
+                name="#{idStatus}"
+                onstart="console.log('onstart id #{idStatus}');#{rich:component(waitPanelId)}.show();"
+                onstop="console.log('onstop id #{idStatus}');#{rich:component(waitPanelId)}.hide();#{rich:component('status_wait')}.hide();">
+    </a4j:status>
+    <rich:popupPanel id="#{waitPanelId}"
+                     autosized="true"
+                     width="200"
+                     height="60"
+                     moveable="false"
+                     resizeable="false">
+      <f:facet name="header">
+        <h:outputText value="Traitement" />
+      </f:facet>
+      <h:outputText value="Veuillez patienter..." />
+    </rich:popupPanel>
+  </ui:composition>
+</html>

@@ -1,0 +1,15 @@
+dist.name.base = CRLR_CAHIER-DE-TEXTE
+
+vserver.machine.name = ent-java
+
+entarchive.machine.address = FRMP0133.frml.bull.fr
+#vserver.machine.address = FRMP0154.frml.bull.fr
+
+#sur prod sur un autre contexte
+vserver.machine.address = FRMP0138.frml.bull.fr
+
+archives.dir = /opt/ArchivesENT/5.0/Livraison pour prod
+vserver.dir = /opt
+
+tomcat.deploy.dir = /opt/tomcatENT/webapps/cahier-texte
+tomcat.work.dir = /opt/tomcatENT/work

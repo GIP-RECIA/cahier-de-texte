@@ -1,0 +1,293 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:crx="urn:crlr:ext"
+    xmlns:cr="urn:crlr"
+    xmlns:rich="http://richfaces.org/rich"
+    xmlns:t="http://myfaces.apache.org/tomahawk">
+
+	<style>
+            .corpsOuvre {
+            padding: 0;
+            width: 17px;
+            font-weight:bold;
+    
+            }
+    </style>
+
+
+    <cr:menuAction rendered="#{cahier.form.renderedRecherche and cahier.form.consultable}">
+        <cr:elemMenuAction idaction="idRechercher" bean="#{cahier}" cible="rechercher"
+                image="binocular.png" title="Rechercher"
+                render="tableDevoirsListing" />
+    </cr:menuAction>
+    
+
+
+    
+    <rich:panel>            
+        
+    <a4j:queue requestDelay="300" ignoreDupResponce="true"/>   
+            
+    <rich:panel id="outilRecherche" rendered="#{cahier.form.renderedRecherche}">
+        <rich:panel header="Visualisation par semaine - Séances" id="cahier">
+            <h:panelGrid columns="8" class="table">
+                <cr:saisieListe id="selectAnnee" modifiable="#{cahier.form.consultable}" rendered="#{cahier.form.archive}" titre="Année scolaire" 
+                   largeur="100" decalageTitreGauche="0" decalageTitreDroite="0" valeur="#{cahier.form.idAnneeScolaire}" donnees="#{cahier.form.listeAnneeScolaire}"
+                   proprieteLibelle="exercice" proprieteValeur="id">
+                   <a4j:ajax event="change" listener="#{cahier['selectionAnnee']}" render="outilRecherche,tableDevoirsListing" />
+                </cr:saisieListe>            
+                <h:selectOneRadio id="selectionClasseOuGroupe"
+                    style="padding-left:5px; #{cahier.form.consultable ? 'champ' : 'inactif'}" disabled="${!cahier.form.consultable}"
+                    value="#{cahier.form.typeGroupeSelectionne}">
+                    <a4j:ajax event="click" listener="#{cahier['resetClasseGroupeSelectionne']}" render="outilRecherche" />
+                    <f:selectItem itemLabel="Classe" itemValue="CLASSE" />
+                    <f:selectItem itemLabel="Groupe" itemValue="GROUPE" />
+                </h:selectOneRadio>                
+                <h:panelGrid columns="2" class="table" style="vertical-align : middle; margin:0;padding:0;">               
+                    <cr:saisiePopup id="intituleGroupeClasse" idPopup="idPopupGroupeClasse"
+                        bean="#{cahier}" largeur="80" decalageTitreGauche="0" decalageTitreDroite="0"
+                        lienModifiable="#{(not empty cahier.form.typeGroupeSelectionne) and (cahier.form.consultable)}"
+                        modifiable="false"
+                        valeur="#{cahier.form.groupeClasseSelectionne.intitule}" >
+                        <a4j:ajax event="blur" listener="#{cahier['chargerGroupe']}" render="outilRecherche,tableDevoirsListing" />
+                    </cr:saisiePopup>                 
+                </h:panelGrid>                 
+                <cr:saisieListeCheckBox 
+                    rendered="#{(cahier.form.typeGroupeSelectionne eq CLASSE) and (cahier.form.consultable)}" 
+                    id="fcSelectList" liste="#{cahier.form.listeGroupe}" titre="Groupes" desc="Choix des groupes"
+                     selectedLabel="groupe(s) choisi(s)"  bean="#{cahier}"  valeurCheckBox="#{ligne.selectionner}" valeurLibelleCheckBox="#{ligne.intitule}" decalageTitreDroite="0"/>
+            </h:panelGrid>
+        </rich:panel>
+    </rich:panel>
+	<t:div id="tableDevoirsListing" style="overflow-y: auto; height: 415px;">
+
+
+		<h:panelGrid columns="24"
+			rendered="#{cahier.form.consultable}" style="margin:auto;">
+			<cr:lien id="idSelSem" bean="#{cahier}" cible="naviguerSemaine"
+				render="tableDevoirsListing" titre="" />
+			<t:inputHidden forceId="true" id="idCacheValeurSem"
+				value="#{cahier.form.numSemaineSel}" />
+			<rich:dataGrid id="listeSemaine"
+				value="#{cahier.form.listeBarreSemaine}" var="sem"
+				columnClasses="corpsOuvre" columns="46" elements="46">
+				<h:panelGrid columns="1" rendered="#{sem.vraiOuFauxSelectionActive}"
+					title="Semaine #{sem.numeroSemaine} du #{cr:formatDate(sem.lundi, 'dd/MM/yyyy')} au  #{cr:formatDateAdimanche(sem.lundi)}"
+					style="cursor:pointer;width:100%;background-color : #{sem.couleur};color:#{sem.vraiOuFauxSelection ? '#000000' : '#ffffff'};"
+					onclick="lancerLienAjax('idSelSem',{'idCacheValeurSem': '#{sem.numeroSemaine}'});">
+					<h:outputText value="#{sem.numeroSemaine}" />
+				</h:panelGrid>
+				<h:panelGrid columns="1"
+					title="Semaine #{sem.numeroSemaine} du #{cr:formatDate(sem.lundi, 'dd/MM/yyyy')} au  #{cr:formatDateAdimanche(sem.lundi)}"
+					rendered="#{not sem.vraiOuFauxSelectionActive}"
+					style="width:100%;background-color : #{sem.couleur};color:#000000;">
+					<h:outputText value="#{sem.numeroSemaine}" />
+				</h:panelGrid>
+			</rich:dataGrid>
+			
+		<ui:remove>	
+		  <!--  exemple de liste de mois -->
+		  
+			<rich:dataGrid id="listeMois"
+                value="#{cahier.form.listeBarreMois}" var="sem"
+                columnClasses="corpsOuvre" columns="46" elements="46">
+                <h:panelGrid columns="1" rendered="#{sem.valeur3}"
+                    style="cursor:pointer;width:100%;background-color : gray;color:#{sem.valeur3 ? '#000000' : '#ffffff'};"
+                     >
+                    <h:outputText value="#{sem.numeroSemaine}" />
+                </h:panelGrid>
+                <h:panelGrid columns="1"
+                    rendered="#{not sem.vraiOuFauxSelectionActive}"
+                    style="width:100%;background-color : grey;color:#000000;">
+                    <h:outputText value="#{sem.valeur1}" />
+                </h:panelGrid>
+            </rich:dataGrid>
+         </ui:remove>       
+		</h:panelGrid> 
+
+	
+	<rich:dataTable value="#{cahier.form.liste}"
+		rowClasses="pair,impair" var="category" rowKeyVar="row" id="table"
+		styleClass="planning">
+		<f:facet name="header">
+			<h:panelGrid columns="5" styleClass="enteteCalTable">
+				<h:outputText styleClass="titreCalTable"
+					value="#{cahier.form.titreNavigateurSemaine}" />
+			</h:panelGrid>
+		</f:facet>
+		<rich:column width="14%">
+			<f:facet name="header">
+				<h:outputText value="Lundi" />
+			</f:facet>
+
+			<h:panelGrid styleClass="corpsCalTable" columns="1" 
+				style="#{not cahier.form.enteteEmploi['LUNDI'].vraiOuFauxActif or not cahier.form.jourOuvreAccessible['LUNDI'] ? 'background-color :#ccc;' : ''}">
+				<h:outputText rendered="#{not empty category.map['LUNDI'].classe}"
+					value="#{category.map['LUNDI'].classe}" />
+				<h:outputText rendered="#{not empty category.map['LUNDI'].groupe}"
+					value="#{category.map['LUNDI'].groupe}" />
+				<h:outputText value="#{category.map['LUNDI'].heureSeance}" />
+				<h:outputText>#{category.map['LUNDI'].matiere}</h:outputText>
+				<h:outputText>#{category.map['LUNDI'].denomination} #{category.map['LUNDI'].nom}</h:outputText>
+				<h:outputText>#{category.map['LUNDI'].intituleSequence}</h:outputText>
+				<cr:lien id="testrrr" desc="Consulter la séance" bean="#{cahier}"
+					cible="selectionnerDevoir" render="zoneMenu">
+					<f:setPropertyActionListener value="#{category.map['LUNDI']}"
+						target="#{cahier.form.selectSeance}" />  
+                        #{category.map['LUNDI'].intituleSeance}
+                   </cr:lien>
+			</h:panelGrid>
+
+
+		</rich:column>
+		<rich:column width="14%">
+			<f:facet name="header">
+				<h:outputText value="Mardi" />
+			</f:facet>
+			<h:panelGrid styleClass="corpsCalTable" columns="1" 
+				style="#{not cahier.form.enteteEmploi['MARDI'].vraiOuFauxActif or not cahier.form.jourOuvreAccessible['MARDI'] ? 'background-color :#ccc;' : ''}">
+				<h:outputText rendered="#{not empty category.map['MARDI'].classe}"
+					value="#{category.map['MARDI'].classe}" />
+				<h:outputText rendered="#{not empty category.map['MARDI'].groupe}"
+					value="#{category.map['MARDI'].groupe}" />
+				<h:outputText value="#{category.map['MARDI'].heureSeance}" />
+				<h:outputText>#{category.map['MARDI'].matiere}</h:outputText>
+				<h:outputText>#{category.map['MARDI'].denomination} #{category.map['MARDI'].nom}</h:outputText>
+				<h:outputText>#{category.map['MARDI'].intituleSequence}</h:outputText>
+				<cr:lien id="test1" desc="Consulter la séance" bean="#{cahier}"
+					cible="selectionnerDevoir" render="zoneMenu">
+					<f:setPropertyActionListener value="#{category.map['MARDI']}"
+						target="#{cahier.form.selectSeance}" />  
+                        #{category.map['MARDI'].intituleSeance}
+                    </cr:lien>
+			</h:panelGrid>
+		</rich:column>
+		<rich:column width="14%">
+			<f:facet name="header">
+				<h:outputText value="Mercredi" />
+			</f:facet>
+			<h:panelGrid styleClass="corpsCalTable" columns="1" 
+				style="#{not cahier.form.enteteEmploi['MERCREDI'].vraiOuFauxActif or not cahier.form.jourOuvreAccessible['MERCREDI'] ? 'background-color :#ccc;' : ''}">
+				<h:outputText
+					rendered="#{not empty category.map['MERCREDI'].classe}"
+					value="#{category.map['MERCREDI'].classe}" />
+				<h:outputText
+					rendered="#{not empty category.map['MERCREDI'].groupe}"
+					value="#{category.map['MERCREDI'].groupe}" />
+				<h:outputText value="#{category.map['MERCREDI'].heureSeance}" />
+				<h:outputText>#{category.map['MERCREDI'].matiere}</h:outputText>
+				<h:outputText>#{category.map['MERCREDI'].denomination} #{category.map['MERCREDI'].nom}</h:outputText>
+				<h:outputText>#{category.map['MERCREDI'].intituleSequence}</h:outputText>
+				<cr:lien id="test2" desc="Consulter la séance" bean="#{cahier}"
+					cible="selectionnerDevoir" render="zoneMenu">
+					<f:setPropertyActionListener value="#{category.map['MERCREDI']}"
+						target="#{cahier.form.selectSeance}" />
+                        #{category.map['MERCREDI'].intituleSeance}
+                    </cr:lien>
+			</h:panelGrid>
+		</rich:column>
+		<rich:column width="14%">
+			<f:facet name="header">
+				<h:outputText value="Jeudi" />
+			</f:facet>
+			<h:panelGrid styleClass="corpsCalTable" columns="1" 
+				style="#{not cahier.form.enteteEmploi['JEUDI'].vraiOuFauxActif or not cahier.form.jourOuvreAccessible['JEUDI'] ? 'background-color :#ccc;' : ''}">
+				<h:outputText rendered="#{not empty category.map['JEUDI'].classe}"
+					value="#{category.map['JEUDI'].classe}" />
+				<h:outputText rendered="#{not empty category.map['JEUDI'].groupe}"
+					value="#{category.map['JEUDI'].groupe}" />
+				<h:outputText value="#{category.map['JEUDI'].heureSeance}" />
+				<h:outputText>#{category.map['JEUDI'].matiere}</h:outputText>
+				<h:outputText>#{category.map['JEUDI'].denomination} #{category.map['JEUDI'].nom}</h:outputText>
+				<h:outputText>#{category.map['JEUDI'].intituleSequence}</h:outputText>
+				<cr:lien id="test3" desc="Consulter la séance" bean="#{cahier}"
+					cible="selectionnerDevoir" render="zoneMenu">
+					<f:setPropertyActionListener value="#{category.map['JEUDI']}"
+						target="#{cahier.form.selectSeance}" />
+                        #{category.map['JEUDI'].intituleSeance}
+                   </cr:lien>
+			</h:panelGrid>
+		</rich:column>
+		<rich:column width="14%">
+			<f:facet name="header">
+				<h:outputText value="Vendredi" />
+			</f:facet>
+			<h:panelGrid styleClass="corpsCalTable" columns="1"
+				style="#{not cahier.form.enteteEmploi['VENDREDI'].vraiOuFauxActif or not cahier.form.jourOuvreAccessible['VENDREDI'] ? 'background-color :#ccc;' : ''}">
+				<h:outputText
+					rendered="#{not empty category.map['VENDREDI'].classe}"
+					value="#{category.map['VENDREDI'].classe}" />
+				<h:outputText
+					rendered="#{not empty category.map['VENDREDI'].groupe}"
+					value="#{category.map['VENDREDI'].groupe}" />
+				<h:outputText value="#{category.map['VENDREDI'].heureSeance}" />
+				<h:outputText>#{category.map['VENDREDI'].matiere}</h:outputText>
+				<h:outputText>#{category.map['VENDREDI'].denomination} #{category.map['VENDREDI'].nom}</h:outputText>
+				<h:outputText>#{category.map['VENDREDI'].intituleSequence}</h:outputText>
+				<cr:lien id="test4" desc="Consulter la séance" bean="#{cahier}"
+					cible="selectionnerDevoir" render="zoneMenu">
+					<f:setPropertyActionListener value="#{category.map['VENDREDI']}"
+						target="#{cahier.form.selectSeance}" />
+                        #{category.map['VENDREDI'].intituleSeance}
+                    </cr:lien>
+			</h:panelGrid>
+			<h:panelGrid styleClass="corpsCalTableVaquer" columns="1" 
+				rendered="#{not cahier.form.enteteEmploi['VENDREDI'].vraiOuFauxActif or not cahier.form.jourOuvreAccessible['VENDREDI']}"
+				style="margin:0;padding:0;height: 100px;width:100%;background-color : #ccc;">
+				<h:panelGroup></h:panelGroup>
+			</h:panelGrid>
+		</rich:column>
+		<rich:column width="14%">
+			<f:facet name="header">
+				<h:outputText value="Samedi" />
+			</f:facet>
+			<h:panelGrid styleClass="corpsCalTable" columns="1"
+				style="#{not cahier.form.enteteEmploi['SAMEDI'].vraiOuFauxActif or not cahier.form.jourOuvreAccessible['SAMEDI'] ? 'background-color :#ccc;' : ''}">
+				<h:outputText rendered="#{not empty category.map['SAMEDI'].classe}"
+					value="#{category.map['SAMEDI'].classe}" />
+				<h:outputText rendered="#{not empty category.map['SAMEDI'].groupe}"
+					value="#{category.map['SAMEDI'].groupe}" />
+				<h:outputText value="#{category.map['SAMEDI'].heureSeance}" />
+				<h:outputText>#{category.map['SAMEDI'].matiere}</h:outputText>
+				<h:outputText>#{category.map['SAMEDI'].denomination} #{category.map['SAMEDI'].nom}</h:outputText>
+				<h:outputText>#{category.map['SAMEDI'].intituleSequence}</h:outputText>
+				<cr:lien id="test5" desc="Consulter la séance" bean="#{cahier}"
+					cible="selectionnerDevoir" render="zoneMenu">
+					<f:setPropertyActionListener value="#{category.map['SAMEDI']}"
+						target="#{cahier.form.selectSeance}" />
+                        #{category.map['SAMEDI'].intituleSeance}
+                    </cr:lien>
+			</h:panelGrid>
+		</rich:column>
+		<rich:column width="14%">
+			<f:facet name="header">
+				<h:outputText value="Dimanche" />
+			</f:facet>
+			<h:panelGrid styleClass="corpsCalTable" columns="1"
+				style="#{not cahier.form.enteteEmploi['DIMANCHE'].vraiOuFauxActif or not cahier.form.jourOuvreAccessible['DIMANCHE'] ? 'background-color :#ccc;' : ''}">
+				<h:outputText
+					rendered="#{not empty category.map['DIMANCHE'].classe}"
+					value="#{category.map['DIMANCHE'].classe}" />
+				<h:outputText
+					rendered="#{not empty category.map['DIMANCHE'].groupe}"
+					value="#{category.map['DIMANCHE'].groupe}" />
+				<h:outputText value="#{category.map['DIMANCHE'].heureSeance}" />
+				<h:outputText>#{category.map['DIMANCHE'].matiere}</h:outputText>
+				<h:outputText>#{category.map['DIMANCHE'].denomination} #{category.map['DIMANCHE'].nom}</h:outputText>
+				<h:outputText>#{category.map['DIMANCHE'].intituleSequence}</h:outputText>
+				<cr:lien id="test6" desc="Consulter la séance" bean="#{cahier}"
+					cible="selectionnerDevoir" render="zoneMenu">
+					<f:setPropertyActionListener value="#{category.map['DIMANCHE']}"
+						target="#{cahier.form.selectSeance}" />
+                        #{category.map['DIMANCHE'].intituleSeance}
+                    </cr:lien>
+			</h:panelGrid>
+		</rich:column>
+	</rich:dataTable></t:div>
+
+</rich:panel>
+  
+</html>

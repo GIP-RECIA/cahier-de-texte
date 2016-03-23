@@ -1,0 +1,685 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:a4j="http://richfaces.org/a4j"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:cr="urn:crlr"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:rich="http://richfaces.org/rich"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:enseignant="http://java.sun.com/jsf/composite/enseignant"
+      >
+  <cr:page titrePage="Recherche/Modification séance">
+    <h:outputStylesheet library="css"
+                        name="visaSeance.css"
+                        target="head" />
+    <h:outputScript library="js"
+                    name="jquery-ui-1.8.20.custom.js"
+                    target="head" />
+    <h:outputScript library="js"
+                    name="jquery.qtip.js"
+                    target="head" />
+    <h:outputScript library="js/fullcalendar"
+                    name="fullcalendar.js"
+                    target="head" />
+    <h:outputScript library="js"
+                    name="visaSeance.js"
+                    target="head" />
+    <h:outputStylesheet library="css"
+                        name="visaSeance.css"
+                        target="head" />
+    <h:outputScript library="js"
+                    name="agendaCommon.js"
+                    target="head" />
+    <h:outputStylesheet library="css"
+                        name="fullcalendar.css"
+                        target="head" />
+    <h:outputStylesheet library="css"
+                        name="jquery.qtip.css"
+                        target="head" />
+    <cr:menuAction id="idMenuAction">
+      
+        <span
+            id="idRetour" 
+            style="#{visaSeance.form.afficheRetour ? 'cursor: pointer;' : 'display:none; '}"
+            onclick="idActionEnCours='idMenuActionRetour'; handleNavigationPage();"
+            title="Retour" >
+            <h:graphicImage library="images/icones" name="back.png" />     
+            <a4j:jsFunction 
+                name="callAction_idMenuActionRetour"  
+                action="#{visaSeance.retour}"/>  
+        </span>    
+        
+      <cr:elemMenuAction bean="#{visaSeance}"
+                         cible="sauver"
+                         idaction="idSauver"
+                         image="save.png"
+                         oncomplete="console.log('sauver1');setModificationFormulaire(false); resizePanel(); console.log('sauver2');"
+                         render="visaSeanceContenu"
+                         rendered="true"
+                         status="status"
+                         style="#{visaSeance.form.afficheSauvegarde ? '' : 'display: none;'}"
+                         title="Sauvegarder les modifications" />
+      <span
+            id="idRechercher" 
+            style="cursor: pointer;"
+            onclick="idActionEnCours='idMenuActionRechercher'; handleNavigationPage();"
+            title="Rechercher" >
+            <h:graphicImage library="images/icones" name="binocular.png" />   
+            <a4j:jsFunction 
+                name="callAction_idMenuActionRechercher" 
+                action="#{visaSeance.rechercher}"
+                oncomplete="resizePanel();"
+                render="visaSeanceContenu paneauResultat outilRecherche"
+            />  
+      </span>    
+
+      <span
+            id="idReinitialiser" 
+            style="cursor: pointer;"
+            onclick="idActionEnCours='idMenuActionReinitialiser'; handleNavigationPage();"
+            title="Réinitialiser les critères de recherche" >
+            <h:graphicImage library="images/icones" name="eraser.png" />   
+            <a4j:jsFunction 
+                name="callAction_idMenuActionReinitialiser" 
+                action="#{visaSeance.reset}"
+                oncomplete="resizePanel();"
+                render="visaSeanceContenu paneauResultat outilRecherche"
+            />  
+      </span>    
+      
+      
+      <cr:elemMenuAction bean="#{visaSeance}"
+                         cible="consulterEnseignantAgenda"
+                         idaction="idConsultEDT"
+                         image="seanceRecherche.png"
+                         oncomplete="#{rich:component('idPopupAgenda')}.show(); chargerAgenda();"
+                         render="idPopupAgendaRegion idPopupAgenda_titre calendarDataPanel"
+                         status="status"
+                         title="Consulter les séances de l'enseignant" />
+      <cr:liena4j bean="#{visaSeance}"
+                  cible="addVisaSimple"
+                  idliena4j="idaddvisasimple"
+                  oncomplete="setModificationFormulaire(true); resizePanel();"
+                  render="visaSeanceContenu idSauver :formulaire_principal:outilRecherche"
+                  rendered="true"
+                  status="status"
+                  style="#{empty visaSeance.form.listeSeance ? 'display: none;' : ''}">
+
+        <h:graphicImage library="images/icones"
+                        name="addVisaSimpleBig.png"
+                        title="Poser un visa simple sur toutes les séances non visées ou avec un visa périmé" />
+            <f:setPropertyActionListener 
+                target="#{visaSeance.form.afficheSauvegarde}"
+                value="true" />
+      </cr:liena4j>
+      <cr:liena4j bean="#{visaSeance}"
+                  cible="addVisaMemo"
+                  idliena4j="idaddvisamemo"
+                  oncomplete="setModificationFormulaire(true); resizePanel();"
+                  render="visaSeanceContenu idSauver :formulaire_principal:outilRecherche"
+                  rendered="true"
+                  status="status"
+                  style="#{empty visaSeance.form.listeSeance ? 'display: none;' : ''}">
+
+        <h:graphicImage library="images/icones"
+                        name="addVisaMemoBig.png"
+                        title="Poser un visa mémo sur toutes les séances non visées ou avec un visa périmé" />
+        <f:setPropertyActionListener target="#{visaSeance.form.afficheSauvegarde}"
+                                     value="true" />
+      </cr:liena4j>
+
+      <h:graphicImage
+            name="aide.png"
+            library="images/icones"  
+            title="Aide contextuelle"
+            id="idAide"
+            onclick="#{rich:component('idPopupAide')}.show();" />
+    </cr:menuAction>
+    
+    
+    
+    <a4j:outputPanel id="calendarDataPanel">
+      <div id='calendarData'></div>
+      <input disabled="disabled"
+             id="agendaJSON"
+             style="display:none;"
+             type="text"
+             value="#{saisirSeance.form.agendaJSON}" />
+      <input disabled="disabled"
+             id="horairesJSON"
+             style="display:none;"
+             type="text"
+             value="#{saisirSeance.form.horairesJSON}" />
+      <input disabled="disabled"
+             id="dateLundi"
+             style="display:none;"
+             type="text"
+             value="#{saisirSeance.form.dateLundi}" />
+      <input disabled="disabled"
+             id="etablissementJSON"
+             style="display:none;"
+             type="text"
+             value="#{saisirSeance.form.etablissementJSON}" />
+    </a4j:outputPanel>
+    <rich:panel id="outilRecherche">
+      <rich:panel header="Poser des visas"
+                  id="visaSeance">
+        <table class="corps">
+          <tr>
+            <td class="data">
+         
+        <enseignant:selectEnseignant choixTousOuUn="false"
+                                    labelControlEnseignant="Cahier de texte de"
+                                   render="outilRecherche visaSeanceContenu idPopupSequence paneauResultat"
+                                   readOnly="#{visaSeance.form.afficheSauvegarde}"
+                                   toujoursVisible="true"
+                                   enseignant="#{enseignant}"
+                                   classeGroupe = "#{classeGroup}"
+                                    >                       
+                                   </enseignant:selectEnseignant>
+                  
+            </td>
+            
+            <td class="data">
+            <t:div rendered="#{not visaSeance.form.modeRemplacant}">
+              <cr:selectEnseignement 
+                render="outilRecherche visaSeanceContenu idPopupSequence paneauResultat selectionEnseignantRemplaceId"
+                toujoursVisible="true" 
+                readOnly="#{visaSeance.form.afficheSauvegarde}"
+                />
+                </t:div>
+            </td>
+          </tr>
+          <tr>
+            <td class="data">
+            <t:div rendered="#{not empty enseignant2.form.listeEnseignant}">
+            <h:outputLabel styleClass="libelle"
+                     value="Voir séances saisies en tant que remplaçant" />
+      <h:selectOneRadio id="selectionVoirRemplacantId"
+                        style="padding-left:5px;"
+                        rendered="true"
+                        disabled="false"
+                        value="#{visaSeance.form.modeRemplacant}">
+        <a4j:ajax event="click"
+                  listener="#{visaSeance.modeRemplacantChange}"
+                  oncomplete=""
+                  render="outilRecherche visaSeanceContenu paneauResultat" />
+        <f:selectItem itemLabel="Oui"
+                      itemValue="true" />
+        <f:selectItem itemLabel="Non"
+                      itemValue="false" />
+      </h:selectOneRadio>
+      </t:div>
+      
+      <t:div id="selectionEnseignantRemplacantConteneur" >
+            <t:div id="selectionEnseignantRemplaceId" 
+            rendered="#{not empty enseignant2.form.listeEnseignant and visaSeance.form.modeRemplacant}">
+                <enseignant:selectEnseignant choixTousOuUn="false"
+                                    labelControlEnseignant="Enseignant remplacé"
+                                   render="outilRecherche visaSeanceContenu idPopupSequence paneauResultat"
+                                   readOnly="#{visaSeance.form.afficheSauvegarde}"
+                                   toujoursVisible="true"
+                                   enseignant="#{enseignant2}"
+                                   classeGroupe = "#{classeGroup}"
+                                   idPopupEnseignant="idPopupEnseignant2"
+                                   intituleEnseignantId="intituleEnseignantId2"
+                                    >                       
+                                   </enseignant:selectEnseignant>
+                   </t:div>
+                   
+                   </t:div>
+            </td>
+          </tr>
+          <tr>
+            <td class="data"
+               >
+               <t:div rendered="#{not visaSeance.form.modeRemplacant}">
+              <cr:selectClasseGroupe 
+                    choixGroupesDeClass="false"
+                    showClasseGroupeLibelle="true"
+                    oncomplete=""
+                    readOnly="#{visaSeance.form.afficheSauvegarde}"
+                    render="outilRecherche visaSeanceContenu idPopupSequence paneauResultat"
+                    tousClasseGroupe="true" />
+                </t:div>
+            </td>
+          </tr>
+          <tr>
+          <td class="data"
+               >
+               <t:div rendered="#{not visaSeance.form.modeRemplacant}">
+               <cr:selectSequence 
+                    render="paneauResultat"
+                    readOnly="#{visaSeance.form.afficheSauvegarde}" />
+            </t:div>
+               </td>
+            
+          </tr>
+          <tr>
+            <td class="data">
+                <table class="corps">
+                    <tr>                
+			          <td class="data">
+			              <h:outputText value="Voir les séances" />
+			            </td>
+			            <td class="data">
+			              <h:selectBooleanCheckbox 
+			                     id="checkboxNonVisee"
+			                     value="#{visaSeance.form.vraiOuFauxNonVisee}" 
+			                     disabled="#{visaSeance.form.afficheSauvegarde}"
+			                     >
+                                <f:ajax
+					                  listener="#{visaSeance.resetFiltreVisee}"
+					                  execute="@this"
+					                  render="paneauResultat"
+					                  status="status" />
+			              </h:selectBooleanCheckbox>
+			              <h:outputText value="non visées" />
+			            </td>
+			            <td class="data">
+			              <h:selectBooleanCheckbox id="checkboxVisee"
+			                    value="#{visaSeance.form.vraiOuFauxVisee}"  
+			                    disabled="#{visaSeance.form.afficheSauvegarde}" >
+			                    <f:ajax
+                                      listener="#{visaSeance.resetFiltreVisee}"
+                                      execute="@this"
+                                      render="paneauResultat"
+                                      status="status" />
+			               </h:selectBooleanCheckbox>
+			              <h:outputText value="visées" />
+			            </td>
+			            <td class="data">
+			              <h:selectBooleanCheckbox id="checkboxPerimee"
+			                    value="#{visaSeance.form.vraiOuFauxPerimee}" 
+			                    disabled="#{visaSeance.form.afficheSauvegarde}" >
+			                 <f:ajax
+                                      listener="#{visaSeance.resetFiltreVisee}"
+                                      execute="@this"
+                                      render="paneauResultat"
+                                      status="status" />
+			              </h:selectBooleanCheckbox>
+			              <h:outputText value="modifiées depuis le dernier visa" />
+			            </td>
+			        </tr>
+			    </table>
+			</td>
+          </tr>          
+        </table>
+    <hr />
+    </rich:panel>
+    </rich:panel>
+    
+    <t:div id="paneauResultat" style="#{visaSeance.form.vraiOuFauxRechercheActive ? '' : 'display: none;'}" >
+        <table class="center" >
+            <tr>
+                <td>
+			         <h:outputText value="Affichage" />
+                </td>
+			    <td>
+			         <h:selectOneRadio id="selectionAffichage"
+                        style="padding-left:0px;"
+                        value="#{visaSeance.form.modeAffichage}">
+			                                
+		                <a4j:ajax event="click"
+		                          listener="#{visaSeance.selectionnerModeAffichage}"
+		                          oncomplete="resizePanel();"
+		                          render="visaSeanceContenu"
+		                          status="status" />
+		                <f:selectItem itemLabel="Liste"
+		                              itemValue="LISTE" />
+		                <f:selectItem itemLabel="Détail"
+		                              itemValue="DETAIL" />
+		              </h:selectOneRadio>
+                </td>
+            </tr>    
+        </table>
+        
+    <t:div id="visaSeanceContenu">
+      <t:div id="listeSeance"
+             rendered="#{visaSeance.form.modeAffichage eq 'LISTE'}"
+             style="#{empty visaSeance.form.listeSeance ? 'display: none;' : ''} overflow:auto;"
+             styleClass="listeSeance">
+        <table class="resultat">
+          <tr>
+            <th>
+              <h:outputText value="Enseignement" />
+            </th>
+            <th>
+              <h:outputText value="Classe/groupe" />
+            </th>
+            <th>
+              <h:outputText value="Intitulé" />
+            </th>
+            <th style="width: 100px;">
+              <h:outputText value="Modif." />
+            </th>
+            <th colspan="2"
+                style="width: 100px;">
+              <h:outputText value="Visa CE" />
+            </th>
+            <th colspan="2"
+                style="width: 100px;">
+              <h:outputText value="Visa Ins" />
+            </th>
+            <th>&#160;</th>
+          </tr>
+          <ui:repeat iterationStatusVar="indexVisaSeanceOuter"
+                     value="#{visaSeance.form.listeSeance}"
+                     var="dateSeance">
+            <tr>
+              <td class="rf-dt-hdr-c groupeDate"
+                  colspan="9">
+                <h:outputText value="Séances du #{cr:formatDate(dateSeance.date, 'dd/MM/yyyy')}" />
+              </td>
+            </tr>
+            <ui:repeat iterationStatusVar="indexVisaSeance"
+                       value="#{dateSeance.listeVisaSeance}"
+                       var="ligneVisaSeance">
+              <tr style="#{ligneVisaSeance.vraiOuFauxModifiee ? 'font-style: italic;' : ''}">
+
+                <td>
+                  <h:outputText value="#{ligneVisaSeance.designationEnseignement}" />
+                </td>
+                <td>
+                  <h:outputText value="#{ligneVisaSeance.sequenceDTO.groupesClassesDTO.designation}" />
+                </td>
+                <td>
+                  <h:outputText value="#{ligneVisaSeance.intitule}" />
+                </td>
+                <td style="text-align: center; #{ligneVisaSeance.alerteDateMaj ? 'background-color: #ff0000;' : ''}"
+                    title="#{empty ligneVisaSeance.dateMaj ? '' : cr:concat('modifée à&#160;', cr:formatDate(ligneVisaSeance.dateMaj, 'HH:mm'))}">
+
+                  <h:outputText value="#{cr:formatDate(ligneVisaSeance.dateMaj, 'dd/MM/yyyy')}" />
+                </td>
+                <td style="width: 20px; text-align: right; border-right-width: 0px;">
+                <h:graphicImage library="images/icones"
+                                name="lock.png"
+                                rendered="#{ligneVisaSeance.typeVisaDirecteur eq 'MEMO'}"
+                                title="Visa de type Mémo" />&#160;</td>
+                <td style="width:80px; border-left-width: 0px; text-align: left; #{ligneVisaSeance.alerteDateVisaDirecteur ? 'background-color: #ff0000;' : ''}"
+                    title="#{empty ligneVisaSeance.dateVisaDirecteur ? '' : cr:concat('modifée à&#160;', cr:formatDate(ligneVisaSeance.dateVisaDirecteur, 'HH:mm'))}">
+
+                  <h:outputText value="#{cr:formatDate(ligneVisaSeance.dateVisaDirecteur, 'dd/MM/yyyy')}" />
+                </td>
+                <td style="width: 20px; border-right-width: 0px; text-align: right;">
+                <h:graphicImage library="images/icones"
+                                name="lock.png"
+                                rendered="#{ligneVisaSeance.typeVisaInspecteur eq 'MEMO'}"
+                                title="Visa de type Mémo" />&#160;</td>
+                <td style="width:80px; border-left-width: 0px; text-align: left; #{ligneVisaSeance.alerteDateVisaInspecteur ? 'background-color: #ff0000;' : ''}"
+                    title="#{empty ligneVisaSeance.dateVisaInspecteur ? '' : cr:concat('modifée à&#160;', cr:formatDate(ligneVisaSeance.dateVisaInspecteur, 'HH:mm'))}">
+
+                  <h:outputText value="#{cr:formatDate(ligneVisaSeance.dateVisaInspecteur, 'dd/MM/yyyy')}" />
+                </td>
+                <td>
+                <ui:remove>
+                à noter : a4j:repeat a un problème de rafraichissement
+                quand il y a des boucles imbriqués
+                a4j:commandLink ne marche pas avec ui:repeat.
+                
+                Alors on utilise jsf pur.  L'oncomplete est gére par le handler js de f:ajax
+                </ui:remove>
+                  <h:commandLink action="#{visaSeance.chargerSeance}"
+                                 id="idvisuseance"
+                                 onclick="console.log('onclick chargerSeance')"
+                                 rendered="true"
+                                 style="white-space: normal; text-decoration: none;"
+                                 styleClass="#{myBackgroundClass} planningLien"
+                                 title="Séance\n #{seance.intitule}">
+                                 
+                    <f:setPropertyActionListener target="#{visaSeance.form.visaSeanceSelected}"
+                                                 value="#{ligneVisaSeance}" />
+                    <f:ajax event="action"
+                            execute="@form"
+                            oneerror="handleErrorAjaxVS"
+                            onevent="handleEventAfficherSeance"
+                            render=":idPopupSeance_form :idPopupSeance_form:idPopupSeance_panel" />
+                    <h:graphicImage library="images/icones"
+                                    name="loupe-icone.png"
+                                    rendered="true"
+                                    title="Voir le détail de la séance" />
+                  </h:commandLink>
+                </td>
+              </tr>
+            </ui:repeat>
+          </ui:repeat>
+        </table>
+      </t:div>
+      
+      <t:div id="seanceDetail"
+             rendered="#{visaSeance.form.modeAffichage eq 'DETAIL'}"
+             styleClass="seanceDetail">
+        <ui:repeat keepSaved="false"
+                   value="#{visaSeance.form.listeSeance}"
+                   var="dateSeanceDetail">
+          <ui:repeat keepSaved="false"
+                     value="#{dateSeanceDetail.listeVisaSeance}"
+                     var="ligneVisaSeanceDetail">
+            <cr:consultationSeance
+                seanceDetail="#{ligneVisaSeanceDetail}"
+                afficheFromVisa="true"
+                afficheTamponVisa="true"
+                style="#{ligneVisaSeanceDetail.vraiOuFauxModifiee ? 'font-style: italic;' : ''} background-color: #{ligneVisaSeanceDetail.typeCouleur.id};"
+                idPopupDevoir="idPopupDevoir"
+                idSeanceDetail=":formulaire_principal:seanceDetail"
+                affichePopupDevoir="true"
+                modifiable="false"
+                controleur="#{visaSeance}"
+                afficheSequenceTitre="#{visaSeance.form.afficheSequenceTitre}"
+            />
+            
+            
+          </ui:repeat>
+        </ui:repeat>
+      </t:div>
+    </t:div>
+ </t:div>
+    <cr:popupSequence 
+    render=":formulaire_principal:outilRecherche :formulaire_principal:paneauResultat"
+    />
+    
+    <cr:popup idPopup="idPopupAide" titrePopup="Aide"
+     largeurPopup="820" tailleAuto="true" popupUseRichEditor="false">
+     <div style="overflow: auto; width: 100%; height: 500px;" > 
+         <span style="word-wrap: break-word; width:780px;display: block;float:left;white-space:normal;">
+            <h:outputText value="#{visaSeance.form.texteAide}" escape="false" />
+         </span>
+     </div>
+                                      
+    </cr:popup>
+    
+    <cr:popupConfirmSauvegardeModification action=""
+                                           bean="#{visaSeance}"
+                                           cible="sauver"
+                                           libelleMessage="Voulez-vous enregistrer vos modifications avant de quitter cette page ?"
+                                           onErrorSauvegarde="setModificationFormulaire(true);"
+                                           oncomplete="setModificationFormulaire(false);"
+                                           render="listeSeance" />
+  </cr:page>
+  <cr:popupModifiable hauteurPopup="550"
+                      idPopup="idPopupAgenda"
+                      largeurPopup="400"
+                      maxlength="50"
+                      statusPopup="statuspop"
+                      titrePopup="#{visaSeance.titreAgenda}">
+    <a4j:outputPanel id="idPopupAgendaRegion">
+      <table style="width: 100%;">
+        <tr>
+          <td style="width: 30px;">
+            <a4j:commandLink action="#{visaSeance['naviguerSemainePrecedent']}"
+                             id="idnaviguerprecedent"
+                             oncomplete="chargerAgenda();"
+                             render="formulaire_principal:calendarDataPanel idTitreSemaine idnaviguerprecedent idnaviguersuivant"
+                             rendered="true"
+                             status="status"
+                             style="#{visaSeance.afficheSemainePrecedente ? '' : 'display:none;'}">
+
+              <h:graphicImage library="images/icones"
+                              name="flecheGauche.png"
+                              title="Afficher la semaine précédente" />
+            </a4j:commandLink>
+          </td>
+          <td style="width: 240px; text-align:center;">
+            <h:outputText id="idTitreSemaine"
+                          value="#{visaSeance.titreSemaine}" />
+          </td>
+          <td style="width: 30px;">
+            <a4j:commandLink action="#{visaSeance['naviguerSemaineSuivant']}"
+                             id="idnaviguersuivant"
+                             oncomplete="chargerAgenda();"
+                             render="formulaire_principal:calendarDataPanel idTitreSemaine idnaviguersuivant idnaviguerprecedent"
+                             rendered="true"
+                             status="status"
+                             style="#{visaSeance.afficheSemaineSuivante ? '' : 'display:none;'}">
+
+              <h:graphicImage library="images/icones"
+                              name="flecheDroite.png"
+                              title="Afficher la semaine suivante" />
+            </a4j:commandLink>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="3"
+              id="idAgenda"
+              style="width: 100%;">
+            <div class='calendar'></div>
+          </td>
+        </tr>
+      </table>
+    </a4j:outputPanel>
+  </cr:popupModifiable>
+  <cr:popupStatus idStatus="status" />
+  
+  <enseignant:enseignantPopup render=":formulaire_principal:outilRecherche :formulaire_principal:idPopupSequence visaSeanceContenu :formulaire_principal:paneauResultat"
+         enseignant = "#{enseignant}"
+         enseignantForm = "#{enseignant.form}"
+                                    titreClasseGroupe="false"
+   /> 
+   
+   <enseignant:enseignantPopup render=":formulaire_principal:outilRecherche :formulaire_principal:idPopupSequence visaSeanceContenu :formulaire_principal:paneauResultat"
+         enseignant = "#{enseignant2}"
+         enseignantForm = "#{enseignant2.form}"
+         idPopup = "idPopupEnseignant2"
+         titreClasseGroupe="false"
+                                    
+   /> 
+  <cr:popupGroupeClasse render=":formulaire_principal:outilRecherche :formulaire_principal:idPopupSequence :formulaire_principal:visaSeanceContenu :formulaire_principal:paneauResultat" />
+  <cr:popupEnseignement render=":formulaire_principal:outilRecherche :formulaire_principal:idPopupSequence visaSeanceContenu :formulaire_principal:paneauResultat" />
+  <cr:popupModifiable idPopup="idPopupDevoir"
+                      largeurPopup="800"
+                      titrePopup="Travail à faire">
+    <rich:panel id="idPopupDevoirRegion">
+      <t:div id="idDevoirDiv"
+             styleClass="listeDesDevoirsSeance">
+        <cr:saisieDevoir checkModification="false"
+                         cibleAfficherChargeTravail="afficherChargeTravail"
+                         cibleAfterAjouterPieceJointe="afterAjouterPieceJointeDevoir"
+                         cibleAjouterPieceJointe="ajouterPieceJointeDevoir"
+                         cibleChargeImagesLatex="chargeImagesLatexDevoir"
+                         cibleDeleteDevoir="deleteDevoir"
+                         cibleDeletePieceJointe="deletePieceJointeDevoir"
+                         cibleResetDevoir="resetDevoir"
+                         controleur="#{ajoutSeance}"
+                         deleteDevoir="false"
+                         devoirDTO="#{ajoutSeance.form.devoirSelected}"
+                         formulaire_contenant="idPopupDevoir_form"
+                         idPopupPiecesJointes="idPopupPiecesJointesDevoir"
+                         id_devoirConteneur="idDevoirDiv"
+                         id_saisieDevoir="idSaisieDevoir"
+                         listeTypeDevoir="#{ajoutSeance.form.listeTypeDevoir}"
+                         readOnly="true"
+                         statusPopup="statusPopup" />
+      </t:div>
+    </rich:panel>
+  </cr:popupModifiable>
+  <cr:popupModifiable domElementAttachment="form"
+                      idPopup="idPopupSeance"
+                      largeurPopup="800"
+                      maxlength="50"
+                      popupUseRichEditor=""
+                      statusPopup="statusPopup"
+                      titrePopup="Détail de la séance">
+    <cr:menuAction surcharge="false">
+      <cr:elemMenuAction bean="#{visaSeance}"
+                         cible="chargerArchiveSeance"
+                         idaction="idMenuArchiveSeance"
+                         image="seanceLock.png"
+                         oncomplete="#{rich:component('idPopupSeance')}.show();"
+                         render=":idPopupSeance_form:idPopupSeance_panel"
+                         rendered="#{visaSeance.form.afficheVisualiserArchiveSeance and visaSeance.form.visaSeanceSelected.isVisibleCadena}"
+                         status="status"
+                         title="Regarder la version archivée" />
+    </cr:menuAction>
+    <cr:liena4j bean="#{ajoutSeance}"
+                cible="changeDateSeance"
+                idliena4j="idLienChangeDate"
+                render="richTabPanel"
+                status="statusPopup"
+                titre=""></cr:liena4j>
+    <rich:tabPanel id="richTabPanel"
+                   selectedTab="seance"
+                   switchType="client">
+      <rich:tab header="#{ajoutSeance.form.seanceTitre}"
+                id="SEANCE"
+                name="tabSeance">
+        <t:div style="height:450px; overflow:auto;">
+          <cr:saisieSeance affichageSequence="#{ajoutSeance.form.afficheSelectionSequenceSeance}"
+                           afficheDate="true"
+                           bean="#{ajoutSeance}"
+                           checkModification="false"
+                           cible="chargerSequence"
+                           cibleAfterAjouterPieceJointeSeance="afterAjouterPieceJointeSeance"
+                           cibleAjouterPieceJointeSeance="ajouterPieceJointeSeance"
+                           cibleChargeImagesLatex="chargeImagesLatex"
+                           cibleChargeImagesLatexAnnotations="chargeImagesLatexAnnotations"
+                           cibleDeletePieceJointeSeance="deletePieceJointeSeance"
+                           cibleResetSeance="resetSeance"
+                           cibleResetSeanceAnnotations="resetSeanceAnnotations"
+                           controleur="#{ajoutSeance}"
+                           formulaire_contenant="idPopupSeance_form"
+                           idPopupPiecesJointes="idPopupPiecesJointes"
+                           id_saisieSeance="idSaisieSeance"
+                           listeSequence="#{ajoutSeance.form.listeSequenceSeance}"
+                           onchangedate=" var lien = $('#idPopupSeance_form\\:idLienChangeDate'); if (lien != null) { lien.click(); }"
+                           readOnly="true"
+                           seance="#{ajoutSeance.form.seance}"
+                           sequenceSelected="#{ajoutSeance.form.seance.sequenceDTO}"
+                           showAnnotations="false" />
+        </t:div>
+      </rich:tab>
+      <rich:tab header="Travail à faire"
+                id="TAB_DEVOIR"
+                rendered="true">
+        <t:div id="idListeDesDevoirsSeance"
+               styleClass="listeDesDevoirsSeance">
+          <c:forEach items="#{ajoutSeance.form.seance.devoirs}"
+                     var="devoir"
+                     varStatus="status">
+            <cr:saisieDevoir checkModification="false"
+                             cibleAfficherChargeTravail="afficherChargeTravail"
+                             cibleAfterAjouterPieceJointe="afterAjouterPieceJointe"
+                             cibleAjouterPieceJointe="ajouterPieceJointe"
+                             cibleChargeImagesLatex="chargeImagesLatexDevoir"
+                             cibleDeleteDevoir="deleteDevoir"
+                             cibleDeletePieceJointe="deletePieceJointe"
+                             cibleResetDevoir="resetDevoir"
+                             controleur="#{ajoutSeance}"
+                             devoirDTO="#{devoir}"
+                             formulaire_contenant="idPopupSeance_form"
+                             idPopupPiecesJointes="idPopupPiecesJointes"
+                             id_devoirConteneur="idListeDesDevoirsSeance"
+                             id_popupChargeTravail="idPopupChargeTravailSeance"
+                             id_saisieDevoir="idSaisieDevoirSeance${status.index}"
+                             listeDate="#{ajoutSeance.form.listeDateRemiseDevoir}"
+                             listeTypeDevoir="#{ajoutSeance.form.listeTypeDevoir}"
+                             readOnly="true" />
+          </c:forEach>
+        </t:div>
+      </rich:tab>
+    </rich:tabPanel>
+  </cr:popupModifiable>
+</html>
